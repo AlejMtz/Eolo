@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="../css/style.css">
+    <title>Walkaround - Inspección de Componentes</title>
+
+</head>
+<body>
+     <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark navbar-custom">
+        <div class="container">
+            <a href="../Menu/Index.html" class="navbar-brand" href="#">
+                <i class="fas fa-plane"></i> EOLO - Sistema de Walkaround
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="../Despacho/ver_aeronaves.html"><i class="fas fa-plane"></i> Aeronaves</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="../Despacho/ver_walkaround.html"><i class="fas fa-clipboard-check"></i> Walkaround</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#"><i class="fas fa-images"></i> Evidencias</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container container-form">
+        <h2 class="form-title"><i class="fas fa-clipboard-check"></i> Walkaround - Inspección de Componentes</h2>
+        
+        <form id="walkaroundForm" action="procesar_walkaround.php" method="POST" enctype="multipart/form-data">
+                <input type="hidden" id="id_walk" name="id_walk">
+
+
+            <div class="form-group mb-3">
+                <label for="fechaHora">Fecha y Hora:</label>
+                <input type="datetime-local" id="fechaHora" name="fechaHora" class="form-control" required>
+                <script>
+                    document.addEventListener("DOMContentLoaded", function() {
+                        const now = new Date();
+                        const formatted = now.toISOString().slice(0,16);
+                        document.getElementById("fechaHora").value = formatted;
+                    });
+                </script>
+            </div>
+
+            <!-- Información de la aeronave -->
+            <div class="row mb-4">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label for="aeronave" class="form-label">Seleccionar Aeronave:</label>
+                        <select class="form-select" id="aeronave" name="id_aeronave" required>
+                            <option value="" selected>Selecciona una aeronave</option>
+                            <!-- Las opciones se cargarán dinámicamente desde la BD -->
+                        </select>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Información del walkaround -->
+            <div class="row mb-4">
+                <div class="col-md-4">
+                    <div class="form-group">
+                        <label for="elaboro" class="form-label">Elaboró:</label>
+                        <input type="text" class="form-control" id="elaboro" name="elaboro" required>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="form-group">
+                        <label for="responsable" class="form-label">Responsable:</label>
+                        <input type="text" class="form-control" id="responsable" name="responsable" required>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="form-group">
+                        <label for="jefe_area" class="form-label">Jefe de Área:</label>
+                        <input type="text" class="form-control" id="jefe_area" name="jefe_area" required>
+                    </div>
+                </div>
+                <div class="col-md-4 mt-3">
+                    <div class="form-group">
+                        <label for="vobo" class="form-label">VoBo:</label>
+                        <input type="text" class="form-control" id="vobo" name="vobo" required>
+                    </div>
+                </div>
+            </div>
+            
+            <hr>
+            
+            <!-- Componentes (se cargarán dinámicamente según el tipo de aeronave) -->
+            <div id="componentesContainer">
+                <div class="text-center py-5">
+                    <i class="fas fa-plane fs-1 text-muted"></i>
+                    <p class="mt-3 text-muted">Selecciona una aeronave para mostrar sus componentes</p>
+                </div>
+            </div>
+            
+            <!-- Sección de evidencias generales -->
+            <div class="evidence-section mt-5">
+                <h4 class="mb-3"><i class="fas fa-camera"></i> Evidencias Generales</h4>
+                <div class="card">
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <label for="generalEvidence" class="form-label">Seleccionar archivos (fotos/videos):</label>
+                            <input class="form-control" type="file" id="generalEvidence" name="generalEvidence[]" multiple accept="image/*,video/*">
+                        </div>
+                        <div id="evidencePreview" class="mt-3"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Campo de observaciones generales -->
+            <div class="form-group mt-4">
+                <label for="observacionesGenerales" class="form-label">Observaciones Generales:</label>
+                <textarea class="form-control" id="observacionesGenerales" name="observacionesGenerales" rows="3" placeholder="Observaciones generales del walkaround"></textarea>
+            </div>
+            
+            <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-4">
+                <button type="button" class="btn btn-secondary me-md-2" onclick="window.history.back()">Cancelar</button>
+                <button type="submit" class="btn btn-primary" id="submitButton">
+                    <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true" style="display: none;"></span>
+                    Guardar Inspección
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Modal de éxito -->
+<div class="modal fade" id="successModal" tabindex="-1" aria-labelledby="successModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title" id="successModalLabel">
+                    <i class="fas fa-check-circle me-2"></i>¡Éxito! 🎉
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" id="successModalBody"></div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-success" data-bs-dismiss="modal">Aceptar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de error -->
+<div class="modal fade" id="errorModal" tabindex="-1" aria-labelledby="errorModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title" id="errorModalLabel">
+                    <i class="fas fa-exclamation-triangle me-2"></i>¡Error! ⚠️
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" id="errorModalBody"></div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Aceptar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de confirmación -->
+<div class="modal fade" id="confirmModal" tabindex="-1" aria-labelledby="confirmModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-warning text-dark">
+                <h5 class="modal-title" id="confirmModalLabel">
+                    <i class="fas fa-question-circle me-2"></i>Confirmar
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" id="confirmModalBody"></div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-warning" id="confirmActionBtn">Confirmar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+ <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="../Despacho/walkaround.js"></script>
+
+<script>
+    // Esperar a que TODO se cargue completamente
+    window.addEventListener('load', function() {
+        console.log('✅ Todos los recursos cargados, incluyendo walkaround.js');
+        console.log('🔍 configurarModoEdicion existe:', typeof configurarModoEdicion);
+        
+        const urlParams = new URLSearchParams(window.location.search);
+        const idWalk = urlParams.get('id');
+        console.log('📋 ID desde URL:', idWalk);
+        
+        if (idWalk && typeof configurarModoEdicion === 'function') {
+            console.log('🚀 Iniciando modo edición...');
+            configurarModoEdicion(idWalk);
+        } else if (idWalk) {
+            console.error('❌ Error: configurarModoEdicion no está disponible');
+            // Mostrar mensaje de error al usuario
+            alert('Error: No se puede cargar el modo edición. Por favor, recarga la página.');
+        }
+    });
+</script>
+
+<!-- Loading overlay - QUITA el style="display: none;" -->
+<div id="loading" class="loading-overlay" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(255, 255, 255, 0.8); display: none; flex-direction: column; justify-content: center; align-items: center; z-index: 9999;">
+    <div class="spinner-border text-primary" role="status">
+        <span class="visually-hidden">Cargando...</span>
+    </div>
+    <p>Guardando inspección...</p>
+</div>
+
+</body>
+</html>
