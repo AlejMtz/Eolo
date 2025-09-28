@@ -14,56 +14,31 @@ let isEditMode = false;
 // Componentes predefinidos para cada tipo de aeronave
 const componentesPorTipo = {
     avion: [
-        { id: 'radomo', nombre: 'Radomo', seccion: 'Nariz' },
-        { id: 'parabrisas_limpiadores', nombre: 'Parabrisas/Limpiadores', seccion: 'Cabina' },
-        { id: 'tubos_pitot', nombre: 'Tubos Pitot', seccion: 'Sistema de Instrumentación' },
-        { id: 'tren_nariz_llantas', nombre: 'Tren de Nariz - Llantas', seccion: 'Tren de Aterrizaje' },
-        { id: 'tren_nariz_luces', nombre: 'Tren de Nariz - Luces', seccion: 'Tren de Aterrizaje' },
-        { id: 'tren_nariz_fugas', nombre: 'Tren de Nariz - Fugas', seccion: 'Tren de Aterrizaje' },
-        { id: 'fuselaje_izq_antenas', nombre: 'Fuselaje Izquierdo - Antenas', seccion: 'Fuselaje' },
-        { id: 'fuselaje_izq_luces', nombre: 'Fuselaje Izquierdo - Luces', seccion: 'Fuselaje' },
-        { id: 'fuselaje_izq_ventanillas', nombre: 'Fuselaje Izquierdo - Ventanillas', seccion: 'Fuselaje' },
-        { id: 'puerta_acceso_escalera', nombre: 'Puerta de Acceso - Escalera', seccion: 'Accesos' },
-        { id: 'puerta_acceso_barandillas', nombre: 'Puerta de Acceso - Barandillas', seccion: 'Accesos' },
-        { id: 'puerta_acceso_marco', nombre: 'Puerta de Acceso - Marco', seccion: 'Accesos' },
-        { id: 'antenas', nombre: 'Antenas', seccion: 'Comunicaciones' },
-        { id: 'semiala_izq_bordes', nombre: 'Semiala Izquierda - Bordes', seccion: 'Alas' },
-        { id: 'semiala_izq_winglet', nombre: 'Semiala Izquierda - Winglet', seccion: 'Alas' },
-        { id: 'semiala_izq_estaticas', nombre: 'Semiala Izquierda - Estáticas', seccion: 'Alas' },
-        { id: 'semiala_izq_sup_control', nombre: 'Semiala Izquierda - Sup. Control', seccion: 'Alas' },
-        { id: 'tren_principal_izq_llantas', nombre: 'Tren Principal Izquierdo - Llantas', seccion: 'Tren de Aterrizaje' },
-        { id: 'tren_principal_izq_fugas', nombre: 'Tren Principal Izquierdo - Fugas', seccion: 'Tren de Aterrizaje' },
-        { id: 'compartimiento_carga_ext', nombre: 'Compartimiento de Carga - Exterior', seccion: 'Compartimientos' },
-        { id: 'compartimiento_carga_int', nombre: 'Compartimiento de Carga - Interior', seccion: 'Compartimientos' },
-        { id: 'empenaje_bordes', nombre: 'Empenaje - Bordes', seccion: 'Empenaje' },
-        { id: 'empenaje_estaticas', nombre: 'Empenaje - Estáticas', seccion: 'Empenaje' },
-        { id: 'empenaje_sup_control', nombre: 'Empenaje - Sup. Control', seccion: 'Empenaje' },
-        { id: 'semiala_der_bordes', nombre: 'Semiala Derecha - Bordes', seccion: 'Alas' },
-        { id: 'semiala_der_winglet', nombre: 'Semiala Derecha - Winglet', seccion: 'Alas' },
-        { id: 'semiala_der_estaticas', nombre: 'Semiala Derecha - Estáticas', seccion: 'Alas' },
-        { id: 'semiala_der_sup_control', nombre: 'Semiala Derecha - Sup. Control', seccion: 'Alas' },
-        { id: 'tren_principal_der_llantas', nombre: 'Tren Principal Derecho - Llantas', seccion: 'Tren de Aterrizaje' },
-        { id: 'tren_principal_der_fugas', nombre: 'Tren Principal Derecho - Fugas', seccion: 'Tren de Aterrizaje' },
-        { id: 'valvulas_servicio_combustible', nombre: 'Válvulas de Servicio - Combustible', seccion: 'Sistemas' },
-        { id: 'valvulas_servicio_agua', nombre: 'Válvulas de Servicio - Agua', seccion: 'Sistemas' },
-        { id: 'valvulas_servicio_fugas', nombre: 'Válvulas de Servicio - Fugas', seccion: 'Sistemas' },
-        { id: 'motores_crowling', nombre: 'Motores - Crowling', seccion: 'Motores' },
-        { id: 'motores_carenados', nombre: 'Motores - Carenados', seccion: 'Motores' },
-        { id: 'fuselaje_der_antenas', nombre: 'Fuselaje Derecho - Antenas', seccion: 'Fuselaje' },
-        { id: 'fuselaje_der_luces', nombre: 'Fuselaje Derecho - Luces', seccion: 'Fuselaje' },
-        { id: 'fuselaje_der_ventanillas', nombre: 'Fuselaje Derecho - Ventanillas', seccion: 'Fuselaje' },
-        { id: 'registros_servicios', nombre: 'Registros de Servicios', seccion: 'Documentación' }
+        { id: 'radomo', nombre: 'Radomo', seccion: 'Avion' },
+        { id: 'parabrisas', nombre: 'Parabrisas/Limpiadores', seccion: 'Avion' },
+        { id: 'tubos_pitot', nombre: 'Tubos Pitot', seccion: 'Avion' },
+        { id: 'tren_nariz', nombre: 'Tren de Nariz (Llantas,Luces,Fugas)', seccion: 'Avion' },
+        { id: 'fuselaje_izq', nombre: 'Fuselaje Izquierdo (Antenas,Luces,Ventanillas)', seccion: 'Avion' },
+        { id: 'puerta_acceso_cabina', nombre: 'Puerta de Acceso a cabina (Escalera,Barandillas,Marco)', seccion: 'Avion' },
+        { id: 'antenas', nombre: 'Antenas', seccion: 'Avion' },
+        { id: 'semiala_izq', nombre: 'Semiala Izquierda (Bordes, winglet, estaticas, sup. de control)', seccion: 'Avion' },
+        { id: 'tren_principal_izq', nombre: 'Tren Principal Izquierdo (Llantas,Fugas)', seccion: 'Avion' },
+        { id: 'compartimiento_carga', nombre: 'Compartimiento de Carga (Exterior e Interior)', seccion: 'Avion' },
+        { id: 'empenaje', nombre: 'Empenaje (Bordes, estaticas, superficies de control)', seccion: 'Avion' },
+        { id: 'semiala_der', nombre: 'Semiala Derecha (Bordes, winglet, estaticas, sup. de control)', seccion: 'Avion' },
+        { id: 'tren_principal_der', nombre: 'Tren Principal Derecho (Llantas, Fugas)', seccion: 'Avion' },
+        { id: 'valvulas_servicio', nombre: 'Válvulas de Servicio (Combustible, agua, libre de fugas)', seccion: 'Avion' },
+        { id: 'motores', nombre: 'Motores (Crowling, carenados)', seccion: 'Avion' },
+        { id: 'fuselaje_der', nombre: 'Fuselaje Derecho (Antenas, luces, ventanillas)', seccion: 'Avion' },
+        { id: 'registros_servicios', nombre: 'Registros de Servicios', seccion: 'Avion' }
     ],
     helicoptero: [
-        { id: 'fuselaje_puertas', nombre: 'Fuselaje - Puertas', seccion: 'Fuselaje' },
-        { id: 'fuselaje_ventanas', nombre: 'Fuselaje - Ventanas', seccion: 'Fuselaje' },
-        { id: 'fuselaje_antenas', nombre: 'Fuselaje - Antenas', seccion: 'Fuselaje' },
-        { id: 'fuselaje_luces', nombre: 'Fuselaje - Luces', seccion: 'Fuselaje' },
-        { id: 'esqui_neumaticos', nombre: 'Esquí/Neumáticos', seccion: 'Tren de Aterrizaje' },
-        { id: 'palas', nombre: 'Palas', seccion: 'Rotor Principal' },
-        { id: 'boom', nombre: 'Boom', seccion: 'Estructura' },
-        { id: 'estabilizadores', nombre: 'Estabilizadores', seccion: 'Control' },
-        { id: 'rotor_cola', nombre: 'Rotor de Cola', seccion: 'Rotor de Cola' }
+        { id: 'fuselaje', nombre: 'Fuselaje (Puertas, ventanas, antenas, luces)', seccion: 'Helicoptero' },
+        { id: 'esqui_neumaticos', nombre: 'Esquí/Neumáticos', seccion: 'Helicoptero' },
+        { id: 'palas', nombre: 'Palas', seccion: 'Helicoptero' },
+        { id: 'boom', nombre: 'Boom', seccion: 'Helicoptero' },
+        { id: 'estabilizadores', nombre: 'Estabilizadores', seccion: 'Helicoptero' },
+        { id: 'rotor_cola', nombre: 'Rotor de Cola', seccion: 'Helicoptero' }
     ]
 };
 
@@ -122,28 +97,33 @@ document.getElementById('walkaroundForm').addEventListener('submit', function(ev
     }
 });
 
-        // Evento cuando se selecciona una aeronave
         document.getElementById('aeronave').addEventListener('change', function() {
-            const aeronaveId = this.value;
-            
-            if (aeronaveId) {
-                // Encontrar la aeronave seleccionada
-                const aeronaveSeleccionada = aeronavesData.find(a => a.Id_Aeronave == aeronaveId);
-                
-                if (aeronaveSeleccionada) {
-                    // Cargar componentes según el tipo de aeronave
-                    const tipo = aeronaveSeleccionada.Tipo.toLowerCase();
-                    cargarComponentes(tipo);
-                }
-            } else {
-                document.getElementById('componentesContainer').innerHTML = `
-                    <div class="text-center py-5">
-                        <i class="fas fa-plane fs-1 text-muted"></i>
-                        <p class="mt-3 text-muted">Selecciona una aeronave para mostrar sus componentes</p>
-                    </div>
-                `;
-            }
-        });
+    const aeronaveId = this.value;
+    
+    if (aeronaveId) {
+        // Mostrar información adicional de la aeronave
+        mostrarInfoAeronave(aeronaveId);
+        
+        // Encontrar la aeronave seleccionada
+        const aeronaveSeleccionada = aeronavesData.find(a => a.Id_Aeronave == aeronaveId);
+        
+        if (aeronaveSeleccionada) {
+            // Cargar componentes según el tipo de aeronave
+            const tipo = aeronaveSeleccionada.Tipo.toLowerCase();
+            cargarComponentes(tipo);
+        }
+    } else {
+        // Ocultar información si no hay aeronave seleccionada
+        ocultarInfoAeronave();
+        
+        document.getElementById('componentesContainer').innerHTML = `
+            <div class="text-center py-5">
+                <i class="fas fa-plane fs-1 text-muted"></i>
+                <p class="mt-3 text-muted">Selecciona una aeronave para mostrar sus componentes</p>
+            </div>
+        `;
+    }
+});
         
         // Manejar la selección de evidencias generales
         document.getElementById('generalEvidence').addEventListener('change', function(e) {
@@ -196,7 +176,7 @@ function configurarModoEdicion(id) {
 }
 
 /**
- * Carga datos del walkaround en modo edición
+ * Carga datos del walkaround en modo edición - VERSIÓN MODIFICADA
  */
 async function cargarWalkaround(id) {
     console.log('🔍 Iniciando carga de walkaround ID:', id);
@@ -248,6 +228,9 @@ async function cargarWalkaround(id) {
             }
         }
         
+        // ⭐⭐ NUEVO: Cargar aeronaves primero para poder mostrar la información ⭐⭐
+        await cargarAeronavesParaSelector();
+        
         // Llenar el formulario con los datos
         document.getElementById('fechaHora').value = fechaHoraValue;
         document.getElementById('aeronave').value = data.Id_Aeronave || '';
@@ -258,6 +241,33 @@ async function cargarWalkaround(id) {
         document.getElementById('observacionesGenerales').value = data.observaciones || '';
         
         console.log('✅ Formulario llenado correctamente');
+        
+        // ⭐⭐ NUEVO: Mostrar información de la aeronave en modo edición ⭐⭐
+        if (data.Id_Aeronave) {
+            console.log('🛩️ Mostrando información de aeronave para ID:', data.Id_Aeronave);
+            
+            // Buscar la aeronave en los datos cargados
+            const aeronaveEnModoEdicion = aeronavesData.find(a => a.Id_Aeronave == data.Id_Aeronave);
+            
+            if (aeronaveEnModoEdicion) {
+                console.log('📋 Información de aeronave encontrada:', aeronaveEnModoEdicion);
+                
+                // Mostrar información adicional
+                mostrarInfoAeronaveEnModoEdicion(
+                    aeronaveEnModoEdicion.Matricula,
+                    aeronaveEnModoEdicion.Equipo, 
+                    aeronaveEnModoEdicion.Procedencia
+                );
+            } else {
+                console.warn('⚠️ No se encontró información completa de la aeronave');
+                // Intentar mostrar con los datos que tengamos del walkaround
+                mostrarInfoAeronaveEnModoEdicion(
+                    data.Matricula,
+                    data.Equipo,
+                    data.Procedencia
+                );
+            }
+        }
         
         // Deshabilitar selector de aeronave en modo edición
         document.getElementById('aeronave').disabled = true;
@@ -279,7 +289,27 @@ async function cargarWalkaround(id) {
 }
 
 /**
- * Carga aeronaves para el selector
+ * ⭐⭐ NUEVA FUNCIÓN: Muestra información de aeronave en modo edición ⭐⭐
+ */
+function mostrarInfoAeronaveEnModoEdicion(matricula, equipo, procedencia) {
+    const infoContainer = document.getElementById('infoAeronaveContainer');
+    
+    if (infoContainer) {
+        // Mostrar la información en los campos correspondientes
+        document.getElementById('infoMatricula').textContent = matricula || 'No especificada';
+        document.getElementById('infoEquipo').textContent = equipo || 'No especificado';
+        document.getElementById('infoProcedencia').textContent = procedencia || 'No especificada';
+        
+        // Mostrar el contenedor de información
+        infoContainer.style.display = 'flex';
+        console.log('✅ Información de aeronave mostrada en modo edición');
+    } else {
+        console.warn('⚠️ No se encontró el contenedor de información de aeronave');
+    }
+}
+
+/**
+ * Carga aeronaves para el selector - VERSIÓN MODIFICADA
  */
 async function cargarAeronavesParaSelector() {
     console.log('Intentando cargar aeronaves...');
@@ -307,11 +337,19 @@ async function cargarAeronavesParaSelector() {
             selectAeronave.remove(1);
         }
         
-        // Añadir opciones
+        // Añadir opciones con todos los datos necesarios
         aeronaves.forEach(aeronave => {
             const option = document.createElement('option');
             option.value = aeronave.Id_Aeronave;
-            option.textContent = `${aeronave.Matricula} (${aeronave.Tipo})`;
+            
+            // Almacenar datos adicionales en el atributo data
+            option.setAttribute('data-matricula', aeronave.Matricula || '');
+            option.setAttribute('data-equipo', aeronave.Equipo || '');
+            option.setAttribute('data-procedencia', aeronave.Procedencia || '');
+            option.setAttribute('data-tipo', aeronave.Tipo || '');
+            
+            // Texto visible en el dropdown
+            option.textContent = `${aeronave.Matricula} - ${aeronave.Equipo || 'Sin equipo'} (${aeronave.Tipo})`;
             selectAeronave.appendChild(option);
         });
         
@@ -320,6 +358,37 @@ async function cargarAeronavesParaSelector() {
     } catch (error) {
         console.error('Error al cargar aeronaves:', error);
         mostrarError('Error al cargar las aeronaves. Por favor, recarga la página.');
+    }
+}
+
+/**
+ * Muestra la información adicional de la aeronave seleccionada
+ */
+function mostrarInfoAeronave(aeronaveId) {
+    const aeronaveSeleccionada = aeronavesData.find(a => a.Id_Aeronave == aeronaveId);
+    const infoContainer = document.getElementById('infoAeronaveContainer');
+    
+    if (aeronaveSeleccionada && infoContainer) {
+        // Mostrar la información en los campos correspondientes
+        document.getElementById('infoMatricula').textContent = aeronaveSeleccionada.Matricula || 'No especificada';
+        document.getElementById('infoEquipo').textContent = aeronaveSeleccionada.Equipo || 'No especificado';
+        document.getElementById('infoProcedencia').textContent = aeronaveSeleccionada.Procedencia || 'No especificada';
+        
+        // Mostrar el contenedor de información
+        infoContainer.style.display = 'flex';
+    } else {
+        // Ocultar el contenedor si no hay aeronave seleccionada
+        infoContainer.style.display = 'none';
+    }
+}
+
+/**
+ * Oculta la información de la aeronave
+ */
+function ocultarInfoAeronave() {
+    const infoContainer = document.getElementById('infoAeronaveContainer');
+    if (infoContainer) {
+        infoContainer.style.display = 'none';
     }
 }
 
@@ -735,166 +804,102 @@ function mostrarError(mensaje) {
 }
 
 /**
- * Carga la lista de walkarounds y la muestra en la tabla.
+ * Carga la lista de walkarounds y la muestra en la tabla - VERSIÓN CORREGIDA
  */
 async function cargarWalkarounds() {
     const tablaBody = document.querySelector('#tablaWalkarounds tbody');
-    tablaBody.innerHTML = '<tr><td colspan="8" class="text-center">Cargando...</td></tr>';
+    tablaBody.innerHTML = '<tr><td colspan="10" class="text-center">Cargando...</td></tr>';
 
     try {
+        console.log('🔄 Cargando walkarounds...');
         const response = await fetch('leer_walkaround.php');
+        
         if (!response.ok) {
             throw new Error(`Error HTTP: ${response.status}`);
         }
+        
         const walkarounds = await response.json();
+        console.log('📊 Walkarounds recibidos:', walkarounds);
         
         if (walkarounds.error) {
             throw new Error(walkarounds.error);
         }
 
         tablaBody.innerHTML = '';
-        if (walkarounds.length === 0) {
-            tablaBody.innerHTML = '<tr><td colspan="8" class="text-center">No hay walkarounds registrados.</td></tr>';
-        } else {
-            walkarounds.forEach((walkaround, index) => {
-                const fila = document.createElement('tr');
-                
-                const matricula = walkaround.Matricula || `Aeronave #${walkaround.Id_Aeronave}`;
-                
-                fila.innerHTML = `
-                    <td>${index + 1}</td>
-                    <td>${new Date(walkaround.Fechahora).toLocaleString()}</td>
-                    <td>${matricula}</td>
-                    <td>${walkaround.Elaboro}</td>
-                    <td>${walkaround.Responsable}</td>
-                    <td>${walkaround.JefeArea}</td>
-                    <td>${walkaround.VoBo}</td>
-                    <td>
-                        <div class="btn-group btn-group-sm" role="group">
-                            <a href="detalle_walkaround.html?id=${walkaround.Id_Walk}" class="btn btn-info" title="Ver detalles">
-                                <i class="fas fa-eye"></i>
-                            </a>
-                            <a href="componenteWk.html?id=${walkaround.Id_Walk}" class="btn btn-warning" title="Editar">
-                                <i class="fas fa-edit"></i>
-                            </a>
-                            <button class="btn btn-danger" onclick="eliminarWalkaround(${walkaround.Id_Walk})" title="Eliminar">
-                                <i class="fas fa-trash-alt"></i>
-                            </button>
-                        </div>
-                    </td>
-                `;
-                tablaBody.appendChild(fila);
-            });
-        }
-    } catch (error) {
-        console.error('Error al cargar walkarounds:', error);
-        tablaBody.innerHTML = `<tr><td colspan="8" class="text-center text-danger">Error al cargar los datos. Por favor, revisa la conexión.</td></tr>`;
-    }
-}async function cargarWalkarounds() {
-    const tablaBody = document.querySelector('#tablaWalkarounds tbody');
-    tablaBody.innerHTML = '<tr><td colspan="8" class="text-center">Cargando...</td></tr>';
-
-    try {
-        const response = await fetch('leer_walkaround.php');
-        if (!response.ok) {
-            throw new Error(`Error HTTP: ${response.status}`);
-        }
-        const walkarounds = await response.json();
         
-        if (walkarounds.error) {
-            throw new Error(walkarounds.error);
-        }
-
-        tablaBody.innerHTML = '';
         if (walkarounds.length === 0) {
-            tablaBody.innerHTML = '<tr><td colspan="8" class="text-center">No hay walkarounds registrados.</td></tr>';
+            tablaBody.innerHTML = '<tr><td colspan="10" class="text-center">No hay walkarounds registrados.</td></tr>';
         } else {
             walkarounds.forEach((walkaround, index) => {
+                console.log(`📝 Procesando walkaround ${index + 1}:`, walkaround);
+                
                 const fila = document.createElement('tr');
                 
-                const matricula = walkaround.Matricula || `Aeronave #${walkaround.Id_Aeronave}`;
+                // ⭐⭐ VERIFICAR CAMPOS DISPONIBLES ⭐⭐
+                console.log('🔍 Campos disponibles:', Object.keys(walkaround));
+                console.log('✈️ Equipo:', walkaround.Equipo);
+                console.log('🌍 Procedencia:', walkaround.Procedencia);
+                
+                // Manejo seguro de campos
+                const matricula = walkaround.Matricula || 'No especificada';
+                const equipo = walkaround.Equipo || 'No especificado';
+                const procedencia = walkaround.Procedencia || 'No especificada';
+                const elaboro = walkaround.Elaboro || 'No especificado';
+                const responsable = walkaround.Responsable || 'No especificado';
+                const jefeArea = walkaround.JefeArea || 'No especificado';
+                const vobo = walkaround.VoBo || 'No especificado';
+                
+                // Formatear fecha
+                let fechaFormateada = 'Fecha no válida';
+                try {
+                    if (walkaround.Fechahora) {
+                        fechaFormateada = new Date(walkaround.Fechahora).toLocaleString();
+                    }
+                } catch (e) {
+                    console.warn('Error al formatear fecha:', e);
+                }
                 
                 fila.innerHTML = `
-                    <td>${index + 1}</td>
-                    <td>${new Date(walkaround.Fechahora).toLocaleString()}</td>
-                    <td>${matricula}</td>
-                    <td>${walkaround.Elaboro}</td>
-                    <td>${walkaround.Responsable}</td>
-                    <td>${walkaround.JefeArea}</td>
-                    <td>${walkaround.VoBo}</td>
-                    <td>
-                        <div class="btn-group btn-group-sm" role="group">
-                            <a href="detalle_walkaround.html?id=${walkaround.Id_Walk}" class="btn btn-info" title="Ver detalles">
-                                <i class="fas fa-eye"></i>
-                            </a>
-                            <a href="componenteWk.html?id=${walkaround.Id_Walk}" class="btn btn-warning" title="Editar">
-                                <i class="fas fa-edit"></i>
-                            </a>
-                            <button class="btn btn-danger" onclick="eliminarWalkaround(${walkaround.Id_Walk})" title="Eliminar">
-                                <i class="fas fa-trash-alt"></i>
-                            </button>
-                        </div>
-                    </td>
-                `;
-                tablaBody.appendChild(fila);
-            });
+        <td>${index + 1}</td>
+        <td>${fechaFormateada}</td>
+        <td>${matricula}</td>
+        <td>${equipo}</td>
+        <td>${procedencia}</td>
+        <td>${elaboro}</td>
+        <td>${responsable}</td>
+        <td>${jefeArea}</td>
+        <td>${vobo}</td>
+        <td>
+            <div class="btn-group btn-group-sm" role="group">
+                <a href="detalle_walkaround.html?id=${walkaround.Id_Walk}" 
+                   class="btn btn-info" title="Ver detalles">
+                    <i class="fas fa-eye"></i>
+                </a>
+                <!-- BOTÓN NUEVO PARA PDF -->
+                <a href="pdf_generator.php?tipo=walkaround&id=${walkaround.Id_Walk}" 
+                   class="btn btn-danger" title="Generar PDF" target="_blank">
+                    <i class="fas fa-file-pdf"></i>
+                </a>
+                <a href="componenteWk.html?id=${walkaround.Id_Walk}" 
+                   class="btn btn-warning" title="Editar">
+                    <i class="fas fa-edit"></i>
+                </a>
+                <button class="btn btn-danger" 
+                        onclick="eliminarWalkaround(${walkaround.Id_Walk})" 
+                        title="Eliminar">
+                    <i class="fas fa-trash-alt"></i>
+                </button>
+            </div>
+        </td>
+    `;
+    
+    tablaBody.appendChild(fila);
+});
         }
-    } catch (error) {
-        console.error('Error al cargar walkarounds:', error);
-        tablaBody.innerHTML = `<tr><td colspan="8" class="text-center text-danger">Error al cargar los datos. Por favor, revisa la conexión.</td></tr>`;
-    }
-}async function cargarWalkarounds() {
-    const tablaBody = document.querySelector('#tablaWalkarounds tbody');
-    tablaBody.innerHTML = '<tr><td colspan="8" class="text-center">Cargando...</td></tr>';
-
-    try {
-        const response = await fetch('leer_walkaround.php');
-        if (!response.ok) {
-            throw new Error(`Error HTTP: ${response.status}`);
-        }
-        const walkarounds = await response.json();
         
-        if (walkarounds.error) {
-            throw new Error(walkarounds.error);
-        }
-
-        tablaBody.innerHTML = '';
-        if (walkarounds.length === 0) {
-            tablaBody.innerHTML = '<tr><td colspan="8" class="text-center">No hay walkarounds registrados.</td></tr>';
-        } else {
-            walkarounds.forEach((walkaround, index) => {
-                const fila = document.createElement('tr');
-                
-                const matricula = walkaround.Matricula || `Aeronave #${walkaround.Id_Aeronave}`;
-                
-                fila.innerHTML = `
-                    <td>${index + 1}</td>
-                    <td>${new Date(walkaround.Fechahora).toLocaleString()}</td>
-                    <td>${matricula}</td>
-                    <td>${walkaround.Elaboro}</td>
-                    <td>${walkaround.Responsable}</td>
-                    <td>${walkaround.JefeArea}</td>
-                    <td>${walkaround.VoBo}</td>
-                    <td>
-                        <div class="btn-group btn-group-sm" role="group">
-                            <a href="detalle_walkaround.html?id=${walkaround.Id_Walk}" class="btn btn-info" title="Ver detalles">
-                                <i class="fas fa-eye"></i>
-                            </a>
-                            <a href="componenteWk.html?id=${walkaround.Id_Walk}" class="btn btn-warning" title="Editar">
-                                <i class="fas fa-edit"></i>
-                            </a>
-                            <button class="btn btn-danger" onclick="eliminarWalkaround(${walkaround.Id_Walk})" title="Eliminar">
-                                <i class="fas fa-trash-alt"></i>
-                            </button>
-                        </div>
-                    </td>
-                `;
-                tablaBody.appendChild(fila);
-            });
-        }
     } catch (error) {
-        console.error('Error al cargar walkarounds:', error);
-        tablaBody.innerHTML = `<tr><td colspan="8" class="text-center text-danger">Error al cargar los datos. Por favor, revisa la conexión.</td></tr>`;
+        console.error('❌ Error al cargar walkarounds:', error);
+        tablaBody.innerHTML = `<tr><td colspan="10" class="text-center text-danger">Error al cargar los datos: ${error.message}</td></tr>`;
     }
 }
 

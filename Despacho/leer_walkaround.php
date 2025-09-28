@@ -7,7 +7,7 @@ require '../conexion.php';
 try {
     // Consulta SQL para obtener walkarounds incluso si la aeronave no existe
     $sql = "SELECT w.Id_Walk, w.Fechahora, w.Elaboro, w.Responsable, w.JefeArea, w.VoBo, w.observaciones,
-                   w.Id_Aeronave, a.Matricula, a.Tipo, a.Equipo
+                   w.Id_Aeronave, a.Matricula, a.Tipo, a.Equipo, a.Procedencia
             FROM walkaround w
             LEFT JOIN aeronave a ON w.Id_Aeronave = a.Id_Aeronave
             ORDER BY w.Fechahora DESC";

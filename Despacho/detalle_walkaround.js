@@ -4,58 +4,34 @@ let walkaroundId = null;
 let walkaroundData = null;
 
 // Componentes predefinidos para cada tipo de aeronave (COPIA EXACTA de walkaround.js)
+// Componentes predefinidos para cada tipo de aeronave
 const componentesPorTipo = {
     avion: [
-        { id: 'radomo', nombre: 'Radomo', seccion: 'Nariz' },
-        { id: 'parabrisas_limpiadores', nombre: 'Parabrisas/Limpiadores', seccion: 'Cabina' },
-        { id: 'tubos_pitot', nombre: 'Tubos Pitot', seccion: 'Sistema de Instrumentación' },
-        { id: 'tren_nariz_llantas', nombre: 'Tren de Nariz - Llantas', seccion: 'Tren de Aterrizaje' },
-        { id: 'tren_nariz_luces', nombre: 'Tren de Nariz - Luces', seccion: 'Tren de Aterrizaje' },
-        { id: 'tren_nariz_fugas', nombre: 'Tren de Nariz - Fugas', seccion: 'Tren de Aterrizaje' },
-        { id: 'fuselaje_izq_antenas', nombre: 'Fuselaje Izquierdo - Antenas', seccion: 'Fuselaje' },
-        { id: 'fuselaje_izq_luces', nombre: 'Fuselaje Izquierdo - Luces', seccion: 'Fuselaje' },
-        { id: 'fuselaje_izq_ventanillas', nombre: 'Fuselaje Izquierdo - Ventanillas', seccion: 'Fuselaje' },
-        { id: 'puerta_acceso_escalera', nombre: 'Puerta de Acceso - Escalera', seccion: 'Accesos' },
-        { id: 'puerta_acceso_barandillas', nombre: 'Puerta de Acceso - Barandillas', seccion: 'Accesos' },
-        { id: 'puerta_acceso_marco', nombre: 'Puerta de Acceso - Marco', seccion: 'Accesos' },
-        { id: 'antenas', nombre: 'Antenas', seccion: 'Comunicaciones' },
-        { id: 'semiala_izq_bordes', nombre: 'Semiala Izquierda - Bordes', seccion: 'Alas' },
-        { id: 'semiala_izq_winglet', nombre: 'Semiala Izquierda - Winglet', seccion: 'Alas' },
-        { id: 'semiala_izq_estaticas', nombre: 'Semiala Izquierda - Estáticas', seccion: 'Alas' },
-        { id: 'semiala_izq_sup_control', nombre: 'Semiala Izquierda - Sup. Control', seccion: 'Alas' },
-        { id: 'tren_principal_izq_llantas', nombre: 'Tren Principal Izquierdo - Llantas', seccion: 'Tren de Aterrizaje' },
-        { id: 'tren_principal_izq_fugas', nombre: 'Tren Principal Izquierdo - Fugas', seccion: 'Tren de Aterrizaje' },
-        { id: 'compartimiento_carga_ext', nombre: 'Compartimiento de Carga - Exterior', seccion: 'Compartimientos' },
-        { id: 'compartimiento_carga_int', nombre: 'Compartimiento de Carga - Interior', seccion: 'Compartimientos' },
-        { id: 'empenaje_bordes', nombre: 'Empenaje - Bordes', seccion: 'Empenaje' },
-        { id: 'empenaje_estaticas', nombre: 'Empenaje - Estáticas', seccion: 'Empenaje' },
-        { id: 'empenaje_sup_control', nombre: 'Empenaje - Sup. Control', seccion: 'Empenaje' },
-        { id: 'semiala_der_bordes', nombre: 'Semiala Derecha - Bordes', seccion: 'Alas' },
-        { id: 'semiala_der_winglet', nombre: 'Semiala Derecha - Winglet', seccion: 'Alas' },
-        { id: 'semiala_der_estaticas', nombre: 'Semiala Derecha - Estáticas', seccion: 'Alas' },
-        { id: 'semiala_der_sup_control', nombre: 'Semiala Derecha - Sup. Control', seccion: 'Alas' },
-        { id: 'tren_principal_der_llantas', nombre: 'Tren Principal Derecho - Llantas', seccion: 'Tren de Aterrizaje' },
-        { id: 'tren_principal_der_fugas', nombre: 'Tren Principal Derecho - Fugas', seccion: 'Tren de Aterrizaje' },
-        { id: 'valvulas_servicio_combustible', nombre: 'Válvulas de Servicio - Combustible', seccion: 'Sistemas' },
-        { id: 'valvulas_servicio_agua', nombre: 'Válvulas de Servicio - Agua', seccion: 'Sistemas' },
-        { id: 'valvulas_servicio_fugas', nombre: 'Válvulas de Servicio - Fugas', seccion: 'Sistemas' },
-        { id: 'motores_crowling', nombre: 'Motores - Crowling', seccion: 'Motores' },
-        { id: 'motores_carenados', nombre: 'Motores - Carenados', seccion: 'Motores' },
-        { id: 'fuselaje_der_antenas', nombre: 'Fuselaje Derecho - Antenas', seccion: 'Fuselaje' },
-        { id: 'fuselaje_der_luces', nombre: 'Fuselaje Derecho - Luces', seccion: 'Fuselaje' },
-        { id: 'fuselaje_der_ventanillas', nombre: 'Fuselaje Derecho - Ventanillas', seccion: 'Fuselaje' },
-        { id: 'registros_servicios', nombre: 'Registros de Servicios', seccion: 'Documentación' }
+        { id: 'radomo', nombre: 'Radomo', seccion: 'Avion' },
+        { id: 'parabrisas', nombre: 'Parabrisas/Limpiadores', seccion: 'Avion' },
+        { id: 'tubos_pitot', nombre: 'Tubos Pitot', seccion: 'Avion' },
+        { id: 'tren_nariz', nombre: 'Tren de Nariz (Llantas,Luces,Fugas)', seccion: 'Avion' },
+        { id: 'fuselaje_izq', nombre: 'Fuselaje Izquierdo (Antenas,Luces,Ventanillas)', seccion: 'Avion' },
+        { id: 'puerta_acceso_cabina', nombre: 'Puerta de Acceso a cabina (Escalera,Barandillas,Marco)', seccion: 'Avion' },
+        { id: 'antenas', nombre: 'Antenas', seccion: 'Avion' },
+        { id: 'semiala_izq', nombre: 'Semiala Izquierda (Bordes, winglet, estaticas, sup. de control)', seccion: 'Avion' },
+        { id: 'tren_principal_izq', nombre: 'Tren Principal Izquierdo (Llantas,Fugas)', seccion: 'Avion' },
+        { id: 'compartimiento_carga', nombre: 'Compartimiento de Carga (Exterior e Interior)', seccion: 'Avion' },
+        { id: 'empenaje', nombre: 'Empenaje (Bordes, estaticas, superficies de control)', seccion: 'Avion' },
+        { id: 'semiala_der', nombre: 'Semiala Derecha (Bordes, winglet, estaticas, sup. de control)', seccion: 'Avion' },
+        { id: 'tren_principal_der', nombre: 'Tren Principal Derecho (Llantas, Fugas)', seccion: 'Avion' },
+        { id: 'valvulas_servicio', nombre: 'Válvulas de Servicio (Combustible, agua, libre de fugas)', seccion: 'Avion' },
+        { id: 'motores', nombre: 'Motores (Crowling, carenados)', seccion: 'Avion' },
+        { id: 'fuselaje_der', nombre: 'Fuselaje Derecho (Antenas, luces, ventanillas)', seccion: 'Avion' },
+        { id: 'registros_servicios', nombre: 'Registros de Servicios', seccion: 'Avion' }
     ],
     helicoptero: [
-        { id: 'fuselaje_puertas', nombre: 'Fuselaje - Puertas', seccion: 'Fuselaje' },
-        { id: 'fuselaje_ventanas', nombre: 'Fuselaje - Ventanas', seccion: 'Fuselaje' },
-        { id: 'fuselaje_antenas', nombre: 'Fuselaje - Antenas', seccion: 'Fuselaje' },
-        { id: 'fuselaje_luces', nombre: 'Fuselaje - Luces', seccion: 'Fuselaje' },
-        { id: 'esqui_neumaticos', nombre: 'Esquí/Neumáticos', seccion: 'Tren de Aterrizaje' },
-        { id: 'palas', nombre: 'Palas', seccion: 'Rotor Principal' },
-        { id: 'boom', nombre: 'Boom', seccion: 'Estructura' },
-        { id: 'estabilizadores', nombre: 'Estabilizadores', seccion: 'Control' },
-        { id: 'rotor_cola', nombre: 'Rotor de Cola', seccion: 'Rotor de Cola' }
+        { id: 'fuselaje', nombre: 'Fuselaje (Puertas, ventanas, antenas, luces)', seccion: 'Helicoptero' },
+        { id: 'esqui_neumaticos', nombre: 'Esquí/Neumáticos', seccion: 'Helicoptero' },
+        { id: 'palas', nombre: 'Palas', seccion: 'Helicoptero' },
+        { id: 'boom', nombre: 'Boom', seccion: 'Helicoptero' },
+        { id: 'estabilizadores', nombre: 'Estabilizadores', seccion: 'Helicoptero' },
+        { id: 'rotor_cola', nombre: 'Rotor de Cola', seccion: 'Helicoptero' }
     ]
 };
 
@@ -87,6 +63,9 @@ document.addEventListener('DOMContentLoaded', function() {
 /**
  * Carga el detalle completo del walkaround
  */
+/**
+ * Carga el detalle completo del walkaround - VERSIÓN MODIFICADA
+ */
 async function cargarDetalleWalkaround() {
     try {
         const response = await fetch(`walkaround_leer_id.php?id=${walkaroundId}`);
@@ -103,10 +82,20 @@ async function cargarDetalleWalkaround() {
         
         walkaroundData = data;
         
-        // Llenar información general
+        console.log('📊 Datos recibidos para detalles:', data);
+        
         document.getElementById('fechaHoraInfo').textContent = formatearFecha(data.Fechahora);
-        document.getElementById('aeronaveInfo').textContent = data.Matricula ? 
-            `${data.Matricula} (${data.Tipo})` : `Aeronave #${data.Id_Aeronave}`;
+        
+        // Información de aeronave
+        const matricula = data.Matricula || 'No especificada';
+        const tipo = data.Tipo || 'No especificado';
+        const equipo = data.Equipo || 'No especificado';
+        const procedencia = data.Procedencia || 'No especificada';
+        
+        document.getElementById('aeronaveInfo').textContent = `${matricula} (${tipo})`;
+        document.getElementById('equipoInfo').textContent = equipo;
+        document.getElementById('procedenciaInfo').textContent = procedencia;
+        
         document.getElementById('elaboroInfo').textContent = data.Elaboro || 'No especificado';
         document.getElementById('responsableInfo').textContent = data.Responsable || 'No especificado';
         document.getElementById('jefeAreaInfo').textContent = data.JefeArea || 'No especificado';

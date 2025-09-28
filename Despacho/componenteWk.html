@@ -67,35 +67,27 @@
                 </div>
             </div>
             
-            <!-- Información del walkaround -->
-            <div class="row mb-4">
+            <!-- NUEVA SECCIÓN: Información adicional de la aeronave seleccionada -->
+            <div class="row mb-4" id="infoAeronaveContainer" style="display: none;">
                 <div class="col-md-4">
                     <div class="form-group">
-                        <label for="elaboro" class="form-label">Elaboró:</label>
-                        <input type="text" class="form-control" id="elaboro" name="elaboro" required>
+                        <label class="form-label">Matrícula:</label>
+                        <div class="form-control-plaintext" id="infoMatricula"></div>
                     </div>
                 </div>
                 <div class="col-md-4">
                     <div class="form-group">
-                        <label for="responsable" class="form-label">Responsable:</label>
-                        <input type="text" class="form-control" id="responsable" name="responsable" required>
+                        <label class="form-label">Equipo:</label>
+                        <div class="form-control-plaintext" id="infoEquipo"></div>
                     </div>
                 </div>
                 <div class="col-md-4">
                     <div class="form-group">
-                        <label for="jefe_area" class="form-label">Jefe de Área:</label>
-                        <input type="text" class="form-control" id="jefe_area" name="jefe_area" required>
-                    </div>
-                </div>
-                <div class="col-md-4 mt-3">
-                    <div class="form-group">
-                        <label for="vobo" class="form-label">VoBo:</label>
-                        <input type="text" class="form-control" id="vobo" name="vobo" required>
+                        <label class="form-label">Procedencia:</label>
+                        <div class="form-control-plaintext" id="infoProcedencia"></div>
                     </div>
                 </div>
             </div>
-            
-            <hr>
             
             <!-- Componentes (se cargarán dinámicamente según el tipo de aeronave) -->
             <div id="componentesContainer">
@@ -121,8 +113,36 @@
             
             <!-- Campo de observaciones generales -->
             <div class="form-group mt-4">
-                <label for="observacionesGenerales" class="form-label">Observaciones Generales:</label>
+                <label for="observacionesGenerales" class="form-label">Otro (especificar):</label>
                 <textarea class="form-control" id="observacionesGenerales" name="observacionesGenerales" rows="3" placeholder="Observaciones generales del walkaround"></textarea>
+            </div>
+            <hr>
+            <!-- Información del walkaround -->
+            <div class="row mb-4">
+                <div class="col-md-4">
+                    <div class="form-group">
+                        <label for="elaboro" class="form-label">Elaboró:</label>
+                        <input type="text" class="form-control" id="elaboro" name="elaboro" required>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="form-group">
+                        <label for="responsable" class="form-label">Responsable de la operación (Nombre y firma):</label>
+                        <input type="text" class="form-control" id="responsable" name="responsable" required>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="form-group">
+                        <label for="jefe_area" class="form-label">Jefe de Área:</label>
+                        <input type="text" class="form-control" id="jefe_area" name="jefe_area" required>
+                    </div>
+                </div>
+                <div class="col-md-4 mt-3">
+                    <div class="form-group">
+                        <label for="vobo" class="form-label">VoBo Gerente FBO:</label>
+                        <input type="text" class="form-control" id="vobo" name="vobo" required>
+                    </div>
+                </div>
             </div>
             
             <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-4">

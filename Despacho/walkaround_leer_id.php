@@ -28,7 +28,7 @@ try {
     }
 
     // Consulta para obtener los datos generales del walkaround
-    $sql = "SELECT w.*, a.Tipo, a.Matricula 
+    $sql = "SELECT w.*, a.Tipo, a.Matricula, a.Equipo, a.Procedencia 
             FROM walkaround w 
             JOIN aeronave a ON w.Id_Aeronave = a.Id_Aeronave 
             WHERE w.Id_Walk = ?";

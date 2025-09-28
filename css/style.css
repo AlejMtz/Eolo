@@ -95,6 +95,98 @@
             padding: 5px 10px;
             border-radius: 20px;
         }
+
+                /* Estilos para el contenedor de la cuadrícula de componentes */
+        .component-grid {
+            display: flex; /* Habilitar Flexbox */
+            flex-wrap: wrap; /* Permite que los elementos pasen a la siguiente línea si no caben */
+            gap: 20px; /* Espacio entre las "tarjetas" de componentes */
+            justify-content: center; /* Centrar las tarjetas dentro del contenedor */
+        }
+
+        /* Estilos para cada tarjeta de componente */
+        .component-card {
+            /* Establece un ancho mínimo y permite que la tarjeta crezca y se encoja */
+            flex: 1 1 300px; 
+            max-width: 400px; /* Limita el ancho máximo para evitar que las tarjetas sean demasiado grandes */
+            padding: 20px;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            background-color: #fff;
+            transition: all 0.3s ease;
+        }
+
+        /* Agrega un efecto al pasar el cursor sobre las tarjetas */
+        .component-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+        }
+
+        /* Estilos para los títulos de sección */
+        .component-section .section-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #495057;
+            border-bottom: 2px solid #007bff;
+            padding-bottom: 5px;
+            margin-bottom: 20px;
+            margin-top: 30px;
+        }
+
+        /* Estilos para las tarjetas de componente seleccionadas (cuando se elige una opción) */
+        .component-card.estado-seleccionado {
+            border-color: #007bff; /* Borde azul para indicar selección */
+        }
+
+        /* Estilos para el estado "Con daño" */
+        .component-card.estado-seleccionado input[value="2"]:checked ~ .damage-options {
+            display: block;
+        }
+
+        .damage-options {
+            /* Estilos para la sección de observaciones y evidencia */
+            border-top: 1px dashed #ccc;
+            padding-top: 15px;
+            margin-top: 15px;
+        }
+
+        /* Estilos específicos para este formulario */
+        .equipment-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        
+        .equipment-table th, .equipment-table td {
+            padding: 10px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        
+        .equipment-table th {
+            background-color: var(--light-color);
+            font-weight: 600;
+        }
+        
+        .checkbox-group {
+            display: flex;
+            gap: 15px;
+        }
+        
+        .form-section {
+            margin-bottom: 30px;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+        }
+        
+        .signature-area {
+            border-top: 2px solid var(--primary-color);
+            padding-top: 20px;
+            margin-top: 30px;
+        }
+        
         /* Animaciones para los modales */
         .modal.fade .modal-dialog {
             transform: translate(0, -50px);
