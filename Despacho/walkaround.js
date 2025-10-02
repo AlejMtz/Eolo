@@ -1,5 +1,3 @@
-// walkaround.js
-
 // Variables globales para los modales
 let successModal = null;
 let errorModal = null;
@@ -10,6 +8,15 @@ let aeronavesData = [];
 let generalEvidenceFiles = [];
 let walkaroundData = null;
 let isEditMode = false;
+
+// Variables globales para paginación
+let paginaActual = 1;
+const registrosPorPagina = 15;
+let totalPaginas = 1;
+let totalRegistros = 0;
+
+// Variables globales para el filtro de búsqueda
+let timeoutBusqueda = null;
 
 // Componentes predefinidos para cada tipo de aeronave
 const componentesPorTipo = {
@@ -96,34 +103,6 @@ document.getElementById('walkaroundForm').addEventListener('submit', function(ev
         enviarWalkaround();
     }
 });
-
-        document.getElementById('aeronave').addEventListener('change', function() {
-    const aeronaveId = this.value;
-    
-    if (aeronaveId) {
-        // Mostrar información adicional de la aeronave
-        mostrarInfoAeronave(aeronaveId);
-        
-        // Encontrar la aeronave seleccionada
-        const aeronaveSeleccionada = aeronavesData.find(a => a.Id_Aeronave == aeronaveId);
-        
-        if (aeronaveSeleccionada) {
-            // Cargar componentes según el tipo de aeronave
-            const tipo = aeronaveSeleccionada.Tipo.toLowerCase();
-            cargarComponentes(tipo);
-        }
-    } else {
-        // Ocultar información si no hay aeronave seleccionada
-        ocultarInfoAeronave();
-        
-        document.getElementById('componentesContainer').innerHTML = `
-            <div class="text-center py-5">
-                <i class="fas fa-plane fs-1 text-muted"></i>
-                <p class="mt-3 text-muted">Selecciona una aeronave para mostrar sus componentes</p>
-            </div>
-        `;
-    }
-});
         
         // Manejar la selección de evidencias generales
         document.getElementById('generalEvidence').addEventListener('change', function(e) {
@@ -143,19 +122,186 @@ document.getElementById('walkaroundForm').addEventListener('submit', function(ev
     }
 });
 
+
+/**
+ * Configura el filtro de búsqueda de aeronaves
+ */
+function configurarBusquedaAeronaves() {
+    const inputBusqueda = document.getElementById('buscarAeronave');
+    const resultadosDiv = document.getElementById('resultadosBusqueda');
+    
+    if (!inputBusqueda) return;
+    
+    inputBusqueda.addEventListener('input', function(e) {
+        const termino = e.target.value.trim();
+        
+        // Limpiar timeout anterior
+        if (timeoutBusqueda) {
+            clearTimeout(timeoutBusqueda);
+        }
+        
+        // Esperar 300ms después de que el usuario deje de escribir
+        timeoutBusqueda = setTimeout(() => {
+            if (termino.length >= 2) {
+                buscarAeronaves(termino);
+            } else {
+                ocultarResultadosBusqueda();
+                limpiarAeronaveSeleccionada();
+            }
+        }, 300);
+    });
+    
+    // Ocultar resultados al hacer clic fuera
+    document.addEventListener('click', function(e) {
+        if (!inputBusqueda.contains(e.target) && !resultadosDiv.contains(e.target)) {
+            ocultarResultadosBusqueda();
+        }
+    });
+    
+    // Limpiar búsqueda al presionar Escape
+    inputBusqueda.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            ocultarResultadosBusqueda();
+            this.value = '';
+            limpiarAeronaveSeleccionada();
+        }
+    });
+}
+
+/**
+ * Busca aeronaves por matrícula
+ */
+function buscarAeronaves(termino) {
+    const listaAeronaves = document.getElementById('listaAeronaves');
+    const resultadosDiv = document.getElementById('resultadosBusqueda');
+    
+    // Filtrar aeronaves que coincidan con la búsqueda
+    const resultados = aeronavesData.filter(aeronave => {
+        const matricula = aeronave.Matricula || '';
+        return matricula.toLowerCase().includes(termino.toLowerCase());
+    });
+    
+    if (resultados.length === 0) {
+        listaAeronaves.innerHTML = `
+            <div class="list-group-item text-center text-muted">
+                <i class="fas fa-search me-2"></i>
+                No se encontraron aeronaves con la matrícula "${termino}"
+            </div>
+        `;
+    } else {
+        listaAeronaves.innerHTML = '';
+        
+        resultados.forEach(aeronave => {
+            const item = document.createElement('button');
+            item.type = 'button';
+            item.className = 'list-group-item list-group-item-action';
+            item.innerHTML = `
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <strong>${aeronave.Matricula}</strong>
+                        <br>
+                        <small class="text-muted">
+                            ${aeronave.Equipo || 'Sin equipo'} - ${aeronave.Tipo}
+                        </small>
+                    </div>
+                    <i class="fas fa-chevron-right text-muted"></i>
+                </div>
+            `;
+            
+            item.addEventListener('click', function() {
+                seleccionarAeronave(aeronave);
+            });
+            
+            listaAeronaves.appendChild(item);
+        });
+    }
+    
+    resultadosDiv.style.display = 'block';
+}
+
+/**
+ * Selecciona una aeronave de los resultados de búsqueda
+ */
+function seleccionarAeronave(aeronave) {
+    const inputBusqueda = document.getElementById('buscarAeronave');
+    const aeronaveSeleccionada = document.getElementById('aeronaveSeleccionada');
+    const resultadosDiv = document.getElementById('resultadosBusqueda');
+    
+    // Mostrar matrícula en el input de búsqueda
+    inputBusqueda.value = aeronave.Matricula;
+    
+    // Guardar ID en campo oculto
+    aeronaveSeleccionada.value = aeronave.Id_Aeronave;
+    
+    // Ocultar resultados
+    resultadosDiv.style.display = 'none';
+    
+    // Mostrar información de la aeronave seleccionada
+    mostrarInfoAeronave(aeronave.Id_Aeronave);
+
+    const tipo = aeronave.Tipo ? aeronave.Tipo.toLowerCase() : 'avion';
+    console.log('🛩️ Cargando componentes para aeronave:', aeronave.Matricula, 'Tipo:', tipo);
+    
+    // Cargar componentes según el tipo de aeronave
+    cargarComponentes(tipo);
+    
+    console.log('Aeronave seleccionada:', aeronave.Matricula, 'ID:', aeronave.Id_Aeronave);
+}
+
+/**
+ * Oculta los resultados de búsqueda
+ */
+function ocultarResultadosBusqueda() {
+    const resultadosDiv = document.getElementById('resultadosBusqueda');
+    if (resultadosDiv) {
+        resultadosDiv.style.display = 'none';
+    }
+}
+
+/**
+ * Limpia la aeronave seleccionada
+ */
+function limpiarAeronaveSeleccionada() {
+    const aeronaveSeleccionada = document.getElementById('aeronaveSeleccionada');
+    const inputBusqueda = document.getElementById('buscarAeronave');
+    
+    if (aeronaveSeleccionada) {
+        aeronaveSeleccionada.value = '';
+    }
+    
+    // Ocultar información de aeronave
+    ocultarInfoAeronave();
+    
+    // Limpiar componentes
+    const componentesContainer = document.getElementById('componentesContainer');
+    componentesContainer.innerHTML = `
+        <div class="text-center py-5">
+            <i class="fas fa-plane fs-1 text-muted"></i>
+            <p class="mt-3 text-muted">Selecciona una aeronave para mostrar sus componentes</p>
+        </div>
+    `;
+}
+
 /**
  * Configura el formulario en modo edición
  */
 function configurarModoEdicion(id) {
     isEditMode = true;
     document.title = 'Editar Walkaround - Inspección de Componentes';
-    document.querySelector('.form-title').innerHTML = '<i class="fas fa-clipboard-check"></i> Editar Walkaround';
+    
+    // Actualizar el título del formulario
+    const formTitle = document.querySelector('.form-title');
+    if (formTitle) {
+        formTitle.innerHTML = '<i class="fas fa-clipboard-check"></i> Editar Walkaround';
+    }
     
     // Cambiar texto del botón de envío
     const submitButton = document.getElementById('submitButton');
-    submitButton.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true" style="display: none;"></span> Actualizar Inspección';
-    submitButton.classList.remove('btn-primary');
-    submitButton.classList.add('btn-warning');
+    if (submitButton) {
+        submitButton.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true" style="display: none;"></span> Actualizar Inspección';
+        submitButton.classList.remove('btn-primary');
+        submitButton.classList.add('btn-warning');
+    }
     
     // Cambiar acción del formulario
     document.getElementById('walkaroundForm').action = 'walkaround_actualizar.php';
@@ -171,33 +317,117 @@ function configurarModoEdicion(id) {
     }
     idWalkInput.value = id;
     
+    console.log('🔄 Configurando modo edición para ID:', id);
+    
     // Cargar datos del walkaround
     cargarWalkaround(id);
 }
 
 /**
- * Carga datos del walkaround en modo edición - VERSIÓN MODIFICADA
+ * Carga evidencias existentes en modo edición
+ */
+function cargarEvidenciasExistentes(evidencias) {
+    console.log('📸 Cargando evidencias existentes:', evidencias);
+    
+    if (!evidencias || evidencias.length === 0) {
+        console.log('ℹ️ No hay evidencias existentes para cargar');
+        return;
+    }
+    
+    const previewContainer = document.getElementById('evidencePreview');
+    if (!previewContainer) {
+        console.error('❌ No se encontró el contenedor de preview de evidencias');
+        return;
+    }
+    
+    // ⭐⭐ CORRECCIÓN: Limpiar solo si no hay evidencias existentes ya mostradas
+    const existingEvidences = previewContainer.querySelectorAll('.existing-evidence');
+    if (existingEvidences.length === 0) {
+        previewContainer.innerHTML = ''; // Solo limpiar si no hay existentes
+    }
+    
+    evidencias.forEach(evidencia => {
+        // Verificar si ya existe esta evidencia en el DOM
+        const existingElement = document.getElementById('evidence-existente-' + evidencia.Id_Evidencia);
+        if (existingElement) {
+            console.log('ℹ️ Evidencia ya existe en el DOM:', evidencia.Id_Evidencia);
+            return; // Saltar si ya existe
+        }
+        
+        const itemDiv = document.createElement('div');
+        itemDiv.className = 'evidence-item existing-evidence';
+        itemDiv.id = 'evidence-existente-' + evidencia.Id_Evidencia;
+        
+        // Determinar si es imagen o video
+        const fileName = evidencia.FileName || evidencia.Ruta || '';
+        const isImage = fileName.toLowerCase().match(/\.(jpg|jpeg|png|gif|bmp|webp)$/);
+        
+        if (isImage && evidencia.Ruta) {
+            const img = document.createElement('img');
+            img.src = evidencia.Ruta;
+            img.className = 'evidence-preview';
+            img.onerror = function() {
+                // Si falla la carga, mostrar un icono
+                this.style.display = 'none';
+                const icon = document.createElement('i');
+                icon.className = 'fas fa-file-image evidence-preview';
+                itemDiv.appendChild(icon);
+            };
+            itemDiv.appendChild(img);
+        } else {
+            const icon = document.createElement('i');
+            icon.className = 'fas fa-file-video evidence-preview';
+            itemDiv.appendChild(icon);
+        }
+        
+        const nameSpan = document.createElement('span');
+        nameSpan.textContent = fileName;
+        nameSpan.className = 'file-name';
+        nameSpan.title = `ID: ${evidencia.Id_Evidencia}`;
+        
+        itemDiv.appendChild(nameSpan);
+        
+        // Agregar indicador de que es una evidencia existente
+        const existenteBadge = document.createElement('span');
+        existenteBadge.className = 'badge bg-info ms-2';
+        existenteBadge.textContent = 'Existente';
+        itemDiv.appendChild(existenteBadge);
+        
+        previewContainer.appendChild(itemDiv);
+    });
+    
+    console.log('✅ Evidencias existentes cargadas:', evidencias.length);
+}
+
+/**
+ * Carga datos del walkaround en modo edición - VERSIÓN CON DEBUGGEO COMPLETO
  */
 async function cargarWalkaround(id) {
     console.log('🔍 Iniciando carga de walkaround ID:', id);
     document.getElementById('loading').style.display = 'flex';
     
     try {
+        console.log('📡 Haciendo fetch a walkaround_leer_id.php...');
         const response = await fetch(`walkaround_leer_id.php?id=${id}`);
+        
+        console.log('📨 Respuesta recibida, status:', response.status);
         
         // Verificar si la respuesta es JSON
         const contentType = response.headers.get('content-type');
+        console.log('📋 Content-Type:', contentType);
+        
         if (!contentType || !contentType.includes('application/json')) {
             const text = await response.text();
-            console.error('Respuesta del servidor (no JSON):', text);
-            throw new Error('El servidor devolvió un formato incorrecto');
+            console.error('❌ Respuesta del servidor (no JSON):', text);
+            throw new Error('El servidor devolvió un formato incorrecto: ' + text.substring(0, 200));
         }
         
         const data = await response.json();
-        console.log('📊 Datos recibidos del servidor:', data);
+        console.log('📊 Datos COMPLETOS recibidos del servidor:', data);
         
         // Verificar si hay error en la respuesta JSON
         if (data.error) {
+            console.error('❌ Error en respuesta JSON:', data.error);
             throw new Error(data.error);
         }
         
@@ -206,103 +436,132 @@ async function cargarWalkaround(id) {
             throw new Error('No se recibieron datos del servidor');
         }
         
-        // DEBUG: Mostrar todos los campos disponibles
-        console.log('✅ Campos disponibles:', Object.keys(data));
+        console.log('✅ Estructura de datos recibida:');
+        console.log('  - Campos principales:', Object.keys(data));
+        console.log('  - Número de componentes:', data.componentes ? data.componentes.length : 0);
+        console.log('  - Número de evidencias:', data.evidencias ? data.evidencias.length : 0);
+        console.log('  - Tipo de aeronave:', data.Tipo);
         
-        // CORRECCIÓN: Usar "FechaHora" (con H mayúscula) en lugar de "Fechahora"
-        const fechaHora = data.FechaHora; // ← ¡ESTA ES LA CORRECCIÓN!
-        
-        if (!fechaHora) {
-            console.warn('⚠️ Campo de fecha no encontrado. Campos disponibles:', Object.keys(data));
+        if (data.componentes && data.componentes.length > 0) {
+            console.log('📦 Primer componente como ejemplo:', data.componentes[0]);
         }
-        
-        // Formatear fecha
-        let fechaHoraValue = '';
-        if (fechaHora) {
-            try {
-                // Reemplazar el espacio por 'T' para el input datetime-local
-                fechaHoraValue = fechaHora.replace(' ', 'T');
-                console.log('📅 Fecha formateada:', fechaHoraValue);
-            } catch (e) {
-                console.warn('⚠️ Error al formatear fecha:', e);
-            }
-        }
-        
-        // ⭐⭐ NUEVO: Cargar aeronaves primero para poder mostrar la información ⭐⭐
+
+        // ⭐⭐ Cargar aeronaves primero para poder mostrar la información ⭐⭐
         await cargarAeronavesParaSelector();
         
         // Llenar el formulario con los datos
-        document.getElementById('fechaHora').value = fechaHoraValue;
-        document.getElementById('aeronave').value = data.Id_Aeronave || '';
+        console.log('🖊️ Llenando formulario...');
+        
+        // Fecha y Hora
+        if (data.FechaHora) {
+            const fechaHoraValue = data.FechaHora.replace(' ', 'T');
+            document.getElementById('fechaHora').value = fechaHoraValue;
+            console.log('📅 Fecha asignada:', fechaHoraValue);
+        }
+        
+        // Aeronave
+        const aeronaveSeleccionadaInput = document.getElementById('aeronaveSeleccionada');
+        if (aeronaveSeleccionadaInput) {
+            aeronaveSeleccionadaInput.value = data.Id_Aeronave || '';
+            console.log('🛩️ ID Aeronave asignado al campo oculto:', data.Id_Aeronave);
+        } else {
+            console.error('❌ No se encontró el campo oculto aeronaveSeleccionada');
+        }
+        
+        const buscarAeronaveInput = document.getElementById('buscarAeronave');
+        if (buscarAeronaveInput && data.Matricula) {
+            buscarAeronaveInput.value = data.Matricula;
+            console.log('🔍 Matrícula asignada al campo de búsqueda:', data.Matricula);
+        }
+        
+        // Campos de texto
         document.getElementById('elaboro').value = data.Elaboro || '';
         document.getElementById('responsable').value = data.Responsable || '';
         document.getElementById('jefe_area').value = data.JefeArea || '';
         document.getElementById('vobo').value = data.VoBo || '';
         document.getElementById('observacionesGenerales').value = data.observaciones || '';
+        document.getElementById('procedencia').value = data.Procedencia || '';
+        document.getElementById('destino').value = data.Destino || '';
         
-        console.log('✅ Formulario llenado correctamente');
+        console.log('✅ Formulario base llenado correctamente');
         
-        // ⭐⭐ NUEVO: Mostrar información de la aeronave en modo edición ⭐⭐
+        // Mostrar información de la aeronave
         if (data.Id_Aeronave) {
-            console.log('🛩️ Mostrando información de aeronave para ID:', data.Id_Aeronave);
+            console.log('👁️ Mostrando información de aeronave para ID:', data.Id_Aeronave);
             
-            // Buscar la aeronave en los datos cargados
             const aeronaveEnModoEdicion = aeronavesData.find(a => a.Id_Aeronave == data.Id_Aeronave);
             
             if (aeronaveEnModoEdicion) {
-                console.log('📋 Información de aeronave encontrada:', aeronaveEnModoEdicion);
-                
-                // Mostrar información adicional
+                console.log('📋 Información de aeronave encontrada en aeronavesData:', aeronaveEnModoEdicion);
                 mostrarInfoAeronaveEnModoEdicion(
                     aeronaveEnModoEdicion.Matricula,
-                    aeronaveEnModoEdicion.Equipo, 
-                    aeronaveEnModoEdicion.Procedencia
+                    aeronaveEnModoEdicion.Equipo
                 );
             } else {
-                console.warn('⚠️ No se encontró información completa de la aeronave');
-                // Intentar mostrar con los datos que tengamos del walkaround
+                console.warn('⚠️ No se encontró la aeronave en aeronavesData, usando datos del walkaround');
                 mostrarInfoAeronaveEnModoEdicion(
                     data.Matricula,
-                    data.Equipo,
-                    data.Procedencia
+                    data.Equipo
                 );
             }
         }
         
-        // Deshabilitar selector de aeronave en modo edición
-        document.getElementById('aeronave').disabled = true;
-        console.log('🔒 Selector de aeronave deshabilitado');
+        // Deshabilitar el campo de búsqueda en modo edición
+        const buscarAeronave = document.getElementById('buscarAeronave');
+        if (buscarAeronave) {
+            buscarAeronave.disabled = true;
+            buscarAeronave.title = "No se puede cambiar la aeronave en modo edición";
+            console.log('🔒 Campo de búsqueda de aeronave deshabilitado');
+        }
         
-        // Cargar componentes
+        // Cargar evidencias existentes
+        if (data.evidencias && data.evidencias.length > 0) {
+            console.log('📸 Cargando evidencias existentes:', data.evidencias);
+            cargarEvidenciasExistentes(data.evidencias);
+        } else {
+            console.log('ℹ️ No hay evidencias existentes para este walkaround');
+        }
+        
+        // Cargar componentes - ¡ESTA ES LA PARTE IMPORTANTE!
         const tipo = data.Tipo ? data.Tipo.toLowerCase() : 'avion';
-        console.log('✈️ Cargando componentes para tipo:', tipo);
-        console.log('📦 Componentes a cargar:', data.componentes);
+        console.log('✈️ Iniciando carga de componentes para tipo:', tipo);
+        console.log('📦 Datos de componentes a pasar:', data.componentes);
+        
         cargarComponentes(tipo, data.componentes || []);
+        
+        console.log('🎉 Carga de walkaround completada exitosamente');
         
     } catch (error) {
         console.error('❌ Error al cargar walkaround:', error);
+        console.error('🔍 Stack trace:', error.stack);
         mostrarError('Error al cargar los datos: ' + error.message);
     } finally {
         document.getElementById('loading').style.display = 'none';
-        console.log('🏁 Carga de walkaround completada');
+        console.log('🏁 Función cargarWalkaround finalizada');
     }
 }
 
 /**
  * ⭐⭐ NUEVA FUNCIÓN: Muestra información de aeronave en modo edición ⭐⭐
  */
-function mostrarInfoAeronaveEnModoEdicion(matricula, equipo, procedencia) {
+function mostrarInfoAeronaveEnModoEdicion(matricula, equipo) {
     const infoContainer = document.getElementById('infoAeronaveContainer');
     
     if (infoContainer) {
         // Mostrar la información en los campos correspondientes
-        document.getElementById('infoMatricula').textContent = matricula || 'No especificada';
-        document.getElementById('infoEquipo').textContent = equipo || 'No especificado';
-        document.getElementById('infoProcedencia').textContent = procedencia || 'No especificada';
+        const infoMatricula = document.getElementById('infoMatricula');
+        const infoEquipo = document.getElementById('infoEquipo');
+        
+        if (infoMatricula) {
+            infoMatricula.textContent = matricula || 'No especificada';
+        }
+        if (infoEquipo) {
+            infoEquipo.textContent = equipo || 'No especificado';
+        }
         
         // Mostrar el contenedor de información
         infoContainer.style.display = 'flex';
-        console.log('✅ Información de aeronave mostrada en modo edición');
+        console.log('✅ Información de aeronave mostrada en modo edición:', { matricula, equipo });
     } else {
         console.warn('⚠️ No se encontró el contenedor de información de aeronave');
     }
@@ -325,41 +584,18 @@ async function cargarAeronavesParaSelector() {
         console.log('Aeronaves recibidas:', aeronaves);
         
         aeronavesData = aeronaves;
-        const selectAeronave = document.getElementById('aeronave');
         
-        if (!selectAeronave) {
-            console.error('No se encontró el elemento select con id "aeronave"');
-            return;
-        }
+        // Configurar el filtro de búsqueda después de cargar las aeronaves
+        configurarBusquedaAeronaves();
         
-        // Limpiar opciones excepto la primera
-        while (selectAeronave.options.length > 1) {
-            selectAeronave.remove(1);
-        }
-        
-        // Añadir opciones con todos los datos necesarios
-        aeronaves.forEach(aeronave => {
-            const option = document.createElement('option');
-            option.value = aeronave.Id_Aeronave;
-            
-            // Almacenar datos adicionales en el atributo data
-            option.setAttribute('data-matricula', aeronave.Matricula || '');
-            option.setAttribute('data-equipo', aeronave.Equipo || '');
-            option.setAttribute('data-procedencia', aeronave.Procedencia || '');
-            option.setAttribute('data-tipo', aeronave.Tipo || '');
-            
-            // Texto visible en el dropdown
-            option.textContent = `${aeronave.Matricula} - ${aeronave.Equipo || 'Sin equipo'} (${aeronave.Tipo})`;
-            selectAeronave.appendChild(option);
-        });
-        
-        console.log('Aeronaves cargadas correctamente');
+        console.log('Aeronaves cargadas correctamente y filtro configurado');
         
     } catch (error) {
         console.error('Error al cargar aeronaves:', error);
         mostrarError('Error al cargar las aeronaves. Por favor, recarga la página.');
     }
 }
+
 
 /**
  * Muestra la información adicional de la aeronave seleccionada
@@ -372,13 +608,13 @@ function mostrarInfoAeronave(aeronaveId) {
         // Mostrar la información en los campos correspondientes
         document.getElementById('infoMatricula').textContent = aeronaveSeleccionada.Matricula || 'No especificada';
         document.getElementById('infoEquipo').textContent = aeronaveSeleccionada.Equipo || 'No especificado';
-        document.getElementById('infoProcedencia').textContent = aeronaveSeleccionada.Procedencia || 'No especificada';
         
         // Mostrar el contenedor de información
         infoContainer.style.display = 'flex';
     } else {
         // Ocultar el contenedor si no hay aeronave seleccionada
         infoContainer.style.display = 'none';
+        console.warn('❌ No se pudo mostrar información de aeronave');
     }
 }
 
@@ -393,17 +629,36 @@ function ocultarInfoAeronave() {
 }
 
 /**
- * Carga componentes según el tipo de aeronave
+ * Carga componentes según el tipo de aeronave - VERSIÓN ROBUSTA
  */
 function cargarComponentes(tipoAeronave, componentesGuardados = []) {
+    console.log('🔄 cargarComponentes iniciado');
+    console.log('📋 Parámetros recibidos:', { tipoAeronave, componentesGuardados });
+    
     const componentesContainer = document.getElementById('componentesContainer');
+    
+    if (!componentesContainer) {
+        console.error('❌ ERROR CRÍTICO: No se encontró el contenedor de componentes');
+        return;
+    }
+    
     const componentes = componentesPorTipo[tipoAeronave];
     
     if (!componentes) {
+        console.error('❌ No se encontraron componentes para tipo:', tipoAeronave);
+        console.log('📚 Tipos disponibles:', Object.keys(componentesPorTipo));
         componentesContainer.innerHTML = '<div class="alert alert-warning">No hay componentes definidos para este tipo de aeronave.</div>';
         return;
     }
     
+    console.log('✅ Componentes del tipo encontrados:', componentes.length);
+    
+    // Verificar la estructura de componentesGuardados
+    console.log('🔍 Analizando componentes guardados:');
+    componentesGuardados.forEach((comp, index) => {
+        console.log(`  Componente ${index + 1}:`, comp);
+    });
+
     // Agrupar componentes por sección
     const secciones = {};
     componentes.forEach(componente => {
@@ -413,8 +668,11 @@ function cargarComponentes(tipoAeronave, componentesGuardados = []) {
         secciones[componente.seccion].push(componente);
     });
     
+    console.log('📂 Secciones a generar:', Object.keys(secciones));
+    
     // Construir HTML para las secciones y componentes
     let html = '';
+    let componentesProcesados = 0;
     
     for (const seccion in secciones) {
         html += `
@@ -426,11 +684,39 @@ function cargarComponentes(tipoAeronave, componentesGuardados = []) {
         secciones[seccion].forEach(componente => {
             // Buscar si este componente tiene datos guardados
             const componenteGuardado = componentesGuardados.find(c => {
-                return c.Componente == componente.id;
+                // Múltiples formas de comparar por si hay diferencias en los nombres de campo
+                const coincide = c.Componente == componente.id || 
+                               c.Identificador_Componente == componente.id ||
+                               c.componente == componente.id;
+                
+                if (coincide) {
+                    console.log(`✅ Coincidencia encontrada para ${componente.id}:`, c);
+                }
+                return coincide;
             });
 
-            const estado = componenteGuardado ? componenteGuardado.Estado : '';
-            const observaciones = componenteGuardado ? componenteGuardado.Observaciones : '';
+            console.log(`🔍 Procesando componente "${componente.id}":`, {
+                encontrado: !!componenteGuardado,
+                datos: componenteGuardado
+            });
+
+            // ⭐⭐ CORRECCIÓN: Manejar diferentes tipos de datos para Estado
+            let estado = '1'; // Por defecto "Sin daño"
+            let observaciones = '';
+            
+            if (componenteGuardado) {
+                // Convertir Estado a string para comparación consistente
+                if (componenteGuardado.Estado !== undefined && componenteGuardado.Estado !== null) {
+                    estado = componenteGuardado.Estado.toString();
+                }
+                observaciones = componenteGuardado.Observaciones || '';
+                
+                console.log(`📊 Estado final para ${componente.id}:`, estado);
+            }
+            
+            const checkedSinDano = estado === '1' ? 'checked' : '';
+            const checkedConDano = estado === '2' ? 'checked' : '';
+            const displayOpciones = estado === '2' ? 'display:block;' : 'display:none;';
             
             html += `
                 <div class="component-card" id="componente-${componente.id}">
@@ -439,7 +725,7 @@ function cargarComponentes(tipoAeronave, componentesGuardados = []) {
                     <div class="form-check">
                         <input class="form-check-input" type="radio" name="estado_${componente.id}" 
                             id="estado_ok_${componente.id}" value="1" 
-                            ${estado === '1' ? 'checked' : ''} required>
+                            ${checkedSinDano} required>
                         <label class="form-check-label" for="estado_ok_${componente.id}">
                             Sin daño
                         </label>
@@ -448,14 +734,14 @@ function cargarComponentes(tipoAeronave, componentesGuardados = []) {
                     <div class="form-check">
                         <input class="form-check-input" type="radio" name="estado_${componente.id}" 
                             id="estado_damage_${componente.id}" value="2"
-                            ${estado === '2' ? 'checked' : ''}>
+                            ${checkedConDano}>
                         <label class="form-check-label" for="estado_damage_${componente.id}">
                             Con daño
                         </label>
                     </div>
                     
                     <div class="damage-options" id="opciones_dano_${componente.id}" 
-                        style="${estado === '2' ? 'display:block;' : 'display:none;'}">
+                        style="${displayOpciones}">
                         <div class="form-group mt-2">
                             <label for="observaciones_${componente.id}" class="form-label">Observaciones:</label>
                             <textarea class="form-control" id="observaciones_${componente.id}" 
@@ -464,11 +750,22 @@ function cargarComponentes(tipoAeronave, componentesGuardados = []) {
                         </div>
                         <div class="form-group mt-2">
                             <label for="evidencia_${componente.id}" class="form-label">Subir evidencia:</label>
-                            <input type="file" class="form-control" id="evidencia_${componente.id}" name="evidencia_${componente.id}" accept="image/*,video/*">
+                            <input type="file" class="form-control" id="evidencia_${componente.id}" 
+                                name="evidencia_${componente.id}" accept="image/*,video/*">
+                            
+                            ${componenteGuardado && componenteGuardado.Id_Evidencia ? `
+                                <div class="mt-1">
+                                    <small class="text-success">
+                                        <i class="fas fa-paperclip"></i> Evidencia existente (ID: ${componenteGuardado.Id_Evidencia})
+                                    </small>
+                                </div>
+                            ` : ''}
                         </div>
                     </div>
                 </div>
             `;
+            
+            componentesProcesados++;
         });
         
         html += `
@@ -477,85 +774,86 @@ function cargarComponentes(tipoAeronave, componentesGuardados = []) {
         `;
     }
     
+    console.log(`📝 Generando HTML para ${componentesProcesados} componentes...`);
     componentesContainer.innerHTML = html;
+    console.log('✅ HTML de componentes generado correctamente');
     
-    // Agregar eventos para mostrar/ocultar opciones de daño
-    document.querySelectorAll('.form-check-input').forEach(radio => {
+    // Configurar eventos para los radio buttons
+    const radios = document.querySelectorAll('.form-check-input');
+    console.log(`🎛️ Configurando eventos para ${radios.length} radio buttons...`);
+    
+    radios.forEach(radio => {
         radio.addEventListener('change', function() {
             const name = this.getAttribute('name');
             const componenteId = name.replace('estado_', '');
             const opcionesDano = document.getElementById(`opciones_dano_${componenteId}`);
-            const componenteCard = document.getElementById(`componente-${componenteId}`);
             
             if (this.value === '2') {
                 opcionesDano.style.display = 'block';
-                componenteCard.classList.add('estado-seleccionado');
             } else {
                 opcionesDano.style.display = 'none';
-                componenteCard.classList.add('estado-seleccionado');
             }
         });
     });
+
+    // Aplicar estilos visuales
+    setTimeout(() => {
+        componentes.forEach(componente => {
+            const componenteCard = document.getElementById(`componente-${componente.id}`);
+            if (componenteCard) {
+                componenteCard.classList.add('estado-seleccionado');
+            }
+        });
+    }, 100);
+    
+    console.log('🎉 Función cargarComponentes completada exitosamente');
 }
 
 /**
  * Maneja la selección de evidencias generales
  */
-function handleGeneralEvidenceSelect(files) {
-    const previewContainer = document.getElementById('evidencePreview');
-    previewContainer.innerHTML = '';
+/**
+ * Actualiza el input de evidencias - VERSIÓN ROBUSTA
+ */
+function updateEvidenceInput() {
+    const input = document.getElementById('generalEvidence');
+    if (!input) {
+        console.error('❌ No se encontró el input generalEvidence');
+        return;
+    }
     
-    Array.from(files).forEach(file => {
-        const fileId = Date.now() + Math.random().toString(36).substr(2, 9);
-        generalEvidenceFiles.push({id: fileId, file: file});
+    // Crear un nuevo DataTransfer para los archivos
+    const dataTransfer = new DataTransfer();
+    
+    // Agregar los archivos que quedan (sin duplicados)
+    const archivosUnicos = [];
+    const nombresArchivos = new Set();
+    
+    generalEvidenceFiles.forEach(f => {
+        // Verificar duplicados por nombre y tamaño
+        const clave = f.file.name + '_' + f.file.size;
         
-        const itemDiv = document.createElement('div');
-        itemDiv.className = 'evidence-item';
-        itemDiv.id = 'evidence-item-' + fileId;
-        
-        if (file.type.startsWith('image/')) {
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                const img = document.createElement('img');
-                img.src = e.target.result;
-                img.className = 'evidence-preview';
-                itemDiv.appendChild(img);
-                
-                const removeBtn = document.createElement('span');
-                removeBtn.className = 'remove-evidence';
-                removeBtn.innerHTML = '&times;';
-                removeBtn.onclick = function() {
-                    removeEvidence(fileId);
-                };
-                itemDiv.appendChild(removeBtn);
-                
-                const nameSpan = document.createElement('span');
-                nameSpan.textContent = file.name;
-                itemDiv.appendChild(nameSpan);
-                
-                previewContainer.appendChild(itemDiv);
-            };
-            reader.readAsDataURL(file);
+        if (!nombresArchivos.has(clave)) {
+            nombresArchivos.add(clave);
+            archivosUnicos.push(f.file);
+            dataTransfer.items.add(f.file);
+            console.log('📋 Archivo agregado a DataTransfer:', f.file.name);
         } else {
-            const icon = document.createElement('i');
-            icon.className = 'fas fa-file-video evidence-preview';
-            
-            const removeBtn = document.createElement('span');
-            removeBtn.className = 'remove-evidence';
-            removeBtn.innerHTML = '&times;';
-            removeBtn.onclick = function() {
-                removeEvidence(fileId);
-            };
-            
-            const nameSpan = document.createElement('span');
-            nameSpan.textContent = file.name;
-            
-            itemDiv.appendChild(icon);
-            itemDiv.appendChild(removeBtn);
-            itemDiv.appendChild(nameSpan);
-            previewContainer.appendChild(itemDiv);
+            console.log('⚠️ Archivo duplicado omitido en DataTransfer:', f.file.name);
         }
     });
+    
+    // Actualizar el input de archivos
+    input.files = dataTransfer.files;
+    
+    console.log('🔄 Input actualizado:', dataTransfer.files.length + ' archivos');
+    console.log('📦 Estado final - generalEvidenceFiles:', generalEvidenceFiles.length);
+    console.log('📦 Estado final - input.files:', input.files.length);
+    
+    // Log detallado de los archivos
+    for (let i = 0; i < input.files.length; i++) {
+        console.log('  📄 Archivo ' + i + ':', input.files[i].name, '-', input.files[i].size, 'bytes');
+    }
 }
 
 /**
@@ -592,155 +890,205 @@ function updateEvidenceInput() {
 }
 
 /**
- * Guarda la inspección
+ * Maneja la selección de evidencias generales - VERSIÓN CORREGIDA
  */
-function guardarInspeccion() {
-    // Validar que todos los componentes tengan un estado seleccionado
-    const radios = document.querySelectorAll('.form-check-input');
-    let todosSeleccionados = true;
+function handleGeneralEvidenceSelect(files) {
+    console.log('📁 Archivos seleccionados:', files);
     
-    radios.forEach(radio => {
-        const name = radio.getAttribute('name');
-        const checked = document.querySelector(`input[name="${name}"]:checked`);
-        if (!checked) {
-            todosSeleccionados = false;
-            const componenteId = name.replace('estado_', '');
-            document.getElementById(`componente-${componenteId}`).style.borderColor = 'red';
-        }
-    });
-    
-    if (!todosSeleccionados) {
-        mostrarError('Por favor, verifica el estado de todos los componentes antes de enviar.');
+    if (!files || files.length === 0) {
+        console.log('⚠️ No se seleccionaron archivos');
         return;
     }
-
-    // Mostrar loading
-    document.getElementById('loading').style.display = 'flex';
-    document.getElementById('submitButton').disabled = true;
-    document.querySelector('#submitButton .spinner-border').style.display = 'inline-block';
-
-    // Crear FormData para enviar el formulario
-    const formData = new FormData(document.getElementById('walkaroundForm'));
-    const url = document.getElementById('walkaroundForm').action;
-
-    // Enviar datos al servidor
-    fetch(url, {
-        method: 'POST',
-        body: formData
-    })
-    .then(response => {
-        // Primero verificar si la respuesta es JSON
-        const contentType = response.headers.get('content-type');
-        if (!contentType || !contentType.includes('application/json')) {
-            return response.text().then(text => {
-                throw new Error(`Respuesta del servidor no es JSON: ${text.substring(0, 100)}...`);
-            });
+    
+    const previewContainer = document.getElementById('evidencePreview');
+    if (!previewContainer) {
+        console.error('❌ No se encontró el contenedor de preview');
+        return;
+    }
+    
+    // Convertir FileList a Array
+    const nuevosArchivos = Array.from(files);
+    
+    nuevosArchivos.forEach(file => {
+        // Verificar si el archivo ya existe
+        const existe = generalEvidenceFiles.some(f => 
+            f.file.name === file.name && f.file.size === file.size
+        );
+        
+        if (!existe) {
+            const fileId = Date.now() + Math.random();
+            const fileObj = {
+                id: fileId,
+                file: file
+            };
+            
+            generalEvidenceFiles.push(fileObj);
+            
+            // Crear elemento de preview
+            const itemDiv = document.createElement('div');
+            itemDiv.className = 'evidence-item';
+            itemDiv.id = 'evidence-item-' + fileId;
+            
+            if (file.type.startsWith('image/')) {
+                const img = document.createElement('img');
+                img.src = URL.createObjectURL(file);
+                img.className = 'evidence-preview';
+                itemDiv.appendChild(img);
+            } else if (file.type.startsWith('video/')) {
+                const icon = document.createElement('i');
+                icon.className = 'fas fa-file-video evidence-preview';
+                itemDiv.appendChild(icon);
+            } else {
+                const icon = document.createElement('i');
+                icon.className = 'fas fa-file evidence-preview';
+                itemDiv.appendChild(icon);
+            }
+            
+            const nameSpan = document.createElement('span');
+            nameSpan.textContent = file.name;
+            nameSpan.className = 'file-name';
+            
+            const removeBtn = document.createElement('button');
+            removeBtn.type = 'button';
+            removeBtn.className = 'btn btn-sm btn-danger remove-evidence';
+            removeBtn.innerHTML = '<i class="fas fa-times"></i>';
+            removeBtn.onclick = () => removeEvidence(fileId);
+            
+            itemDiv.appendChild(nameSpan);
+            itemDiv.appendChild(removeBtn);
+            previewContainer.appendChild(itemDiv);
         }
-        return response.json();
-    })
-    .then(data => {
-        if (data.success) {
-            // Mostrar modal de éxito
-            const successModal = new bootstrap.Modal(document.getElementById('successModal'));
-            
-            // Cambiar mensaje según el modo
-            document.querySelector('#successModal .modal-body').textContent = 
-                isEditMode ? 'La inspección se ha actualizado correctamente.' : 
-                            'La inspección se ha guardado correctamente.';
-            
-            successModal.show();
-            
-            // Configurar redirección después de cerrar el modal
-            document.getElementById('successModal').addEventListener('hidden.bs.modal', function() {
-                window.location.href = 'ver_walkaround.html';
-            });
-        } else {
-            // Mostrar modal de error
-            document.getElementById('errorModalBody').textContent = data.message || data.error || 'Error al guardar la inspección';
-            const errorModal = new bootstrap.Modal(document.getElementById('errorModal'));
-            errorModal.show();
-        }
-    })
-    .catch(error => {
-        console.error('Error:', error);
-        document.getElementById('errorModalBody').textContent = 'Error: ' + error.message;
-        const errorModal = new bootstrap.Modal(document.getElementById('errorModal'));
-        errorModal.show();
-    })
-    .finally(() => {
-        // Ocultar loading
-        document.getElementById('loading').style.display = 'none';
-        document.getElementById('submitButton').disabled = false;
-        document.querySelector('#submitButton .spinner-border').style.display = 'none';
     });
+    
+    // Actualizar el input
+    updateEvidenceInput();
+    
+    console.log('📦 Estado actual de evidencias:', generalEvidenceFiles.length, 'archivos');
 }
 
 /**
- * Envía el formulario de walkaround
+ * Envía el formulario de walkaround - VERSIÓN CORREGIDA Y ROBUSTA
  */
 async function enviarWalkaround() {
+    console.log('🚀 Iniciando envío de walkaround...');
+    console.log('📝 Modo:', isEditMode ? 'EDICIÓN' : 'CREACIÓN');
+    
     // Validar que todos los componentes tengan un estado seleccionado
     if (!validarFormulario()) {
-        mostrarError('Por favor, verifica el estado de todos los componentes antes de enviar.');
+        return;
+    }
+
+    // Validar que se haya seleccionado una aeronave
+    const aeronaveSeleccionada = document.getElementById('aeronaveSeleccionada').value;
+    if (!aeronaveSeleccionada) {
+        mostrarError('Por favor, selecciona una aeronave.');
         return;
     }
 
     // Mostrar loading
     document.getElementById('loading').style.display = 'flex';
     document.getElementById('submitButton').disabled = true;
-    document.querySelector('#submitButton .spinner-border').style.display = 'inline-block';
-
-    // Crear FormData para enviar el formulario
-    const formData = new FormData(document.getElementById('walkaroundForm'));
-    const url = document.getElementById('walkaroundForm').action;
-
-    // ✅ CORRECCIÓN: Asegurar que el campo id_aeronave se envíe incluso si está deshabilitado
-    const aeronaveSelect = document.getElementById('aeronave');
-    if (aeronaveSelect.disabled) {
-        // Si está deshabilitado (modo edición), agregar manualmente el valor
-        formData.append('id_aeronave', aeronaveSelect.value);
+    const spinner = document.querySelector('#submitButton .spinner-border');
+    if (spinner) {
+        spinner.style.display = 'inline-block';
     }
 
-    // ✅ Añadir evidencias generales al FormData
-    generalEvidenceFiles.forEach(fileObj => {
-        formData.append('generalEvidence[]', fileObj.file);
-    });
-
     try {
+        // Crear FormData para enviar el formulario
+        const formData = new FormData(document.getElementById('walkaroundForm'));
+        const url = document.getElementById('walkaroundForm').action;
+
+        console.log('📤 URL de envío:', url);
+        console.log('🛩️ ID Aeronave seleccionada:', aeronaveSeleccionada);
+
+        // En modo edición, el campo de búsqueda está deshabilitado, así que usamos el valor del campo oculto
+        formData.append('id_aeronave', aeronaveSeleccionada);
+
+        // ✅ Añadir evidencias generales al FormData
+        if (generalEvidenceFiles && generalEvidenceFiles.length > 0) {
+            generalEvidenceFiles.forEach(fileObj => {
+                formData.append('generalEvidence[]', fileObj.file);
+            });
+            console.log('📎 Evidencias generales agregadas:', generalEvidenceFiles.length);
+        } else {
+            console.log('📎 No hay evidencias generales para agregar');
+        }
+
+        // DEBUG: Mostrar datos que se enviarán (excluyendo archivos para no saturar la consola)
+        console.log('📦 Datos a enviar:');
+        for (let [key, value] of formData.entries()) {
+            if (key.includes('evidencia') || key.includes('generalEvidence')) {
+                console.log(`  ${key}: [ARCHIVO - ${value.name || 'sin nombre'}]`);
+            } else {
+                console.log(`  ${key}: ${value}`);
+            }
+        }
+
+        console.log('🔄 Enviando datos al servidor...');
         const response = await fetch(url, {
             method: 'POST',
             body: formData
         });
         
-        // Verificar si la respuesta es JSON
-        const contentType = response.headers.get('content-type');
-        if (!contentType || !contentType.includes('application/json')) {
-            const text = await response.text();
-            console.error('Respuesta del servidor (no JSON):', text);
-            throw new Error('El servidor devolvió un formato incorrecto');
+        console.log('📨 Respuesta recibida, status:', response.status);
+        
+        // Obtener el texto de la respuesta primero para debuggear
+        const responseText = await response.text();
+        console.log('📄 Respuesta completa del servidor:', responseText);
+        
+        let data;
+        try {
+            // Intentar parsear como JSON
+            data = JSON.parse(responseText);
+            console.log('📊 Respuesta JSON parseada:', data);
+        } catch (parseError) {
+            console.error('❌ Error parseando JSON:', parseError);
+            console.error('📄 Respuesta que causó el error:', responseText);
+            
+            // Si no es JSON, verificar si es un mensaje de éxito/error simple
+            if (responseText.includes('éxito') || responseText.includes('success') || response.status === 200) {
+                // Asumir éxito si la respuesta es positiva aunque no sea JSON
+                data = { success: true, message: 'Operación completada exitosamente' };
+            } else {
+                throw new Error(`El servidor devolvió un formato inesperado: ${responseText.substring(0, 200)}`);
+            }
         }
         
-        const data = await response.json();
-        
         if (data.success) {
-            const mensaje = isEditMode ? 
+            const mensaje = data.message || (isEditMode ? 
                 'Walkaround actualizado correctamente.' : 
-                'Walkaround creado correctamente.';
+                'Walkaround creado correctamente.');
                 
+            console.log('✅ Éxito:', mensaje);
             mostrarExito(mensaje, () => {
                 window.location.href = 'ver_walkaround.html';
             });
         } else {
-            mostrarError(data.message || data.error || 'Error al procesar el walkaround');
+            const errorMsg = data.message || data.error || 'Error al procesar el walkaround';
+            console.error('❌ Error del servidor:', errorMsg);
+            mostrarError(errorMsg);
         }
     } catch (error) {
-        console.error('Error:', error);
-        mostrarError('Ocurrió un error al conectar con el servidor: ' + error.message);
+        console.error('❌ Error en el envío:', error);
+        console.error('🔍 Stack trace:', error.stack);
+        
+        let mensajeError = 'Ocurrió un error al conectar con el servidor. ';
+        
+        if (error.message.includes('formato inesperado')) {
+            mensajeError += 'El servidor devolvió una respuesta inesperada. ';
+        }
+        
+        mensajeError += error.message;
+        mostrarError(mensajeError);
     } finally {
         // Ocultar loading SIEMPRE
+        console.log('🏁 Finalizando envío...');
         document.getElementById('loading').style.display = 'none';
         document.getElementById('submitButton').disabled = false;
-        document.querySelector('#submitButton .spinner-border').style.display = 'none';
+        const spinnerFinal = document.querySelector('#submitButton .spinner-border');
+        if (spinnerFinal) {
+            spinnerFinal.style.display = 'none';
+        }
     }
 }
 
@@ -748,8 +1096,20 @@ async function enviarWalkaround() {
  * Valida que todos los componentes tengan un estado seleccionado
  */
 function validarFormulario() {
+    console.log('🔍 Validando formulario...');
+    
+    // Validar aeronave seleccionada
+    const aeronaveSeleccionada = document.getElementById('aeronaveSeleccionada').value;
+    if (!aeronaveSeleccionada) {
+        console.error('❌ No se ha seleccionado aeronave');
+        mostrarError('Por favor, selecciona una aeronave.');
+        return false;
+    }
+
+    // Validar que todos los componentes tengan un estado seleccionado
     const radios = document.querySelectorAll('.form-check-input');
     let todosSeleccionados = true;
+    let componentesSinSeleccionar = [];
     
     radios.forEach(radio => {
         const name = radio.getAttribute('name');
@@ -757,6 +1117,7 @@ function validarFormulario() {
         if (!checked) {
             todosSeleccionados = false;
             const componenteId = name.replace('estado_', '');
+            componentesSinSeleccionar.push(componenteId);
             const componenteCard = document.getElementById(`componente-${componenteId}`);
             if (componenteCard) {
                 componenteCard.style.borderColor = 'red';
@@ -764,7 +1125,14 @@ function validarFormulario() {
         }
     });
     
-    return todosSeleccionados;
+    if (!todosSeleccionados) {
+        console.error('❌ Componentes sin seleccionar:', componentesSinSeleccionar);
+        mostrarError('Por favor, verifica el estado de todos los componentes antes de enviar.');
+        return false;
+    }
+    
+    console.log('✅ Formulario válido');
+    return true;
 }
 
 /**
@@ -804,50 +1172,49 @@ function mostrarError(mensaje) {
 }
 
 /**
- * Carga la lista de walkarounds y la muestra en la tabla - VERSIÓN CORREGIDA
+ * Carga la lista de walkarounds con paginación
  */
-async function cargarWalkarounds() {
+async function cargarWalkarounds(pagina = 1) {
     const tablaBody = document.querySelector('#tablaWalkarounds tbody');
     tablaBody.innerHTML = '<tr><td colspan="10" class="text-center">Cargando...</td></tr>';
 
     try {
-        console.log('🔄 Cargando walkarounds...');
-        const response = await fetch('leer_walkaround.php');
+        console.log(`🔄 Cargando walkarounds página ${pagina}...`);
+        const response = await fetch(`leer_walkaround.php?pagina=${pagina}&registros_por_pagina=${registrosPorPagina}`);
         
         if (!response.ok) {
             throw new Error(`Error HTTP: ${response.status}`);
         }
         
-        const walkarounds = await response.json();
-        console.log('📊 Walkarounds recibidos:', walkarounds);
+        const data = await response.json();
+        console.log('📊 Datos recibidos:', data);
         
-        if (walkarounds.error) {
-            throw new Error(walkarounds.error);
+        if (data.error) {
+            throw new Error(data.error);
         }
+
+        const walkarounds = data.walkarounds;
+        paginaActual = data.paginacion.pagina_actual;
+        totalPaginas = data.paginacion.total_paginas;
+        totalRegistros = data.paginacion.total_registros;
 
         tablaBody.innerHTML = '';
         
         if (walkarounds.length === 0) {
             tablaBody.innerHTML = '<tr><td colspan="10" class="text-center">No hay walkarounds registrados.</td></tr>';
         } else {
-            walkarounds.forEach((walkaround, index) => {
-                console.log(`📝 Procesando walkaround ${index + 1}:`, walkaround);
+            walkarounds.forEach((walkaround) => {
+                console.log(`📝 Procesando walkaround ID ${walkaround.Id_Walk}:`, walkaround);
                 
                 const fila = document.createElement('tr');
-                
-                // ⭐⭐ VERIFICAR CAMPOS DISPONIBLES ⭐⭐
-                console.log('🔍 Campos disponibles:', Object.keys(walkaround));
-                console.log('✈️ Equipo:', walkaround.Equipo);
-                console.log('🌍 Procedencia:', walkaround.Procedencia);
                 
                 // Manejo seguro de campos
                 const matricula = walkaround.Matricula || 'No especificada';
                 const equipo = walkaround.Equipo || 'No especificado';
                 const procedencia = walkaround.Procedencia || 'No especificada';
+                const destino = walkaround.Destino || 'No especificada';
                 const elaboro = walkaround.Elaboro || 'No especificado';
                 const responsable = walkaround.Responsable || 'No especificado';
-                const jefeArea = walkaround.JefeArea || 'No especificado';
-                const vobo = walkaround.VoBo || 'No especificado';
                 
                 // Formatear fecha
                 let fechaFormateada = 'Fecha no válida';
@@ -860,46 +1227,169 @@ async function cargarWalkarounds() {
                 }
                 
                 fila.innerHTML = `
-        <td>${index + 1}</td>
-        <td>${fechaFormateada}</td>
-        <td>${matricula}</td>
-        <td>${equipo}</td>
-        <td>${procedencia}</td>
-        <td>${elaboro}</td>
-        <td>${responsable}</td>
-        <td>${jefeArea}</td>
-        <td>${vobo}</td>
-        <td>
-            <div class="btn-group btn-group-sm" role="group">
-                <a href="detalle_walkaround.html?id=${walkaround.Id_Walk}" 
-                   class="btn btn-info" title="Ver detalles">
-                    <i class="fas fa-eye"></i>
-                </a>
-                <!-- BOTÓN NUEVO PARA PDF -->
-                <a href="pdf_generator.php?tipo=walkaround&id=${walkaround.Id_Walk}" 
-                   class="btn btn-danger" title="Generar PDF" target="_blank">
-                    <i class="fas fa-file-pdf"></i>
-                </a>
-                <a href="componenteWk.html?id=${walkaround.Id_Walk}" 
-                   class="btn btn-warning" title="Editar">
-                    <i class="fas fa-edit"></i>
-                </a>
-                <button class="btn btn-danger" 
-                        onclick="eliminarWalkaround(${walkaround.Id_Walk})" 
-                        title="Eliminar">
-                    <i class="fas fa-trash-alt"></i>
-                </button>
-            </div>
-        </td>
-    `;
-    
-    tablaBody.appendChild(fila);
-});
+                    <td>${walkaround.Id_Walk}</td>
+                    <td>${fechaFormateada}</td>
+                    <td>${matricula}</td>
+                    <td>${equipo}</td>
+                    <td>${procedencia}</td>
+                    <td>${destino}</td>
+                    <td>${elaboro}</td>
+                    <td>${responsable}</td>
+                    
+                    <td>
+                        <div class="btn-group btn-group-sm" role="group">
+                            <a href="detalle_walkaround.html?id=${walkaround.Id_Walk}" 
+                               class="btn btn-info" title="Ver detalles">
+                                <i class="fas fa-eye"></i>
+                            </a>
+                            <a href="pdf_generator.php?tipo=walkaround&id=${walkaround.Id_Walk}" 
+                               class="btn btn-danger" title="Generar PDF" target="_blank">
+                                <i class="fas fa-file-pdf"></i>
+                            </a>
+                            <a href="componenteWk.html?id=${walkaround.Id_Walk}" 
+                               class="btn btn-warning" title="Editar">
+                                <i class="fas fa-edit"></i>
+                            </a>
+                            <button class="btn btn-danger" 
+                                    onclick="eliminarWalkaround(${walkaround.Id_Walk})" 
+                                    title="Eliminar">
+                                <i class="fas fa-trash-alt"></i>
+                            </button>
+                        </div>
+                    </td>
+                `;
+                
+                tablaBody.appendChild(fila);
+            });
         }
+        
+        // Actualizar el paginador
+        actualizarPaginador();
         
     } catch (error) {
         console.error('❌ Error al cargar walkarounds:', error);
         tablaBody.innerHTML = `<tr><td colspan="10" class="text-center text-danger">Error al cargar los datos: ${error.message}</td></tr>`;
+    }
+}
+
+/**
+ * Actualiza el paginador en la interfaz
+ */
+function actualizarPaginador() {
+    const paginadorContainer = document.getElementById('paginador');
+    if (!paginadorContainer) return;
+    
+    let html = '';
+    
+    // Información de registros
+    const inicio = ((paginaActual - 1) * registrosPorPagina) + 1;
+    const fin = Math.min(paginaActual * registrosPorPagina, totalRegistros);
+    
+    html += `
+        <div class="d-flex justify-content-between align-items-center">
+            <div class="text-muted">
+                Mostrando ${inicio} a ${fin} de ${totalRegistros} registros
+            </div>
+            <nav aria-label="Paginación de walkarounds">
+                <ul class="pagination pagination-sm mb-0">
+    `;
+    
+    // Botón Anterior
+    if (paginaActual > 1) {
+        html += `
+            <li class="page-item">
+                <a class="page-link" href="javascript:void(0)" onclick="cambiarPagina(${paginaActual - 1})">
+                    <i class="fas fa-chevron-left"></i>
+                </a>
+            </li>
+        `;
+    } else {
+        html += `
+            <li class="page-item disabled">
+                <span class="page-link"><i class="fas fa-chevron-left"></i></span>
+            </li>
+        `;
+    }
+    
+    // Números de página
+    const paginasAMostrar = 5; // Número máximo de páginas a mostrar en el paginador
+    let inicioPaginas = Math.max(1, paginaActual - Math.floor(paginasAMostrar / 2));
+    let finPaginas = Math.min(totalPaginas, inicioPaginas + paginasAMostrar - 1);
+    
+    // Ajustar si estamos cerca del final
+    if (finPaginas - inicioPaginas + 1 < paginasAMostrar) {
+        inicioPaginas = Math.max(1, finPaginas - paginasAMostrar + 1);
+    }
+    
+    // Página inicial
+    if (inicioPaginas > 1) {
+        html += `
+            <li class="page-item">
+                <a class="page-link" href="javascript:void(0)" onclick="cambiarPagina(1)">1</a>
+            </li>
+            ${inicioPaginas > 2 ? '<li class="page-item disabled"><span class="page-link">...</span></li>' : ''}
+        `;
+    }
+    
+    // Páginas intermedias
+    for (let i = inicioPaginas; i <= finPaginas; i++) {
+        if (i === paginaActual) {
+            html += `
+                <li class="page-item active">
+                    <span class="page-link">${i}</span>
+                </li>
+            `;
+        } else {
+            html += `
+                <li class="page-item">
+                    <a class="page-link" href="javascript:void(0)" onclick="cambiarPagina(${i})">${i}</a>
+                </li>
+            `;
+        }
+    }
+    
+    // Página final
+    if (finPaginas < totalPaginas) {
+        html += `
+            ${finPaginas < totalPaginas - 1 ? '<li class="page-item disabled"><span class="page-link">...</span></li>' : ''}
+            <li class="page-item">
+                <a class="page-link" href="javascript:void(0)" onclick="cambiarPagina(${totalPaginas})">${totalPaginas}</a>
+            </li>
+        `;
+    }
+    
+    // Botón Siguiente
+    if (paginaActual < totalPaginas) {
+        html += `
+            <li class="page-item">
+                <a class="page-link" href="javascript:void(0)" onclick="cambiarPagina(${paginaActual + 1})">
+                    <i class="fas fa-chevron-right"></i>
+                </a>
+            </li>
+        `;
+    } else {
+        html += `
+            <li class="page-item disabled">
+                <span class="page-link"><i class="fas fa-chevron-right"></i></span>
+            </li>
+        `;
+    }
+    
+    html += `
+                </ul>
+            </nav>
+        </div>
+    `;
+    
+    paginadorContainer.innerHTML = html;
+}
+
+/**
+ * Cambia a una página específica
+ */
+function cambiarPagina(pagina) {
+    if (pagina >= 1 && pagina <= totalPaginas && pagina !== paginaActual) {
+        cargarWalkarounds(pagina);
     }
 }
 

@@ -38,18 +38,20 @@ try {
     $jefe_area = $_POST['jefe_area'];
     $vobo = $_POST['vobo'];
     $observacionesGenerales = isset($_POST['observacionesGenerales']) ? $_POST['observacionesGenerales'] : '';
+    $procedencia = isset($_POST['procedencia']) ? trim($_POST['procedencia']) : '';
+    $destino = isset($_POST['destino']) ? trim($_POST['destino']) : '';
 
     // Iniciar transacción
     $conn->begin_transaction();
 
     // PRIMERO: Actualizar la tabla walkaround
-    $stmt_walkaround = $conn->prepare("UPDATE walkaround SET Fechahora=?, Id_Aeronave=?, Elaboro=?, Responsable=?, JefeArea=?, VoBo=?, observaciones=? WHERE Id_Walk=?");
+    $stmt_walkaround = $conn->prepare("UPDATE walkaround SET Fechahora=?, Id_Aeronave=?, Elaboro=?, Responsable=?, JefeArea=?, VoBo=?, observaciones=?, Procedencia=?, Destino=? WHERE Id_Walk=?");
     
     if (!$stmt_walkaround) {
         throw new Exception("Error al preparar consulta walkaround: " . $conn->error);
     }
     
-    $stmt_walkaround->bind_param("sisssssi", $fechaHora, $id_aeronave, $elaboro, $responsable, $jefe_area, $vobo, $observacionesGenerales, $id_walk);
+   $stmt_walkaround->bind_param("sisssssssi", $fechaHora, $id_aeronave, $elaboro, $responsable, $jefe_area, $vobo, $observacionesGenerales, $procedencia, $destino, $id_walk);
     
     if (!$stmt_walkaround->execute()) {
         throw new Exception("Error al actualizar walkaround: " . $stmt_walkaround->error);
@@ -93,7 +95,8 @@ try {
                 }
                 
                 $evidencia = $_FILES['evidencia_' . $componente_id];
-                $id_evidencia = guardarEvidencia($conn, $evidencia, $id_walk, $id_aeronave);
+                $id_evidencia = guardarEvidencia($conn, $evidencia, $id_walk, $id_aeronave, true);
+
             } else if ($componente_existente) {
                 // Mantener la evidencia existente
                 $id_evidencia = $componente_existente['id_evidencia'];
@@ -140,12 +143,76 @@ try {
         $stmt_delete->close();
     }
     
-    // QUINTO: Procesar evidencias generales (solo agregar nuevas, no eliminar existentes)
-    if (isset($_FILES['generalEvidence']) && count($_FILES['generalEvidence']['name']) > 0) {
-        $evidencias = $_FILES['generalEvidence'];
+    // QUINTO: Procesar evidencias generales - VERSIÓN CORREGIDA
+if (isset($_FILES['generalEvidence']) && count($_FILES['generalEvidence']['name']) > 0) {
+    $evidencias = $_FILES['generalEvidence'];
+    $archivosValidos = 0;
+    
+    error_log("🔄 Procesando evidencias generales en actualización...");
+
+    // Contar archivos válidos (no vacíos)
+    for ($i = 0; $i < count($evidencias['name']); $i++) {
+        if ($evidencias['error'][$i] == UPLOAD_ERR_OK && 
+            $evidencias['size'][$i] > 0 && 
+            !empty($evidencias['name'][$i])) {
+            $archivosValidos++;
+        }
+    }
+    
+    error_log("📊 Archivos válidos encontrados: " . $archivosValidos);
+    
+    if ($archivosValidos > 0) {
+        error_log("🗑️ Eliminando evidencias existentes antes de agregar nuevas...");
         
+        // ⭐⭐ CORRECCIÓN: Solo eliminar evidencias si hay archivos nuevos válidos
+        $sql_eliminar_evidencias = "SELECT Id_Evidencia, Ruta FROM evidencias WHERE Id_Wk = ?";
+        $stmt_eliminar = $conn->prepare($sql_eliminar_evidencias);
+        $stmt_eliminar->bind_param("i", $id_walk);
+        
+        if (!$stmt_eliminar->execute()) {
+            error_log("❌ Error al obtener evidencias existentes: " . $stmt_eliminar->error);
+            throw new Exception("Error al obtener evidencias existentes");
+        }
+        
+        $result_eliminar = $stmt_eliminar->get_result();
+        $evidenciasEliminadas = 0;
+        
+        while ($row = $result_eliminar->fetch_assoc()) {
+            // Eliminar archivo físico
+            if (file_exists($row['Ruta'])) {
+                if (unlink($row['Ruta'])) {
+                    error_log("✅ Archivo físico eliminado: " . $row['Ruta']);
+                } else {
+                    error_log("⚠️ No se pudo eliminar archivo físico: " . $row['Ruta']);
+                }
+            } else {
+                error_log("ℹ️ Archivo no encontrado: " . $row['Ruta']);
+            }
+            
+            // Eliminar registro de la base de datos
+            $stmt_delete_evidencia = $conn->prepare("DELETE FROM evidencias WHERE Id_Evidencia = ?");
+            if ($stmt_delete_evidencia) {
+                $stmt_delete_evidencia->bind_param("i", $row['Id_Evidencia']);
+                if ($stmt_delete_evidencia->execute()) {
+                    $evidenciasEliminadas++;
+                    error_log("✅ Registro BD eliminado - ID: " . $row['Id_Evidencia']);
+                } else {
+                    error_log("❌ Error al eliminar registro BD: " . $stmt_delete_evidencia->error);
+                }
+                $stmt_delete_evidencia->close();
+            }
+        }
+        $stmt_eliminar->close();
+        
+        error_log("🗑️ " . $evidenciasEliminadas . " evidencias eliminadas de la BD");
+
+        // ⭐⭐ CORRECCIÓN: Agregar SOLO las nuevas evidencias
+        $archivosProcesados = 0;
         for ($i = 0; $i < count($evidencias['name']); $i++) {
-            if ($evidencias['error'][$i] == UPLOAD_ERR_OK) {
+            if ($evidencias['error'][$i] == UPLOAD_ERR_OK && 
+                $evidencias['size'][$i] > 0 && 
+                !empty($evidencias['name'][$i])) {
+                
                 $evidencia = [
                     'name' => $evidencias['name'][$i],
                     'type' => $evidencias['type'][$i],
@@ -154,10 +221,27 @@ try {
                     'size' => $evidencias['size'][$i]
                 ];
                 
-                guardarEvidencia($conn, $evidencia, $id_walk, $id_aeronave);
+                error_log("📤 Procesando nueva evidencia: " . $evidencia['name']);
+                
+                $id_evidencia = guardarEvidencia($conn, $evidencia, $id_walk, $id_aeronave, true);
+
+                if ($id_evidencia) {
+                    $archivosProcesados++;
+                    error_log("✅ Nueva evidencia guardada - ID: " . $id_evidencia);
+                } else {
+                    error_log("❌ Error al guardar nueva evidencia: " . $evidencia['name']);
+                }
             }
         }
+        
+        error_log("🎉 " . $archivosProcesados . " nuevas evidencias agregadas exitosamente");
+        
+    } else {
+        error_log("ℹ️ No hay archivos nuevos válidos, se mantienen las evidencias existentes");
     }
+} else {
+    error_log("ℹ️ No se recibieron evidencias generales para actualizar");
+}
     
     // Confirmar transacción
     $conn->commit();

@@ -3,7 +3,6 @@
 let walkaroundId = null;
 let walkaroundData = null;
 
-// Componentes predefinidos para cada tipo de aeronave (COPIA EXACTA de walkaround.js)
 // Componentes predefinidos para cada tipo de aeronave
 const componentesPorTipo = {
     avion: [
@@ -61,9 +60,6 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 /**
- * Carga el detalle completo del walkaround
- */
-/**
  * Carga el detalle completo del walkaround - VERSIÓN MODIFICADA
  */
 async function cargarDetalleWalkaround() {
@@ -84,7 +80,7 @@ async function cargarDetalleWalkaround() {
         
         console.log('📊 Datos recibidos para detalles:', data);
         
-        document.getElementById('fechaHoraInfo').textContent = formatearFecha(data.Fechahora);
+        document.getElementById('fechaHoraInfo').textContent = formatearFecha(data.FechaHora);
         
         // Información de aeronave
         const matricula = data.Matricula || 'No especificada';
@@ -115,13 +111,25 @@ async function cargarDetalleWalkaround() {
 }
 
 /**
- * Formatea la fecha para mostrarla
+ * Formatea la fecha para mostrarla - VERSIÓN CORREGIDA
  */
-function formatearFecha(fecha) {
-    if (!fecha) return 'No especificado';
+function formatearFecha(fechaHora) { // El parámetro está bien con 'f' minúscula
+    console.log('📅 Fecha recibida para formatear:', fechaHora);
+    
+    if (!fechaHora) {
+        console.warn('⚠️ Fecha vacía o undefined');
+        return 'No especificado';
+    }
     
     try {
-        const date = new Date(fecha);
+        const date = new Date(fechaHora);
+        
+        // Verificar si la fecha es válida
+        if (isNaN(date.getTime())) {
+            console.warn('⚠️ Fecha inválida:', fechaHora);
+            return fechaHora; // Devolver el valor original si no se puede parsear
+        }
+        
         return date.toLocaleString('es-ES', {
             year: 'numeric',
             month: '2-digit',
@@ -130,7 +138,8 @@ function formatearFecha(fecha) {
             minute: '2-digit'
         });
     } catch (e) {
-        return fecha;
+        console.error('❌ Error al formatear fecha:', e);
+        return fechaHora; 
     }
 }
 

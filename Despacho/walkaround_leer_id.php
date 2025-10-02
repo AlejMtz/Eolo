@@ -28,10 +28,10 @@ try {
     }
 
     // Consulta para obtener los datos generales del walkaround
-    $sql = "SELECT w.*, a.Tipo, a.Matricula, a.Equipo, a.Procedencia 
-            FROM walkaround w 
-            JOIN aeronave a ON w.Id_Aeronave = a.Id_Aeronave 
-            WHERE w.Id_Walk = ?";
+    $sql = "SELECT w.*, a.Tipo, a.Matricula, a.Equipo 
+        FROM walkaround w 
+        JOIN aeronave a ON w.Id_Aeronave = a.Id_Aeronave 
+        WHERE w.Id_Walk = ?";
     
     $stmt = $conn->prepare($sql);
     if (!$stmt) {
@@ -50,6 +50,7 @@ try {
 
     $walkaround_data = $result->fetch_assoc();
     $stmt->close();
+    
 
     // Consulta para obtener los componentes
     $sql_componentes = "SELECT Identificador_Componente, Estado, Observaciones, Id_Aeronave, Id_Evidencia 

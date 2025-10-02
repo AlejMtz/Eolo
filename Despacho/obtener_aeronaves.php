@@ -18,7 +18,7 @@ try {
     }
 
     // Consulta para obtener aeronaves
-    $sql = "SELECT Id_Aeronave, Matricula, Tipo, Equipo, Procedencia, Destino FROM aeronave ORDER BY Matricula";
+    $sql = "SELECT Id_Aeronave, Matricula, Tipo, Equipo FROM aeronave ORDER BY Matricula";
     $result = $conn->query($sql);
 
     if (!$result) {

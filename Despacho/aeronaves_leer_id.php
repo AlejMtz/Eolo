@@ -29,7 +29,7 @@ try {
         die(json_encode(['error' => 'ID de aeronave no válido: ' . $_GET['id']]));
     }
 
-    $sql = "SELECT Id_Aeronave, Matricula, Tipo, Equipo, Procedencia, Destino 
+    $sql = "SELECT Id_Aeronave, Matricula, Tipo, Equipo 
             FROM aeronave 
             WHERE Id_Aeronave = ?";
     

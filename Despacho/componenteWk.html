@@ -28,7 +28,7 @@
                         <a class="nav-link active" href="../Despacho/ver_walkaround.html"><i class="fas fa-clipboard-check"></i> Walkaround</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="#"><i class="fas fa-images"></i> Evidencias</a>
+                        <a class="nav-link" href="../Despacho/ver_entrega_turno.html"><i class="fas fa-images"></i> Entrega de Turno</a>
                     </li>
                 </ul>
             </div>
@@ -55,17 +55,46 @@
             </div>
 
             <!-- Información de la aeronave -->
-            <div class="row mb-4">
-                <div class="col-md-6">
-                    <div class="form-group">
-                        <label for="aeronave" class="form-label">Seleccionar Aeronave:</label>
-                        <select class="form-select" id="aeronave" name="id_aeronave" required>
-                            <option value="" selected>Selecciona una aeronave</option>
-                            <!-- Las opciones se cargarán dinámicamente desde la BD -->
-                        </select>
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="buscarAeronave" class="form-label">Escribe la matrícula de la aeronave:</label>
+                            <input type="text" class="form-control" id="buscarAeronave" 
+                                placeholder="Escribe la matrícula de la aeronave..." 
+                                autocomplete="off">
+                            <div class="form-text">Escribe al menos 2 caracteres para buscar</div>
+                            
+                            <!-- Lista de resultados de búsqueda -->
+                            <div id="resultadosBusqueda" class="mt-2" style="display: none;">
+                                <div class="card">
+                                    <div class="card-body p-2">
+                                        <div id="listaAeronaves" class="list-group list-group-flush">
+                                            <!-- Los resultados se cargarán aquí dinámicamente -->
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Campo oculto para almacenar la aeronave seleccionada -->
+                            <input type="hidden" id="aeronaveSeleccionada" name="id_aeronave">
+                        </div>
                     </div>
                 </div>
-            </div>
+
+                <div class="row mb-4">
+    <div class="col-md-6">
+        <div class="form-group">
+            <label for="procedencia" class="form-label">Procedencia:</label>
+            <input type="text" class="form-control" id="procedencia" name="procedencia" placeholder="Escriba la procedencia del vuelo" required>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="form-group">
+            <label for="destino" class="form-label">Destino:</label>
+            <input type="text" class="form-control" id="destino" name="destino" placeholder="Escriba el destino del vuelo" required>
+        </div>
+    </div>
+</div>
             
             <!-- NUEVA SECCIÓN: Información adicional de la aeronave seleccionada -->
             <div class="row mb-4" id="infoAeronaveContainer" style="display: none;">
@@ -79,12 +108,6 @@
                     <div class="form-group">
                         <label class="form-label">Equipo:</label>
                         <div class="form-control-plaintext" id="infoEquipo"></div>
-                    </div>
-                </div>
-                <div class="col-md-4">
-                    <div class="form-group">
-                        <label class="form-label">Procedencia:</label>
-                        <div class="form-control-plaintext" id="infoProcedencia"></div>
                     </div>
                 </div>
             </div>

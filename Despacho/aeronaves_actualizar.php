@@ -17,16 +17,26 @@ try {
     $matricula = isset($_POST['matricula']) ? trim($_POST['matricula']) : '';
     $tipo = isset($_POST['tipo']) ? trim($_POST['tipo']) : '';
     $equipo = isset($_POST['equipo']) ? trim($_POST['equipo']) : '';
-    $procedencia = isset($_POST['procedencia']) ? trim($_POST['procedencia']) : '';
-    $destino = isset($_POST['destino']) ? trim($_POST['destino']) : '';
 
     // Validar que los campos no estén vacíos
-    if (empty($id_aeronave) || empty($matricula) || empty($tipo) || empty($equipo) || empty($procedencia) || empty($destino)) {
+    if (empty($id_aeronave) || empty($matricula) || empty($tipo) || empty($equipo)) {
         throw new Exception('Todos los campos son obligatorios.');
     }
 
+    // ⭐⭐ NUEVA VALIDACIÓN: Verificar si la matrícula ya existe en OTRA aeronave ⭐⭐
+    $sql_verificar = "SELECT COUNT(*) as count FROM aeronave WHERE Matricula = :matricula AND Id_Aeronave != :id_aeronave";
+    $stmt_verificar = $pdo->prepare($sql_verificar);
+    $stmt_verificar->bindParam(':matricula', $matricula);
+    $stmt_verificar->bindParam(':id_aeronave', $id_aeronave, PDO::PARAM_INT);
+    $stmt_verificar->execute();
+    $resultado = $stmt_verificar->fetch(PDO::FETCH_ASSOC);
+    
+    if ($resultado['count'] > 0) {
+        throw new Exception('La matrícula "' . $matricula . '" ya está registrada en otra aeronave. Por favor, use una matrícula diferente.');
+    }
+
     // Consulta de actualización con marcadores de posición
-    $sql = "UPDATE aeronave SET Matricula = :matricula, Tipo = :tipo, Equipo = :equipo, Procedencia = :procedencia, Destino = :destino WHERE Id_Aeronave = :id_aeronave";
+    $sql = "UPDATE aeronave SET Matricula = :matricula, Tipo = :tipo, Equipo = :equipo WHERE Id_Aeronave = :id_aeronave";
     
     // Preparar la sentencia
     $stmt = $pdo->prepare($sql);
@@ -35,8 +45,6 @@ try {
     $stmt->bindParam(':matricula', $matricula);
     $stmt->bindParam(':tipo', $tipo);
     $stmt->bindParam(':equipo', $equipo);
-    $stmt->bindParam(':procedencia', $procedencia);
-    $stmt->bindParam(':destino', $destino);
     $stmt->bindParam(':id_aeronave', $id_aeronave, PDO::PARAM_INT);
     
     // Ejecutar la sentencia
@@ -47,9 +55,16 @@ try {
     }
 
 } catch (PDOException $e) {
-    http_response_code(500);
-    echo json_encode(['error' => 'Error en la base de datos: ' . $e->getMessage()]);
+    // Verificar si es error de duplicado
+    if ($e->getCode() == 23000 || strpos($e->getMessage(), 'Duplicate') !== false) {
+        http_response_code(400);
+        echo json_encode(['error' => 'La matrícula "' . $matricula . '" ya está registrada. Por favor, use una matrícula diferente.']);
+    } else {
+        http_response_code(500);
+        echo json_encode(['error' => 'Error en la base de datos: ' . $e->getMessage()]);
+    }
 } catch (Exception $e) {
     http_response_code(400); // 400 Bad Request por datos inválidos
     echo json_encode(['error' => $e->getMessage()]);
 }
+?>

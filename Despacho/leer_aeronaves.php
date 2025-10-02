@@ -6,7 +6,7 @@ require '../conexion.php';
 
 try {
     // Consulta SQL para seleccionar los datos de la tabla 'aeronave'
-    $sql = "SELECT Id_Aeronave, Matricula, Tipo, Equipo, Procedencia, Destino FROM aeronave ORDER BY Matricula";
+    $sql = "SELECT Id_Aeronave, Matricula, Tipo, Equipo FROM aeronave ORDER BY Matricula";
     
     // Preparar la sentencia
     $stmt = $pdo->prepare($sql);

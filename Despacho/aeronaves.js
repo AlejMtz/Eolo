@@ -1,5 +1,3 @@
-// aeronaves.js
-
 // Variables globales para los modales
 let successModal = null;
 let errorModal = null;
@@ -62,6 +60,8 @@ document.addEventListener('DOMContentLoaded', () => {
             cargarAeronaveParaEditar(id);
         }
     }
+    
+        configurarValidacionMatricula();
 
     // Configurar evento para el botón de confirmación de eliminación
     const confirmBtn = document.getElementById('confirmActionBtn');
@@ -135,6 +135,7 @@ function mostrarConfirmacionEliminar(id) {
     }
 }
 
+
 /**
  * Carga la lista de aeronaves y la muestra en la tabla.
  */
@@ -164,8 +165,6 @@ async function cargarAeronaves() {
                     <td>${aeronave.Matricula}</td>
                     <td>${aeronave.Tipo}</td>
                     <td>${aeronave.Equipo}</td>
-                    <td>${aeronave.Procedencia}</td>
-                    <td>${aeronave.Destino}</td>
                     <td>
                         <a href="aeronave.html?id=${aeronave.Id_Aeronave}" class="btn btn-warning btn-sm">
                             <i class="fas fa-edit"></i>
@@ -243,6 +242,109 @@ async function cargarAeronaveParaEditar(id) {
                 mostrarError(error.message + '\n\nPero puedes editar manualmente los datos.');
             }
         }, 1500);
+    }
+}
+
+function configurarValidacionMatricula() {
+    const inputMatricula = document.getElementById('matricula');
+    if (!inputMatricula) return;
+
+    let timeoutValidacion = null;
+
+    inputMatricula.addEventListener('input', function(e) {
+        const matricula = e.target.value.trim();
+        
+        // Limpiar timeout anterior
+        if (timeoutValidacion) {
+            clearTimeout(timeoutValidacion);
+        }
+        
+        // Esperar 500ms después de que el usuario deje de escribir
+        timeoutValidacion = setTimeout(() => {
+            if (matricula.length >= 2) {
+                validarMatriculaUnica(matricula);
+            } else {
+                limpiarValidacionMatricula();
+            }
+        }, 500);
+    });
+
+    // Limpiar validación cuando el campo pierde el foco
+    inputMatricula.addEventListener('blur', function() {
+        const matricula = this.value.trim();
+        if (matricula.length >= 2) {
+            validarMatriculaUnica(matricula);
+        }
+    });
+}
+
+/**
+ * Valida si una matrícula es única
+ */
+async function validarMatriculaUnica(matricula) {
+    const inputMatricula = document.getElementById('matricula');
+    const idAeronave = document.getElementById('id_aeronave') ? document.getElementById('id_aeronave').value : null;
+    
+    try {
+        // Preparar datos para la validación
+        const formData = new FormData();
+        formData.append('matricula', matricula);
+        if (idAeronave) {
+            formData.append('id_aeronave', idAeronave);
+        }
+
+        const response = await fetch('validar_matricula.php', {
+            method: 'POST',
+            body: formData
+        });
+
+        const data = await response.json();
+
+        if (!data.disponible) {
+            // Matrícula no disponible
+            inputMatricula.classList.add('is-invalid');
+            inputMatricula.classList.remove('is-valid');
+            
+            // Mostrar mensaje de error
+            let feedbackElement = inputMatricula.nextElementSibling;
+            if (!feedbackElement || !feedbackElement.classList.contains('invalid-feedback')) {
+                feedbackElement = document.createElement('div');
+                feedbackElement.className = 'invalid-feedback';
+                inputMatricula.parentNode.appendChild(feedbackElement);
+            }
+            feedbackElement.textContent = data.mensaje;
+            
+        } else {
+            // Matrícula disponible
+            inputMatricula.classList.remove('is-invalid');
+            inputMatricula.classList.add('is-valid');
+            
+            // Limpiar mensaje de error
+            const feedbackElement = inputMatricula.nextElementSibling;
+            if (feedbackElement && feedbackElement.classList.contains('invalid-feedback')) {
+                feedbackElement.textContent = '';
+            }
+        }
+    } catch (error) {
+        console.error('Error en validación de matrícula:', error);
+        // En caso de error, no mostramos validación
+        limpiarValidacionMatricula();
+    }
+}
+
+/**
+ * Limpia los estilos de validación
+ */
+function limpiarValidacionMatricula() {
+    const inputMatricula = document.getElementById('matricula');
+    if (inputMatricula) {
+        inputMatricula.classList.remove('is-invalid');
+        inputMatricula.classList.remove('is-valid');
+        
+        const feedbackElement = inputMatricula.nextElementSibling;
+        if (feedbackElement && feedbackElement.classList.contains('invalid-feedback')) {
+            feedbackElement.textContent = '';
+        }
     }
 }
 

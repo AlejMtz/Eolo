@@ -64,7 +64,7 @@ public function generarWalkaround($id) {
     
     try {
         // Obtener datos del walkaround
-        $sql = "SELECT w.*, a.Matricula, a.Equipo, a.Procedencia, a.Tipo 
+        $sql = "SELECT w.*, a.Matricula, a.Equipo, a.Tipo 
                 FROM walkaround w 
                 LEFT JOIN aeronave a ON w.Id_Aeronave = a.Id_Aeronave 
                 WHERE w.Id_Walk = ?";
@@ -86,11 +86,8 @@ public function generarWalkaround($id) {
         
         // Segunda página: Diagrama
         $this->generarDiagrama($walkaround['Tipo']);
-        
-         // Tercera página: Observaciones y Firmas
-            $this->pdf->AddPage();
-            $this->generarObservacionesWalkaroundPDF($walkaround);
-            $this->generarFirmasWalkaroundPDF($walkaround);
+        $this->generarObservacionesWalkaroundPDF($walkaround);
+        $this->generarFirmasWalkaroundPDF($walkaround);
         
         $this->pdf->Output('walkaround_' . $id . '.pdf', 'I');
         return true;
@@ -115,17 +112,24 @@ public function generarWalkaround($id) {
         $this->pdf->SetFont('helvetica', 'B', 14);
         $this->pdf->SetY(12);
         $this->pdf->Cell(0, 10, 'ENTREGA DE TURNO, OFICINA DE DESPACHO', 0, 1, 'C');
-        
+
+        if (!$segundaPagina) {
+            $this->pdf->SetTextColor(255, 0, 0);
+            $this->pdf->SetY(5);
+            $this->pdf->SetX(150);
+            $this->pdf->SetFont('helvetica', 'B', 12);
+            $this->pdf->Cell(0, 6, 'ID DEL REPORTE: ' . $entrega['Id_EntregaTurno'], 0, 1);
+            $this->pdf->Ln(6);
+        }
+
+        $this->pdf->SetTextColor(0, 0, 0); // Negro
+
         // Información de fecha y nombre
         $this->pdf->SetFont('helvetica', '', 10);
+        $this->pdf->SetY(25);
         $fecha_formateada = date('d/m/Y', strtotime($entrega['Fecha']));
         $this->pdf->Cell(0, 6, 'FECHA: ' . $fecha_formateada . '    NOMBRE: ' . $entrega['Nombre'], 0, 1);
         
-        if (!$segundaPagina) {
-            $this->pdf->SetFont('helvetica', 'B', 10);
-            $this->pdf->Cell(0, 6, 'ID DEL REPORTE: ' . $entrega['Id_EntregaTurno'], 0, 1);
-            $this->pdf->Ln(5);
-        }
     }
     
     /**
@@ -142,10 +146,23 @@ public function generarWalkaround($id) {
         $this->pdf->SetFont('helvetica', 'B', 16);
         $this->pdf->SetY(12);
         $this->pdf->Cell(0, 10, 'E O L O', 0, 1, 'C');
+
+        $this->pdf->SetFont('helvetica', 'B', 12);
+        $this->pdf->SetY(5);
+        $this->pdf->SetX(150);
+        $this->pdf->SetTextColor(255, 0, 0); // Rojo
+        $this->pdf->Cell(0, 6, 'ID DEL REPORTE: ' . $walkaround['Id_Walk'], 0, 1);
+
+        $this->pdf->SetTextColor(0, 0, 0); // Negro
+
+        // Título centrado
+        $this->pdf->SetFont('helvetica', 'B', 14);
+        $this->pdf->SetY(25);
+        $this->pdf->Cell(0, 10, 'Reporte de Inspección de Aeronave. Walk Around (Llegada/Salida)', 0, 1, 'C');
         
         // Tabla de información
         $this->pdf->SetFont('helvetica', '', 10);
-        $this->pdf->SetY(25);
+        $this->pdf->SetY(35);
         
         // Cabecera de la tabla
         $this->pdf->SetFillColor(240, 240, 240);
@@ -155,7 +172,6 @@ public function generarWalkaround($id) {
         $this->pdf->Cell(40, 8, 'Matrícula', 1, 0, 'C', true);
         $this->pdf->Cell(50, 8, 'Procedencia', 1, 1, 'C', true);
         
-        // CORRECCIÓN: Campo FechaHora es DateTime
     $fecha = 'No especificada';
     $hora = 'No especificada';
     
@@ -182,10 +198,6 @@ public function generarWalkaround($id) {
         $this->pdf->Cell(40, 10, isset($walkaround['Matricula']) ? $walkaround['Matricula'] : 'No especificada', 1, 0, 'C');
         $this->pdf->Cell(50, 10, isset($walkaround['Procedencia']) ? $walkaround['Procedencia'] : 'No especificada', 1, 1, 'C');
         
-        $this->pdf->Ln(8);
-        $this->pdf->SetFont('helvetica', 'B', 10);
-        $this->pdf->Cell(0, 6, 'ID DEL REPORTE: ' . $walkaround['Id_Walk'], 0, 1);
-        $this->pdf->Ln(5);
     }
     
     /**
@@ -460,7 +472,7 @@ private function generarComponentesWalkaroundPDF($componentes, $tipoAeronave) {
         $observaciones = $componenteGuardado ? $componenteGuardado['Observaciones'] : '';
         
         // ALTURA FIJA PARA TODAS LAS FILAS
-        $alturaFila = 8;
+        $alturaFila = 9;
         
         // Guardar posición Y inicial
         $yInicial = $this->pdf->GetY();
