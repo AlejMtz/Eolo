@@ -6,6 +6,7 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="../css/style.css">
+    <script src="../Login/auth_check.js"></script>
     <title>Entregas de Turno</title>
 </head>
 <body>
@@ -33,6 +34,13 @@
                 </ul>
             </div>
         </div>
+
+              <div class="navbar-nav ms-auto">
+        <span class="navbar-text text-light me-3" id="userInfo"></span>
+        <button class="btn btn-outline-light btn-sm" onclick="cerrarSesion()">
+            <i class="fas fa-sign-out-alt me-1"></i>Cerrar Sesión
+        </button>
+    </div>
     </nav>
 
     <div class="container container-form">

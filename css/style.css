@@ -1,279 +1,943 @@
-        :root {
-            --primary-color: #2c3e50;
-            --secondary-color: #3498db;
-            --accent-color: #e74c3c;
-            --light-color: #ecf0f1;
-            --success-color: #27ae60;
-        }
-        
-        body {
-            background-color: #f8f9fa;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
-        
-        .navbar-custom {
-            background-color: var(--primary-color);
-        }
-        
-        .container-form {
-            background-color: white;
-            border-radius: 10px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-            padding: 25px;
-            margin-top: 30px;
-        }
-        
-        .form-title {
-            color: var(--primary-color);
-            border-bottom: 2px solid var(--secondary-color);
-            padding-bottom: 10px;
-            margin-bottom: 25px;
-        }
-        
-        .btn-primary {
-            background-color: var(--secondary-color);
-            border: none;
-            padding: 10px 20px;
-        }
-        
-        .btn-primary:hover {
-            background-color: #2980b9;
-        }
-        
-        .component-section {
-            margin-bottom: 30px;
-        }
-        
-        .section-title {
-            background-color: var(--light-color);
-            padding: 10px 15px;
-            border-radius: 5px;
-            margin-bottom: 15px;
-            font-weight: 600;
-        }
-        
-        .component-card {
-            border: 1px solid #dee2e6;
-            border-radius: 8px;
-            padding: 15px;
-            margin-bottom: 15px;
-            transition: all 0.3s;
-        }
-        
-        .component-card:hover {
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-        }
-        
-        .component-card h5 {
-            margin-bottom: 10px;
-            color: var(--primary-color);
-        }
-        
-        .form-check-input:checked {
-            background-color: var(--secondary-color);
-            border-color: var(--secondary-color);
-        }
-        
-        .damage-options {
-            display: none;
-            margin-top: 10px;
-            padding: 10px;
-            background-color: #f8f9fa;
-            border-radius: 5px;
-        }
-        
-        .component-image {
-            width: 100%;
-            height: 120px;
-            object-fit: cover;
-            border-radius: 5px;
-            margin-bottom: 10px;
-        }
-        
-        .status-badge {
-            font-size: 0.85rem;
-            padding: 5px 10px;
-            border-radius: 20px;
-        }
+:root {
+    --primary-color: #2c3e50;
+    --secondary-color: #3498db;
+    --accent-color: #e74c3c;
+    --light-color: #ecf0f1;
+    --success-color: #27ae60;
+}
 
-                /* Estilos para el contenedor de la cuadrícula de componentes */
-        .component-grid {
-            display: flex; /* Habilitar Flexbox */
-            flex-wrap: wrap; /* Permite que los elementos pasen a la siguiente línea si no caben */
-            gap: 20px; /* Espacio entre las "tarjetas" de componentes */
-            justify-content: center; /* Centrar las tarjetas dentro del contenedor */
-        }
+body {
+    background-color: #f8f9fa;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
 
-        /* Estilos para cada tarjeta de componente */
-        .component-card {
-            /* Establece un ancho mínimo y permite que la tarjeta crezca y se encoja */
-            flex: 1 1 300px; 
-            max-width: 400px; /* Limita el ancho máximo para evitar que las tarjetas sean demasiado grandes */
-            padding: 20px;
-            border: 1px solid #e0e0e0;
-            border-radius: 8px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-            background-color: #fff;
-            transition: all 0.3s ease;
-        }
+.navbar-custom {
+    background-color: var(--primary-color);
+}
 
-        /* Agrega un efecto al pasar el cursor sobre las tarjetas */
-        .component-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 6px 12px rgba(0,0,0,0.15);
-        }
+.container-form {
+    background-color: white;
+    border-radius: 10px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    padding: 25px;
+    margin-top: 30px;
+}
 
-        /* Estilos para los títulos de sección */
-        .component-section .section-title {
-            font-size: 1.5rem;
-            font-weight: 600;
-            color: #495057;
-            border-bottom: 2px solid #007bff;
-            padding-bottom: 5px;
-            margin-bottom: 20px;
-            margin-top: 30px;
-        }
+.form-title {
+    color: var(--primary-color);
+    border-bottom: 2px solid var(--secondary-color);
+    padding-bottom: 10px;
+    margin-bottom: 25px;
+}
 
-        /* Estilos para las tarjetas de componente seleccionadas (cuando se elige una opción) */
-        .component-card.estado-seleccionado {
-            border-color: #007bff; /* Borde azul para indicar selección */
-        }
+.btn-primary {
+    background-color: var(--secondary-color);
+    border: none;
+    padding: 10px 20px;
+}
 
-        /* Estilos para el estado "Con daño" */
-        .component-card.estado-seleccionado input[value="2"]:checked ~ .damage-options {
-            display: block;
-        }
+.btn-primary:hover {
+    background-color: #2980b9;
+}
 
-        .damage-options {
-            /* Estilos para la sección de observaciones y evidencia */
-            border-top: 1px dashed #ccc;
-            padding-top: 15px;
-            margin-top: 15px;
-        }
+.component-section {
+    margin-bottom: 30px;
+}
 
-        /* Estilos específicos para este formulario */
-        .equipment-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-bottom: 20px;
-        }
-        
-        .equipment-table th, .equipment-table td {
-            padding: 10px;
-            text-align: left;
-            border-bottom: 1px solid #ddd;
-        }
-        
-        .equipment-table th {
-            background-color: var(--light-color);
-            font-weight: 600;
-        }
-        
-        .checkbox-group {
-            display: flex;
-            gap: 15px;
-        }
-        
-        .form-section {
-            margin-bottom: 30px;
-            padding: 15px;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-        }
-        
-        .signature-area {
-            border-top: 2px solid var(--primary-color);
-            padding-top: 20px;
-            margin-top: 30px;
-        }
-        
-        /* Animaciones para los modales */
-        .modal.fade .modal-dialog {
-            transform: translate(0, -50px);
-            transition: transform 0.3s ease-out;
-        }
+.section-title {
+    background-color: var(--light-color);
+    padding: 10px 15px;
+    border-radius: 5px;
+    margin-bottom: 15px;
+    font-weight: 600;
+}
 
-        .modal.show .modal-dialog {
-            transform: translate(0, 0);
-        }
+.component-card {
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    padding: 15px;
+    margin-bottom: 15px;
+    transition: all 0.3s;
+}
 
-        /* Iconos más grandes en modales */
-        .modal-header .fas {
-            font-size: 1.2em;
-        }
+.component-card:hover {
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
 
-        /* Efecto hover en botones de modales */
-        .modal-footer .btn:hover {
-            transform: translateY(-1px);
-            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
-        }
+.component-card h5 {
+    margin-bottom: 10px;
+    color: var(--primary-color);
+}
 
-        .component-card {
-            border: 1px solid #dee2e6;
-            border-radius: 8px;
-            padding: 15px;
-            margin-bottom: 15px;
-            background: #fff;
-        }
-        .estado-ok { border-left: 4px solid #28a745; }
-        .estado-damage { border-left: 4px solid #dc3545; }
-        .evidence-gallery {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-            gap: 15px;
-            margin-top: 20px;
-        }
-        .evidence-item {
-            position: relative;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            overflow: hidden;
-        }
-        .evidence-item img, .evidence-item video {
-            width: 100%;
-            height: 150px;
-            object-fit: cover;
-        }
-        .evidence-info {
-            padding: 10px;
-            background: #f8f9fa;
-        }
+.form-check-input:checked {
+    background-color: var(--secondary-color);
+    border-color: var(--secondary-color);
+}
 
-        .btn-group-vertical .btn {
-            width: 80px;
-            text-align: center;
-            padding: 0.25rem 0.5rem;
-            font-size: 0.75rem;
-        }
+.damage-options {
+    display: none;
+    margin-top: 10px;
+    padding: 10px;
+    background-color: #f8f9fa;
+    border-radius: 5px;
+}
 
-        .btn-group-vertical .btn i {
-            display: block;
-            margin-bottom: 2px;
-        }
+.component-image {
+    width: 100%;
+    height: 120px;
+    object-fit: cover;
+    border-radius: 5px;
+    margin-bottom: 10px;
+}
 
-        * Estilos para validación de Bootstrap */
-        .is-valid {
-            border-color: #28a745 !important;
-            padding-right: calc(1.5em + 0.75rem);
-            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' width='8' height='8' viewBox='0 0 8 8'%3e%3cpath fill='%2328a745' d='M2.3 6.73L.6 4.53c-.4-1.04.46-1.4 1.1-.8l1.1 1.4 3.4-3.8c.6-.63 1.6-.27 1.2.7l-4 4.6c-.43.5-.8.4-1.1.1z'/%3e%3c/svg%3e");
-            background-repeat: no-repeat;
-            background-position: right calc(0.375em + 0.1875rem) center;
-            background-size: calc(0.75em + 0.375rem) calc(0.75em + 0.375rem);
-        }
+.status-badge {
+    font-size: 0.85rem;
+    padding: 5px 10px;
+    border-radius: 20px;
+}
 
-        .is-invalid {
-            border-color: #dc3545 !important;
-            padding-right: calc(1.5em + 0.75rem);
-            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='none' stroke='%23dc3545' viewBox='0 0 12 12'%3e%3ccircle cx='6' cy='6' r='4.5'/%3e%3cpath d='M5.8 3.6h.4L6 6.5z'/%3e%3ccircle cx='6' cy='8.2' r='.6' fill='%23dc3545' stroke='none'/%3e%3c/svg%3e");
-            background-repeat: no-repeat;
-            background-position: right calc(0.375em + 0.1875rem) center;
-            background-size: calc(0.75em + 0.375rem) calc(0.75em + 0.375rem);
-        }
+/* Estilos para el contenedor de la cuadrícula de componentes */
+.component-grid {
+    display: flex; /* Habilitar Flexbox */
+    flex-wrap: wrap; /* Permite que los elementos pasen a la siguiente línea si no caben */
+    gap: 20px; /* Espacio entre las "tarjetas" de componentes */
+    justify-content: center; /* Centrar las tarjetas dentro del contenedor */
+}
 
-        .invalid-feedback {
-            display: block;
-            width: 100%;
-            margin-top: 0.25rem;
-            font-size: 0.875em;
-            color: #dc3545;
-        }
+/* Estilos para cada tarjeta de componente */
+.component-card {
+    /* Establece un ancho mínimo y permite que la tarjeta crezca y se encoja */
+    flex: 1 1 300px; 
+    max-width: 400px; /* Limita el ancho máximo para evitar que las tarjetas sean demasiado grandes */
+    padding: 20px;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    background-color: #fff;
+    transition: all 0.3s ease;
+}
+
+/* Agrega un efecto al pasar el cursor sobre las tarjetas */
+.component-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+}
+
+/* Estilos para los títulos de sección */
+.component-section .section-title {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: #495057;
+    border-bottom: 2px solid #007bff;
+    padding-bottom: 5px;
+    margin-bottom: 20px;
+    margin-top: 30px;
+}
+
+/* Estilos para las tarjetas de componente seleccionadas (cuando se elige una opción) */
+.component-card.estado-seleccionado {
+    border-color: #007bff; /* Borde azul para indicar selección */
+}
+
+/* Estilos para el estado "Con daño" */
+.component-card.estado-seleccionado input[value="2"]:checked ~ .damage-options {
+    display: block;
+}
+
+.damage-options {
+    /* Estilos para la sección de observaciones y evidencia */
+    border-top: 1px dashed #ccc;
+    padding-top: 15px;
+    margin-top: 15px;
+}
+
+/* Estilos específicos para este formulario */
+.equipment-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 20px;
+}
+
+.equipment-table th, .equipment-table td {
+    padding: 10px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+}
+
+.equipment-table th {
+    background-color: var(--light-color);
+    font-weight: 600;
+}
+
+.checkbox-group {
+    display: flex;
+    gap: 15px;
+}
+
+.form-section {
+    margin-bottom: 30px;
+    padding: 15px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+}
+
+.signature-area {
+    border-top: 2px solid var(--primary-color);
+    padding-top: 20px;
+    margin-top: 30px;
+}
+
+/* Estilos para el formato de tabla de componentes */
+.section-container {
+    border: 2px solid #dee2e6;
+    border-radius: 0.5rem;
+    padding: 1rem;
+}
+
+.section-header {
+    border-radius: 0.375rem;
+}
+
+.component-table {
+    font-size: 0.875rem;
+    margin-bottom: 0;
+}
+
+.component-table th {
+    font-weight: 600;
+    text-align: center;
+    vertical-align: middle;
+    padding: 0.5rem;
+}
+
+.component-table td {
+    vertical-align: middle;
+    padding: 0.5rem;
+}
+
+.component-name {
+    font-weight: 500;
+}
+
+.damage-checkbox {
+    transform: scale(1.2);
+}
+
+.has-damage {
+    background-color: #fff3cd !important;
+}
+
+.component-options {
+    display: table-row;
+}
+
+.table-warning {
+    background-color: #fff3cd;
+}
+
+/* Estilos responsivos */
+@media (max-width: 768px) {
+    .component-table {
+        font-size: 0.75rem;
+    }
+    
+    .component-table th,
+    .component-table td {
+        padding: 0.25rem;
+    }
+    
+    .damage-checkbox {
+        transform: scale(1);
+    }
+}
+
+/* Mejora visual para las tablas */
+.table-responsive {
+    border-radius: 0.375rem;
+    overflow: hidden;
+}
+
+.component-table thead th {
+    border-bottom: 2px solid #dee2e6;
+}
+
+/* Animaciones para los modales */
+.modal.fade .modal-dialog {
+    transform: translate(0, -50px);
+    transition: transform 0.3s ease-out;
+}
+
+.modal.show .modal-dialog {
+    transform: translate(0, 0);
+}
+
+/* Iconos más grandes en modales */
+.modal-header .fas {
+    font-size: 1.2em;
+}
+
+/* Efecto hover en botones de modales */
+.modal-footer .btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+}
+
+.component-card {
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    padding: 15px;
+    margin-bottom: 15px;
+    background: #fff;
+}
+.estado-ok { border-left: 4px solid #28a745; }
+.estado-damage { border-left: 4px solid #dc3545; }
+.evidence-gallery {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 15px;
+    margin-top: 20px;
+}
+.evidence-item {
+    position: relative;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    overflow: hidden;
+}
+.evidence-item img, .evidence-item video {
+    width: 100%;
+    height: 150px;
+    object-fit: cover;
+}
+.evidence-info {
+    padding: 10px;
+    background: #f8f9fa;
+}
+
+.btn-group-vertical .btn {
+    width: 80px;
+    text-align: center;
+    padding: 0.25rem 0.5rem;
+    font-size: 0.75rem;
+}
+
+.btn-group-vertical .btn i {
+    display: block;
+    margin-bottom: 2px;
+}
+
+/* Estilos para validación de Bootstrap */
+.is-valid {
+    border-color: #28a745 !important;
+    padding-right: calc(1.5em + 0.75rem);
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' width='8' height='8' viewBox='0 0 8 8'%3e%3cpath fill='%2328a745' d='M2.3 6.73L.6 4.53c-.4-1.04.46-1.4 1.1-.8l1.1 1.4 3.4-3.8c.6-.63 1.6-.27 1.2.7l-4 4.6c-.43.5-.8.4-1.1.1z'/%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right calc(0.375em + 0.1875rem) center;
+    background-size: calc(0.75em + 0.375rem) calc(0.75em + 0.375rem);
+}
+
+.is-invalid {
+    border-color: #dc3545 !important;
+    padding-right: calc(1.5em + 0.75rem);
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='none' stroke='%23dc3545' viewBox='0 0 12 12'%3e%3ccircle cx='6' cy='6' r='4.5'/%3e%3cpath d='M5.8 3.6h.4L6 6.5z'/%3e%3ccircle cx='6' cy='8.2' r='.6' fill='%23dc3545' stroke='none'/%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right calc(0.375em + 0.1875rem) center;
+    background-size: calc(0.75em + 0.375rem) calc(0.75em + 0.375rem);
+}
+
+.invalid-feedback {
+    display: block;
+    width: 100%;
+    margin-top: 0.25rem;
+    font-size: 0.875em;
+    color: #dc3545;
+}
+
+/* Estilos para el login */
+.login-container {
+    min-height: 100vh;
+    background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.login-card {
+    background: white;
+    border-radius: 15px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+    padding: 40px;
+    width: 100%;
+    max-width: 400px;
+}
+
+.login-logo {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.login-logo i {
+    font-size: 3rem;
+    color: var(--secondary-color);
+    margin-bottom: 15px;
+}
+
+.login-title {
+    color: var(--primary-color);
+    text-align: center;
+    margin-bottom: 30px;
+    font-weight: 600;
+}
+
+.form-floating {
+    margin-bottom: 20px;
+}
+
+.btn-login {
+    background-color: var(--secondary-color);
+    border: none;
+    padding: 12px;
+    font-weight: 600;
+    width: 100%;
+}
+
+.btn-login:hover {
+    background-color: #2980b9;
+}
+
+/* Estilos para el sistema de permisos */
+.permiso-badge {
+    margin-top: 10px;
+}
+
+.btn-crear, .btn-editar, .btn-eliminar {
+    transition: all 0.3s ease;
+}
+
+.btn-crear:disabled, .btn-editar:disabled, .btn-eliminar:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.mosaic-card[data-modulo] {
+    position: relative;
+}
+
+.mosaic-card .badge {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    font-size: 0.7rem;
+}
+
+/* Indicadores visuales de permisos */
+.sin-permisos {
+    opacity: 0.6;
+    pointer-events: none;
+}
+
+.con-permisos {
+    border-left: 4px solid var(--success-color);
+}
+
+.sin-acceso {
+    background-color: #f8f9fa;
+    border: 2px dashed #dee2e6;
+}
+
+/* Estilos para el header fijo GLOBAL de la tabla */
+.components-main-container {
+    position: relative;
+    max-height: 70vh;
+    overflow-y: auto;
+    border: 1px solid #dee2e6;
+    border-radius: 0.375rem;
+}
+
+/* Header fijo global que se mantiene siempre visible */
+.global-table-header {
+    position: sticky;
+    top: 0;
+    background: #f8f9fa;
+    z-index: 100;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    margin-bottom: 0;
+}
+
+.global-table-header table {
+    margin-bottom: 0;
+    width: 100%;
+}
+
+.global-table-header th {
+    white-space: nowrap;
+    font-size: 0.75rem;
+    padding: 10px 4px;
+    text-align: center;
+    vertical-align: middle;
+    background: #f8f9fa;
+    font-weight: 600;
+    border-bottom: 2px solid #dee2e6;
+}
+
+/* Contenedor del contenido desplazable */
+.components-content {
+    padding-top: 0;
+}
+
+/* Mejorar la visualización de las tablas de componentes */
+.component-table {
+    margin-bottom: 0;
+}
+
+.component-table th {
+    white-space: nowrap;
+    font-size: 0.8rem;
+    padding: 8px 4px;
+    text-align: center;
+    vertical-align: middle;
+    background: #e9ecef;
+}
+
+.component-table td {
+    font-size: 0.85rem;
+    padding: 8px 4px;
+    vertical-align: middle;
+}
+
+.component-name {
+    font-weight: 500;
+}
+
+.section-container {
+    margin-bottom: 2rem;
+    border: 1px solid #dee2e6;
+    border-radius: 0.375rem;
+    overflow: hidden;
+}
+
+.section-header {
+    background: #343a40;
+    border-radius: 0;
+    padding: 10px 15px;
+}
+
+.section-header h5 {
+    margin: 0;
+    color: white;
+    font-weight: 600;
+}
+
+/* Estilos para checkboxes */
+.damage-checkbox {
+    transform: scale(1.2);
+}
+
+/* Resaltar filas con daños */
+.has-damage {
+    background-color: #fff3cd !important;
+}
+
+/* Estilos para evidencias */
+.evidence-item {
+    display: inline-flex;
+    align-items: center;
+    background: #f8f9fa;
+    padding: 8px 12px;
+    margin: 5px;
+    border-radius: 5px;
+    border: 1px solid #dee2e6;
+}
+
+.evidence-preview {
+    width: 50px;
+    height: 50px;
+    object-fit: cover;
+    border-radius: 3px;
+    margin-right: 10px;
+}
+
+.file-name {
+    font-size: 0.85rem;
+    margin-right: 10px;
+    max-width: 200px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.remove-evidence {
+    padding: 2px 6px;
+}
+
+/* Mejorar la legibilidad de las tablas */
+.table-hover tbody tr:hover {
+    background-color: rgba(0,0,0,.075);
+}
+
+/* Asegurar que el contenedor principal tenga buen espaciado */
+.container-form {
+    padding-bottom: 2rem;
+}
+
+/* ===== ESTILOS MEJORADOS PARA MODALES ===== */
+
+/* Modal de Éxito - Estilo Personalizado */
+#successModal .modal-content {
+    border: none;
+    border-radius: 15px;
+    box-shadow: 0 10px 30px rgba(39, 174, 96, 0.3);
+    overflow: hidden;
+    position: relative;
+}
+
+#successModal .modal-content::after {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: linear-gradient(45deg, 
+        transparent, 
+        rgba(255,255,255,0.1), 
+        transparent);
+    transform: rotate(45deg);
+    animation: shine 3s ease-in-out infinite;
+    pointer-events: none;
+}
+
+#successModal .modal-header {
+    background: linear-gradient(135deg, var(--success-color) 0%, #2ecc71 100%);
+    border-bottom: none;
+    padding: 25px 30px 20px;
+    position: relative;
+}
+
+#successModal .modal-header::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, 
+        rgba(255,255,255,0.8) 0%, 
+        rgba(255,255,255,0.4) 50%, 
+        rgba(255,255,255,0.8) 100%);
+}
+
+#successModal .modal-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    text-align: center;
+    width: 100%;
+    color: white;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+#successModal .modal-title i {
+    font-size: 1.8rem;
+    margin-right: 10px;
+    animation: bounce 0.6s ease-in-out;
+}
+
+#successModal .modal-body {
+    padding: 30px;
+    text-align: center;
+    background: #f8f9fa;
+    position: relative;
+}
+
+#successModal .modal-body::before {
+    content: '🎉';
+    font-size: 4rem;
+    display: block;
+    margin-bottom: 15px;
+    animation: celebrate 2s ease-in-out infinite;
+}
+
+#successModalBody {
+    font-size: 1.1rem;
+    font-weight: 500;
+    color: var(--primary-color);
+    line-height: 1.6;
+    padding: 0 20px;
+}
+
+#successModal .modal-footer {
+    border-top: 1px solid #e9ecef;
+    padding: 20px 30px;
+    background: white;
+    justify-content: center;
+}
+
+#successModal .btn-success {
+    background: linear-gradient(135deg, var(--success-color) 0%, #2ecc71 100%);
+    border: none;
+    border-radius: 25px;
+    padding: 12px 35px;
+    font-weight: 600;
+    font-size: 1rem;
+    box-shadow: 0 4px 15px rgba(39, 174, 96, 0.3);
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+#successModal .btn-success::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, 
+        transparent, 
+        rgba(255,255,255,0.3), 
+        transparent);
+    transition: left 0.5s;
+}
+
+#successModal .btn-success:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(39, 174, 96, 0.4);
+}
+
+#successModal .btn-success:hover::before {
+    left: 100%;
+}
+
+#successModal .btn-close {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    z-index: 10;
+    background: rgba(255,255,255,0.2);
+    border-radius: 50%;
+    padding: 5px;
+    backdrop-filter: blur(10px);
+}
+
+#successModal .btn-close:hover {
+    background: rgba(255,255,255,0.3);
+}
+
+/* Modal de Error - Estilo Coherente */
+#errorModal .modal-content {
+    border: none;
+    border-radius: 15px;
+    box-shadow: 0 10px 30px rgba(231, 76, 60, 0.3);
+    overflow: hidden;
+}
+
+#errorModal .modal-header {
+    background: linear-gradient(135deg, var(--accent-color) 0%, #c0392b 100%);
+    border-bottom: none;
+    padding: 25px 30px 20px;
+}
+
+#errorModal .modal-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    text-align: center;
+    width: 100%;
+    color: white;
+}
+
+#errorModal .modal-body {
+    padding: 30px;
+    text-align: center;
+    background: #f8f9fa;
+    position: relative;
+}
+
+#errorModal .modal-body::before {
+    content: '⚠️';
+    font-size: 4rem;
+    display: block;
+    margin-bottom: 15px;
+}
+
+#errorModalBody {
+    font-size: 1.1rem;
+    font-weight: 500;
+    color: var(--primary-color);
+    line-height: 1.6;
+}
+
+#errorModal .modal-footer {
+    border-top: 1px solid #e9ecef;
+    padding: 20px 30px;
+    background: white;
+    justify-content: center;
+}
+
+#errorModal .btn-danger {
+    background: linear-gradient(135deg, var(--accent-color) 0%, #c0392b 100%);
+    border: none;
+    border-radius: 25px;
+    padding: 12px 35px;
+    font-weight: 600;
+}
+
+/* Modal de Confirmación - Estilo Coherente */
+#confirmModal .modal-content {
+    border: none;
+    border-radius: 15px;
+    box-shadow: 0 10px 30px rgba(243, 156, 18, 0.3);
+    overflow: hidden;
+}
+
+#confirmModal .modal-header {
+    background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%);
+    border-bottom: none;
+    padding: 25px 30px 20px;
+}
+
+#confirmModal .modal-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    text-align: center;
+    width: 100%;
+    color: white;
+}
+
+#confirmModal .modal-body {
+    padding: 30px;
+    text-align: center;
+    background: #f8f9fa;
+    position: relative;
+}
+
+#confirmModal .modal-body::before {
+    content: '❓';
+    font-size: 4rem;
+    display: block;
+    margin-bottom: 15px;
+}
+
+#confirmModalBody {
+    font-size: 1.1rem;
+    font-weight: 500;
+    color: var(--primary-color);
+    line-height: 1.6;
+}
+
+#confirmModal .modal-footer {
+    border-top: 1px solid #e9ecef;
+    padding: 20px 30px;
+    background: white;
+    gap: 10px;
+}
+
+#confirmModal .btn-warning {
+    background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%);
+    border: none;
+    border-radius: 25px;
+    padding: 10px 30px;
+    font-weight: 600;
+    color: white;
+}
+
+#confirmModal .btn-secondary {
+    background: linear-gradient(135deg, #95a5a6 0%, #7f8c8d 100%);
+    border: none;
+    border-radius: 25px;
+    padding: 10px 30px;
+    font-weight: 600;
+}
+
+/* Animaciones para el modal de éxito */
+@keyframes bounce {
+    0%, 20%, 60%, 100% {
+        transform: translateY(0);
+    }
+    40% {
+        transform: translateY(-10px);
+    }
+    80% {
+        transform: translateY(-5px);
+    }
+}
+
+@keyframes celebrate {
+    0%, 100% {
+        transform: scale(1) rotate(0deg);
+    }
+    25% {
+        transform: scale(1.1) rotate(5deg);
+    }
+    50% {
+        transform: scale(1.05) rotate(-5deg);
+    }
+    75% {
+        transform: scale(1.1) rotate(3deg);
+    }
+}
+
+@keyframes shine {
+    0% {
+        transform: translateX(-100%) translateY(-100%) rotate(45deg);
+    }
+    100% {
+        transform: translateX(100%) translateY(100%) rotate(45deg);
+    }
+}
+
+/* Efecto de confetti */
+.confetti-particle {
+    position: absolute;
+    pointer-events: none;
+    z-index: 1000;
+}
+
+@keyframes confettiFall {
+    0% {
+        transform: translateY(0) rotate(0deg);
+        opacity: 1;
+    }
+    100% {
+        transform: translateY(200px) rotate(360deg);
+        opacity: 0;
+    }
+}
+
+/* Efectos de transición mejorados para todos los modales */
+.modal.fade .modal-dialog {
+    transform: translateY(-50px) scale(0.95);
+    opacity: 0;
+    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.modal.show .modal-dialog {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+}
+
+/* Responsive para modales */
+@media (max-width: 576px) {
+    #successModal .modal-dialog,
+    #errorModal .modal-dialog,
+    #confirmModal .modal-dialog {
+        margin: 20px;
+    }
+    
+    #successModal .modal-body,
+    #errorModal .modal-body,
+    #confirmModal .modal-body {
+        padding: 20px 15px;
+    }
+    
+    #successModalBody,
+    #errorModalBody,
+    #confirmModalBody {
+        font-size: 1rem;
+        padding: 0 10px;
+    }
+    
+    #successModal .modal-body::before,
+    #errorModal .modal-body::before,
+    #confirmModal .modal-body::before {
+        font-size: 3rem;
+    }
+}

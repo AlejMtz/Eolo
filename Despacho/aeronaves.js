@@ -8,7 +8,17 @@ document.addEventListener('DOMContentLoaded', () => {
     if (typeof bootstrap !== 'undefined') {
         successModal = new bootstrap.Modal(document.getElementById('successModal'));
         errorModal = new bootstrap.Modal(document.getElementById('errorModal'));
-        confirmModal = new bootstrap.Modal(document.getElementById('confirmModal'));
+        
+        // Solo inicializar confirmModal si existe
+        const confirmModalElement = document.getElementById('confirmModal');
+        if (confirmModalElement) {
+            confirmModal = new bootstrap.Modal(confirmModalElement);
+        }
+    }
+
+    // Verificar permisos antes de cargar contenido
+    if (!verificarPermisosAeronaves()) {
+        return;
     }
 
     // Detecta si el elemento de la tabla existe para saber en qué página estamos
@@ -18,50 +28,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Detecta si el elemento del formulario existe para saber en qué página estamos
     if (document.getElementById('aeronaveForm')) {
-        document.getElementById('aeronaveForm').addEventListener('submit', function(event) {
-            event.preventDefault();
-            const id_aeronave = document.getElementById('id_aeronave').value;
-            
-            if (!id_aeronave && window.location.search.includes('id=')) {
-                mostrarError('No se pudo cargar el ID de la aeronave. Recarga la página.');
-                return;
-            }
-            
-            const url = id_aeronave ? 'aeronaves_actualizar.php' : 'aeronaves_crear.php';
-            const formData = new FormData(this);
-
-            fetch(url, {
-                method: 'POST',
-                body: formData
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    const mensaje = id_aeronave ? 
-                        'Aeronave actualizada correctamente.' : 
-                        'Aeronave creada correctamente.';
-                    mostrarExito(mensaje, () => {
-                        window.location.href = 'ver_aeronaves.html';
-                    });
-                } else {
-                    mostrarError(data.error);
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                mostrarError('Ocurrió un error al conectar con el servidor.');
-            });
-        });
-
-        // Comprueba si hay un ID en la URL para cargar datos en el formulario de edición
-        const params = new URLSearchParams(window.location.search);
-        const id = params.get('id');
-        if (id) {
-            cargarAeronaveParaEditar(id);
-        }
+        configurarFormularioAeronave();
     }
     
-        configurarValidacionMatricula();
+    configurarValidacionMatricula();
 
     // Configurar evento para el botón de confirmación de eliminación
     const confirmBtn = document.getElementById('confirmActionBtn');
@@ -135,13 +105,84 @@ function mostrarConfirmacionEliminar(id) {
     }
 }
 
+/**
+ * Verifica permisos para el módulo de aeronaves
+ */
+function verificarPermisosAeronaves() {
+    if (!localStorage.getItem('usuario_logueado')) {
+        window.location.href = '../login.html';
+        return false;
+    }
+    
+    // Todos pueden ver aeronaves, pero solo admin puede gestionar
+    return true;
+}
+
+/**
+ * Configura el formulario de aeronave con validación de permisos
+ */
+function configurarFormularioAeronave() {
+    const formulario = document.getElementById('aeronaveForm');
+    const puedeGestionar = permisosSistema.puedeCrear('aeronaves');
+    
+    formulario.addEventListener('submit', function(event) {
+        event.preventDefault();
+        
+        // Verificar permisos antes de enviar
+        if (!puedeGestionar) {
+            mostrarErrorPermisos('No tienes permisos para gestionar aeronaves');
+            return;
+        }
+        
+        const id_aeronave = document.getElementById('id_aeronave').value;
+        
+        if (!id_aeronave && window.location.search.includes('id=')) {
+            mostrarError('No se pudo cargar el ID de la aeronave. Recarga la página.');
+            return;
+        }
+        
+        const url = id_aeronave ? 'aeronaves_actualizar.php' : 'aeronaves_crear.php';
+        const formData = new FormData(this);
+
+        fetch(url, {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                const mensaje = id_aeronave ? 
+                    'Aeronave actualizada correctamente.' : 
+                    'Aeronave creada correctamente.';
+                mostrarExito(mensaje, () => {
+                    window.location.href = 'ver_aeronaves.html';
+                });
+            } else {
+                mostrarError(data.error);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            mostrarError('Ocurrió un error al conectar con el servidor.');
+        });
+    });
+
+    // Comprueba si hay un ID en la URL para cargar datos en el formulario de edición
+    const params = new URLSearchParams(window.location.search);
+    const id = params.get('id');
+    if (id) {
+        cargarAeronaveParaEditar(id);
+    }
+}
 
 /**
  * Carga la lista de aeronaves y la muestra en la tabla.
  */
 async function cargarAeronaves() {
     const tablaBody = document.querySelector('#tablaAeronaves tbody');
-    tablaBody.innerHTML = '<tr><td colspan="7" class="text-center">Cargando...</td></tr>';
+    if (!tablaBody) return;
+
+    tablaBody.innerHTML = '<tr><td colspan="5" class="text-center">Cargando...</td></tr>';
 
     try {
         const response = await fetch('leer_aeronaves.php');
@@ -156,8 +197,11 @@ async function cargarAeronaves() {
 
         tablaBody.innerHTML = '';
         if (aeronaves.length === 0) {
-            tablaBody.innerHTML = '<tr><td colspan="7" class="text-center">No hay aeronaves registradas.</td></tr>';
+            tablaBody.innerHTML = '<tr><td colspan="5" class="text-center">No hay aeronaves registradas.</td></tr>';
         } else {
+            const puedeEditar = permisosSistema.puedeEditar('aeronaves');
+            const puedeEliminar = permisosSistema.puedeEliminar('aeronaves');
+            
             aeronaves.forEach(aeronave => {
                 const fila = document.createElement('tr');
                 fila.innerHTML = `
@@ -166,12 +210,24 @@ async function cargarAeronaves() {
                     <td>${aeronave.Tipo}</td>
                     <td>${aeronave.Equipo}</td>
                     <td>
-                        <a href="aeronave.html?id=${aeronave.Id_Aeronave}" class="btn btn-warning btn-sm">
+                        <!-- Botón Editar -->
+                        <a href="aeronave.html?id=${aeronave.Id_Aeronave}" 
+                           class="btn btn-warning btn-sm btn-editar"
+                           title="${puedeEditar ? 'Editar aeronave' : 'Se requieren permisos de administrador'}"
+                           style="${!puedeEditar ? 'opacity: 0.6; pointer-events: none;' : ''}">
                             <i class="fas fa-edit"></i>
                         </a>
-                        <button class="btn btn-danger btn-sm" onclick="eliminarAeronave(${aeronave.Id_Aeronave})">
+                        
+                        <!-- Botón Eliminar -->
+                        <button class="btn btn-danger btn-sm btn-eliminar"
+                                onclick="${puedeEliminar ? `eliminarAeronave(${aeronave.Id_Aeronave})` : 'mostrarErrorPermisos()'}" 
+                                title="${puedeEliminar ? 'Eliminar aeronave' : 'Se requieren permisos de administrador'}"
+                                style="${!puedeEliminar ? 'opacity: 0.6;' : ''}">
                             <i class="fas fa-trash-alt"></i>
                         </button>
+                        
+                        <!-- Indicador visual de permisos -->
+                        ${!puedeEditar ? '<span class="badge bg-secondary ms-1" title="Solo administradores pueden gestionar">🔒</span>' : ''}
                     </td>
                 `;
                 tablaBody.appendChild(fila);
@@ -179,8 +235,45 @@ async function cargarAeronaves() {
         }
     } catch (error) {
         console.error('Error al cargar aeronaves:', error);
-        tablaBody.innerHTML = `<tr><td colspan="7" class="text-center text-danger">Error al cargar los datos. Por favor, revisa la conexión.</td></tr>`;
+        tablaBody.innerHTML = `<tr><td colspan="5" class="text-center text-danger">Error al cargar los datos.</td></tr>`;
     }
+}
+
+/**
+ * Muestra error de permisos específico para aeronaves
+ */
+function mostrarErrorPermisos(mensaje = 'No tienes permisos para realizar esta acción') {
+    // Buscar modal existente o crear uno
+    let modalElement = document.getElementById('permisosModal');
+    
+    if (!modalElement) {
+        const modalHTML = `
+            <div class="modal fade" id="permisosModal" tabindex="-1">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content">
+                        <div class="modal-header bg-warning text-dark">
+                            <h5 class="modal-title">
+                                <i class="fas fa-ban me-2"></i>Permisos Insuficientes
+                            </h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body">
+                            <p>${mensaje}</p>
+                            <p class="text-muted">Solo los usuarios administradores pueden gestionar aeronaves.</p>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-warning" data-bs-dismiss="modal">Entendido</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+        document.body.insertAdjacentHTML('beforeend', modalHTML);
+        modalElement = document.getElementById('permisosModal');
+    }
+
+    const modal = new bootstrap.Modal(modalElement);
+    modal.show();
 }
 
 /**
@@ -220,8 +313,6 @@ async function cargarAeronaveParaEditar(id) {
         document.getElementById('matricula').value = aeronave.Matricula || '';
         document.getElementById('tipo').value = aeronave.Tipo || '';
         document.getElementById('equipo').value = aeronave.Equipo || '';
-        document.getElementById('procedencia').value = aeronave.Procedencia || '';
-        document.getElementById('destino').value = aeronave.Destino || '';
 
         // Cambiar estilo del botón
         document.getElementById('btnGuardar').innerText = 'Actualizar Aeronave';
@@ -353,6 +444,12 @@ function limpiarValidacionMatricula() {
  * @param {string} id - El ID de la aeronave a eliminar.
  */
 function eliminarAeronave(id) {
+    // Verificar permisos antes de mostrar confirmación
+    if (!permisosSistema.puedeEliminar('aeronaves')) {
+        mostrarErrorPermisos();
+        return;
+    }
+    
     mostrarConfirmacionEliminar(id);
 }
 

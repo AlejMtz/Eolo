@@ -1,9 +1,13 @@
-// entrega_turno.js - CRUD completo para Entrega de Turno
-
 // Variables globales para los modales
 let successModal = null;
 let errorModal = null;
 let confirmModal = null;
+
+// Función para verificar permisos de edición/eliminación
+function tienePermisosAdmin() {
+    const tipoUsuario = localStorage.getItem('tipo_usuario');
+    return tipoUsuario === 'admin';
+}
 
 document.addEventListener('DOMContentLoaded', () => {
     // Inicializar modales de Bootstrap
@@ -404,13 +408,21 @@ function setRadioValue(name, value) {
 }
 
 /**
+ * Genera PDF de entrega de turno
+ */
+function generarPDFEntregaTurno(id) {
+    // Abrir en nueva pestaña
+    window.open(`pdf_generator.php?tipo=entrega_turno&id=${id}`, '_blank');
+}
+
+/**
  * Carga la lista de entregas en la tabla
  */
 async function cargarEntregasTurno() {
     const tablaBody = document.querySelector('#tablaTurnos tbody');
     if (!tablaBody) return;
 
-    tablaBody.innerHTML = '<tr><td colspan="8" class="text-center">Cargando...</td></tr>';
+    tablaBody.innerHTML = '<tr><td colspan="9" class="text-center">Cargando...</td></tr>';
 
     try {
         const response = await fetch('entrega_turno_leer.php');
@@ -427,48 +439,76 @@ async function cargarEntregasTurno() {
         tablaBody.innerHTML = '';
         
         if (entregas.length === 0) {
-            tablaBody.innerHTML = '<tr><td colspan="8" class="text-center">No hay entregas de turno registradas.</td></tr>';
+            tablaBody.innerHTML = '<tr><td colspan="9" class="text-center">No hay entregas de turno registradas.</td></tr>';
         } else {
-            // En la función cargarEntregasTurno(), modifica esta parte:
-entregas.forEach(entrega => {
-    const fila = document.createElement('tr');
-    fila.innerHTML = `
-        <td>${entrega.Id_EntregaTurno}</td>
-        <td>${formatearFecha(entrega.Fecha)}</td>
-        <td>${entrega.Nombre || 'N/A'}</td>
-        <td>${entrega.Total_Operaciones_Llegadas || 0}</td>
-        <td>${entrega.Total_Operaciones_Salidas || 0}</td>
-        <td>${entrega.Walk_Arounds || 0}</td>
-        <td>${entrega.Firma_Entrega || 'N/A'}</td>
-        <td>
-            <div class="btn-group btn-group-sm" role="group">
-                <a href="detalle_entrega_turno.html?id=${entrega.Id_EntregaTurno}" 
-                   class="btn btn-info" title="Ver Detalles">
-                    <i class="fas fa-eye"></i>
-                </a>
-                <!-- BOTÓN NUEVO PARA PDF -->
-                <a href="pdf_generator.php?tipo=entrega_turno&id=${entrega.Id_EntregaTurno}" 
-                   class="btn btn-danger" title="Generar PDF" target="_blank">
-                    <i class="fas fa-file-pdf"></i>
-                </a>
-                <a href="entrega_turno.html?id=${entrega.Id_EntregaTurno}" 
-                   class="btn btn-warning" title="Editar">
-                    <i class="fas fa-edit"></i>
-                </a>
-                <button class="btn btn-danger" 
-                        onclick="eliminarEntrega(${entrega.Id_EntregaTurno})" 
-                        title="Eliminar">
-                    <i class="fas fa-trash-alt"></i>
-                </button>
-            </div>
-        </td>
-    `;
-    tablaBody.appendChild(fila);
-});
+            const usuarioActual = permisosSistema.usuario.nombre;
+            
+            entregas.forEach(entrega => {
+                const fila = document.createElement('tr');
+                
+                // Determinar permisos para este registro específico
+                const puedeEditar = permisosSistema.puedeEditar('entregas_turno', entrega);
+                const puedeEliminar = permisosSistema.puedeEliminar('entregas_turno');
+                const esPropietario = entrega.Nombre === usuarioActual;
+                
+                fila.innerHTML = `
+                    <td>${entrega.Id_EntregaTurno}</td>
+                    <td>${formatearFecha(entrega.Fecha)}</td>
+                    <td>
+                        ${entrega.Nombre || 'N/A'}
+                        ${esPropietario ? '<span class="badge bg-primary ms-1">Tuyo</span>' : ''}
+                    </td>
+                    <td>${entrega.Total_Operaciones_Llegadas || 0}</td>
+                    <td>${entrega.Total_Operaciones_Salidas || 0}</td>
+                    <td>${entrega.Walk_Arounds || 0}</td>
+                    <td>${entrega.Firma_Entrega || 'N/A'}</td>
+                    <td>
+                        <div class="btn-group btn-group-sm" role="group">
+                            <!-- Botón Ver Detalles -->
+                            <a href="detalle_entrega_turno.html?id=${entrega.Id_EntregaTurno}" 
+                               class="btn btn-info" 
+                               title="Ver detalles completos">
+                                <i class="fas fa-eye"></i>
+                            </a>
+                            
+                            <!-- Botón Generar PDF -->
+                            <button class="btn btn-danger" 
+                                    onclick="generarPDFEntregaTurno(${entrega.Id_EntregaTurno})" 
+                                    title="Generar PDF">
+                                <i class="fas fa-file-pdf"></i>
+                            </button>
+                            
+                            <!-- Botón Editar -->
+                            <a href="entrega_turno.html?id=${entrega.Id_EntregaTurno}" 
+                               class="btn btn-warning btn-editar" 
+                               data-modulo="entregas_turno"
+                               title="${puedeEditar ? 'Editar entrega' : (esPropietario ? 'Solo puedes editar tus propias entregas' : 'No puedes editar entregas de otros usuarios')}"
+                               style="${!puedeEditar ? 'opacity: 0.6; pointer-events: none;' : ''}">
+                                <i class="fas fa-edit"></i>
+                            </a>
+                            
+                            <!-- Botón Eliminar -->
+                            <button class="btn btn-danger btn-eliminar" 
+                                    data-modulo="entregas_turno"
+                                    onclick="${puedeEliminar ? `eliminarEntrega(${entrega.Id_EntregaTurno})` : 'mostrarErrorPermisos()'}" 
+                                    title="${puedeEliminar ? 'Eliminar entrega' : 'Se requieren permisos de administrador'}"
+                                    style="${!puedeEliminar ? 'opacity: 0.6;' : ''}">
+                                <i class="fas fa-trash-alt"></i>
+                            </button>
+                        </div>
+                        
+                        <!-- Indicador visual de permisos -->
+                        ${!puedeEditar && !esPropietario ? 
+                            '<span class="badge bg-secondary ms-1" title="Solo el creador o administrador puede editar">🔒</span>' : 
+                            ''}
+                    </td>
+                `;
+                tablaBody.appendChild(fila);
+            });
         }
     } catch (error) {
         console.error('Error al cargar entregas:', error);
-        tablaBody.innerHTML = '<tr><td colspan="8" class="text-center text-danger">Error al cargar los datos.</td></tr>';
+        tablaBody.innerHTML = '<tr><td colspan="9" class="text-center text-danger">Error al cargar los datos.</td></tr>';
     }
 }
 

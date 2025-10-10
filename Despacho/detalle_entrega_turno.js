@@ -182,6 +182,13 @@ function cargarEquiposOficina(equipos) {
 }
 
 /**
+ * Genera PDF de la entrega de turno
+ */
+function generarPDF() {
+    window.open(`pdf_generator.php?tipo=entrega_turno&id=${entregaId}`, '_blank');
+}
+
+/**
  * Elimina la entrega de turno
  */
 async function eliminarEntrega(id) {

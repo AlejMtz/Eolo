@@ -6,6 +6,7 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="../css/style.css">
+    <script src="../Login/auth_check.js"></script>
     <title>Gestión de Entrega De Turnos</title>
 </head>
 <body>
@@ -32,11 +33,21 @@
                 </ul>
             </div>
         </div>
+
+              <div class="navbar-nav ms-auto">
+        <span class="navbar-text text-light me-3" id="userInfo"></span>
+        <button class="btn btn-outline-light btn-sm" onclick="cerrarSesion()">
+            <i class="fas fa-sign-out-alt me-1"></i>Cerrar Sesión
+        </button>
+    </div>
     </nav>
 
     <div class="container container-form mt-4">
         <h2 class="form-title"><i class="fas fa-clipboard-check"></i> Gestión de Enterga de turno</h2>
     </div>
+
+     <!-- Información de permisos -->
+        <div id="infoPermisos"></div>
 
     <div class="container mt-5">
         <div class="d-flex justify-content-between align-items-center mb-3">
@@ -121,6 +132,23 @@
     </div>
 
     <script src="../Despacho/entrega_turno.js"></script>
+    <script src="../Login/auth_check.js"></script>
+    <script src="../Login/permisos.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        // Verificar permisos específicos para esta página
+        document.addEventListener('DOMContentLoaded', function() {
+            if (!verificarSesion()) return;
+            
+            // Verificar acceso al módulo
+            if (!permisosSistema.verificarAccesoPagina('entregas_turno')) {
+                return;
+            }
+            
+            permisosSistema.aplicarPermisosUI();
+            cargarEntregasTurno();
+        });
+    </script>
 </body>
 </html>

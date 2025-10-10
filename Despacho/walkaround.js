@@ -18,91 +18,123 @@ let totalRegistros = 0;
 // Variables globales para el filtro de búsqueda
 let timeoutBusqueda = null;
 
-// Componentes predefinidos para cada tipo de aeronave
+// Componentes predefinidos organizados por sección según el formato físico
 const componentesPorTipo = {
-    avion: [
-        { id: 'radomo', nombre: 'Radomo', seccion: 'Avion' },
-        { id: 'parabrisas', nombre: 'Parabrisas/Limpiadores', seccion: 'Avion' },
-        { id: 'tubos_pitot', nombre: 'Tubos Pitot', seccion: 'Avion' },
-        { id: 'tren_nariz', nombre: 'Tren de Nariz (Llantas,Luces,Fugas)', seccion: 'Avion' },
-        { id: 'fuselaje_izq', nombre: 'Fuselaje Izquierdo (Antenas,Luces,Ventanillas)', seccion: 'Avion' },
-        { id: 'puerta_acceso_cabina', nombre: 'Puerta de Acceso a cabina (Escalera,Barandillas,Marco)', seccion: 'Avion' },
-        { id: 'antenas', nombre: 'Antenas', seccion: 'Avion' },
-        { id: 'semiala_izq', nombre: 'Semiala Izquierda (Bordes, winglet, estaticas, sup. de control)', seccion: 'Avion' },
-        { id: 'tren_principal_izq', nombre: 'Tren Principal Izquierdo (Llantas,Fugas)', seccion: 'Avion' },
-        { id: 'compartimiento_carga', nombre: 'Compartimiento de Carga (Exterior e Interior)', seccion: 'Avion' },
-        { id: 'empenaje', nombre: 'Empenaje (Bordes, estaticas, superficies de control)', seccion: 'Avion' },
-        { id: 'semiala_der', nombre: 'Semiala Derecha (Bordes, winglet, estaticas, sup. de control)', seccion: 'Avion' },
-        { id: 'tren_principal_der', nombre: 'Tren Principal Derecho (Llantas, Fugas)', seccion: 'Avion' },
-        { id: 'valvulas_servicio', nombre: 'Válvulas de Servicio (Combustible, agua, libre de fugas)', seccion: 'Avion' },
-        { id: 'motores', nombre: 'Motores (Crowling, carenados)', seccion: 'Avion' },
-        { id: 'fuselaje_der', nombre: 'Fuselaje Derecho (Antenas, luces, ventanillas)', seccion: 'Avion' },
-        { id: 'registros_servicios', nombre: 'Registros de Servicios', seccion: 'Avion' }
-    ],
-    helicoptero: [
-        { id: 'fuselaje', nombre: 'Fuselaje (Puertas, ventanas, antenas, luces)', seccion: 'Helicoptero' },
-        { id: 'esqui_neumaticos', nombre: 'Esquí/Neumáticos', seccion: 'Helicoptero' },
-        { id: 'palas', nombre: 'Palas', seccion: 'Helicoptero' },
-        { id: 'boom', nombre: 'Boom', seccion: 'Helicoptero' },
-        { id: 'estabilizadores', nombre: 'Estabilizadores', seccion: 'Helicoptero' },
-        { id: 'rotor_cola', nombre: 'Rotor de Cola', seccion: 'Helicoptero' }
-    ]
+    avion: {
+        'A': [
+            { id: 'tren_nariz', nombre: 'TREN DE NARIZ' },
+            { id: 'compuertas_tren', nombre: 'COMPUERTAS TREN DE ATERRIZAJE' },
+            { id: 'parabrisas_limpiadores', nombre: 'PARABRISAS / LIMPIADORES' },
+            { id: 'radomo', nombre: 'RADOMO' },
+            { id: 'tubo_pitot', nombre: 'TUBO PITOT' }
+        ],
+
+        'B': [
+            { id: 'fuselaje', nombre: 'FUSELAJE' },
+            { id: 'antena', nombre: 'ANTENA' }
+        ],    
+          
+        'C': [
+            { id: 'aleta', nombre: 'ALETA' },
+            { id: 'aleron', nombre: 'ALERON' },
+            { id: 'compensador_aleron', nombre: 'COMPENSADOR DE ALERON' },
+            { id: 'mechas_descarga', nombre: 'MECHAS DE DESCARGA ESTÁTICA' },
+            { id: 'punta_ala', nombre: 'PUNTA DE ALA' },
+            { id: 'luces_carretero', nombre: 'LUCES DE CARRETEO / ATERRIZAJE' },
+            { id: 'luces_navegacion', nombre: 'LUCES DE NAVEGACIÓN, BEACON' },
+            { id: 'borde_ataque', nombre: 'BORDE DE ATAQUE' },
+            { id: 'tren_principal', nombre: 'TREN DE ATERRIZAJE PRINCIPAL' },
+            { id: 'valvulas_servicio', nombre: 'VÁLVULAS DE SERVICIO (COMBUSTIBLE, ETC)' }
+        ],
+            
+        'D': [
+            { id: 'motor', nombre: 'MOTOR' },
+        ],
+        'E': [
+            { id: 'estabilizador_vertical', nombre: 'ESTABILIZADOR VERTICAL' },
+            { id: 'timon_direccion', nombre: 'TIMÓN DE DIRECCIÓN' },
+            { id: 'compensador_timon_direccion', nombre: 'COMPENSADOR TIMÓN DE DIRECCIÓN' },
+            { id: 'estabilizador_horizontal', nombre: 'ESTABILIZADOR HORIZONTAL' },
+            { id: 'timon_profundidad', nombre: 'TIMÓN DE PROFUNDIDAD' },
+            { id: 'compensador_timon_profundidad', nombre: 'COMPENSADOR TIMÓN DE PROFUNDIDAD' },
+            { id: 'borde_empenaje', nombre: 'BORDE DE EMPEÑAJE' },
+            { id: 'alas_delta', nombre: 'ALAS DELTA' }
+        ]
+    },
+    helicoptero: {
+        'A': [
+            { id: 'fuselaje', nombre: 'FUSELAJE' },
+            { id: 'puertas', nombre: 'PUERTAS, VENTANAS, ANTENAS, LUCES' }, 
+            { id: 'esqui', nombre: 'ESQUÍ / NEUMÁTICOS' },
+            { id: 'palas', nombre: 'PALAS' },
+            { id: 'boom', nombre: 'BOOM' },
+            { id: 'estabilizadores', nombre: 'ESTABILIZADORES' },
+            { id: 'rotor', nombre: 'ROTOR DE COLA' },
+            { id: 'parabrisas', nombre: 'PARABRISAS' }
+        ]
+    }
 };
 
+// Tipos de daño según el formato
+const tiposDano = [
+    { id: 'derecho', nombre: 'DERECHO' },
+    { id: 'izquierdo', nombre: 'IZQUIERDO' },
+    { id: 'golpe', nombre: 'GOLPE' },
+    { id: 'rayon', nombre: 'RAYÓN' },
+    { id: 'fisura', nombre: 'FISURA' },
+    { id: 'quebrado', nombre: 'QUEBRADO' },
+    { id: 'pinturaCuarteada', nombre: 'PINT. CUARTEADA' },
+    { id: 'otroDano', nombre: 'OTRO DAÑO' }
+];
+
 document.addEventListener('DOMContentLoaded', () => {
-    // Inicializar modales de Bootstrap SOLO si existen
+    // Inicializar modales de Bootstrap
     if (typeof bootstrap !== 'undefined') {
-        // Inicializar solo los modales que existen
-        const initModalIfExists = (modalId, modalVariable) => {
-            const modalElement = document.getElementById(modalId);
-            if (modalElement) {
-                modalVariable = new bootstrap.Modal(modalElement);
-            }
-        };
+        successModal = new bootstrap.Modal(document.getElementById('successModal'));
+        errorModal = new bootstrap.Modal(document.getElementById('errorModal'));
         
-        initModalIfExists('successModal', successModal);
-        initModalIfExists('errorModal', errorModal);
-        initModalIfExists('confirmModal', confirmModal);
+        // Solo inicializar confirmModal si existe
+        const confirmModalElement = document.getElementById('confirmModal');
+        if (confirmModalElement) {
+            confirmModal = new bootstrap.Modal(confirmModalElement);
+        }
     }
+
     // Si estamos en la página de lista, cargar walkarounds
     if (document.getElementById('tablaWalkarounds')) {
         cargarWalkarounds();
     }
 
     // Si estamos en el formulario de walkaround
-if (document.getElementById('walkaroundForm')) {
-    // Comprobar si hay un ID en la URL para modo edición
-    const params = new URLSearchParams(window.location.search);
-    const id = params.get('id');
-    
-    if (id) {
-        // Modo edición
-        configurarModoEdicion(id);
-    } else {
-        // Modo creación - establecer fecha/hora actual
-        const now = new Date();
-        const formatted = now.toISOString().slice(0,16);
-        document.getElementById('fechaHora').value = formatted;
-        
-        // Asegurar que la acción sea para creación
-        document.getElementById('walkaroundForm').action = 'procesar_walkaround.php';
-    }
-        
-        // Cargar aeronaves para el selector
+    if (document.getElementById('walkaroundForm')) {
+        // ⭐⭐ PRIMERO: Cargar aeronaves para el selector (SIEMPRE, en ambos modos)
         cargarAeronavesParaSelector();
         
+        // Comprobar si hay un ID en la URL para modo edición
+        const params = new URLSearchParams(window.location.search);
+        const id = params.get('id');
+        
+        if (id) {
+            // Modo edición
+            configurarModoEdicion(id);
+        } else {
+            // Modo creación - establecer fecha/hora actual
+            const now = new Date();
+            const formatted = now.toISOString().slice(0,16);
+            document.getElementById('fechaHora').value = formatted;
+            
+            // Asegurar que la acción sea para creación
+            document.getElementById('walkaroundForm').action = 'procesar_walkaround.php';
+        }
+
+        // Configurar checkboxes de entrada/salida
+        configurarCheckboxesEntradaSalida();
+        
         // Configurar envío del formulario
-document.getElementById('walkaroundForm').addEventListener('submit', function(event) {
-    event.preventDefault();
-    
-    // En modo edición, usar el nuevo script de actualización
-    if (isEditMode) {
-        enviarWalkaround();
-    } else {
-        // En modo creación, usar el procesamiento normal
-        enviarWalkaround();
-    }
-});
+        document.getElementById('walkaroundForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+            enviarWalkaround();
+        });
         
         // Manejar la selección de evidencias generales
         document.getElementById('generalEvidence').addEventListener('change', function(e) {
@@ -121,7 +153,6 @@ document.getElementById('walkaroundForm').addEventListener('submit', function(ev
         });
     }
 });
-
 
 /**
  * Configura el filtro de búsqueda de aeronaves
@@ -220,7 +251,7 @@ function buscarAeronaves(termino) {
 }
 
 /**
- * Selecciona una aeronave de los resultados de búsqueda
+ * Selecciona una aeronave de los resultados de búsqueda - VERSIÓN MEJORADA
  */
 function seleccionarAeronave(aeronave) {
     const inputBusqueda = document.getElementById('buscarAeronave');
@@ -242,10 +273,10 @@ function seleccionarAeronave(aeronave) {
     const tipo = aeronave.Tipo ? aeronave.Tipo.toLowerCase() : 'avion';
     console.log('🛩️ Cargando componentes para aeronave:', aeronave.Matricula, 'Tipo:', tipo);
     
-    // Cargar componentes según el tipo de aeronave
+    // ⭐⭐ Cargar componentes según el tipo de aeronave (funciona en ambos modos)
     cargarComponentes(tipo);
     
-    console.log('Aeronave seleccionada:', aeronave.Matricula, 'ID:', aeronave.Id_Aeronave);
+    console.log('✅ Aeronave seleccionada:', aeronave.Matricula, 'ID:', aeronave.Id_Aeronave);
 }
 
 /**
@@ -283,22 +314,24 @@ function limpiarAeronaveSeleccionada() {
 }
 
 /**
- * Configura el formulario en modo edición
+ * ⭐⭐ FUNCIÓN MEJORADA: Configura el formulario en modo edición
  */
 function configurarModoEdicion(id) {
     isEditMode = true;
     document.title = 'Editar Walkaround - Inspección de Componentes';
     
+    console.log('🔄 Configurando modo edición para ID:', id);
+    
     // Actualizar el título del formulario
     const formTitle = document.querySelector('.form-title');
     if (formTitle) {
-        formTitle.innerHTML = '<i class="fas fa-clipboard-check"></i> Editar Walkaround';
+        formTitle.innerHTML = '<i class="fas fa-edit"></i> Editar Walkaround';
     }
     
     // Cambiar texto del botón de envío
     const submitButton = document.getElementById('submitButton');
     if (submitButton) {
-        submitButton.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true" style="display: none;"></span> Actualizar Inspección';
+        submitButton.innerHTML = '<i class="fas fa-save me-1"></i> Actualizar Walkaround';
         submitButton.classList.remove('btn-primary');
         submitButton.classList.add('btn-warning');
     }
@@ -317,10 +350,11 @@ function configurarModoEdicion(id) {
     }
     idWalkInput.value = id;
     
-    console.log('🔄 Configurando modo edición para ID:', id);
+    // ✅ CARGAR AERONAVES PARA EL SELECTOR (IMPORTANTE: también en modo edición)
+    cargarAeronavesParaSelector();
     
-    // Cargar datos del walkaround
-    cargarWalkaround(id);
+    // ✅ Cargar los datos del walkaround
+    cargarDatosWalkaround(id);
 }
 
 /**
@@ -399,150 +433,203 @@ function cargarEvidenciasExistentes(evidencias) {
     console.log('✅ Evidencias existentes cargadas:', evidencias.length);
 }
 
-/**
- * Carga datos del walkaround en modo edición - VERSIÓN CON DEBUGGEO COMPLETO
- */
-async function cargarWalkaround(id) {
-    console.log('🔍 Iniciando carga de walkaround ID:', id);
-    document.getElementById('loading').style.display = 'flex';
+function debugFormData(formData) {
+    console.log('🔍 DEBUG FormData:');
+    for (let [key, value] of formData.entries()) {
+        if (key.startsWith('dano_')) {
+            console.log(`  ${key} = ${value}`);
+        }
+    }
     
+    // Contar por componente
+    const componentes = {};
+    for (let [key, value] of formData.entries()) {
+        if (key.startsWith('dano_')) {
+            const parts = key.split('_');
+            if (parts.length >= 3) {
+                const compId = parts[1];
+                if (!componentes[compId]) componentes[compId] = 0;
+                componentes[compId]++;
+            }
+        }
+    }
+    
+    console.log('📊 Campos por componente:', componentes);
+}
+
+/**
+ * Carga la lista de walkarounds con paginación y permisos
+ */
+async function cargarWalkarounds(pagina = 1) {
+    const tablaBody = document.querySelector('#tablaWalkarounds tbody');
+    tablaBody.innerHTML = '<tr><td colspan="10" class="text-center">Cargando...</td></tr>';
+
     try {
-        console.log('📡 Haciendo fetch a walkaround_leer_id.php...');
-        const response = await fetch(`walkaround_leer_id.php?id=${id}`);
+        console.log(`🔄 Cargando walkarounds página ${pagina}...`);
+        const response = await fetch(`leer_walkaround.php?pagina=${pagina}&registros_por_pagina=${registrosPorPagina}`);
         
-        console.log('📨 Respuesta recibida, status:', response.status);
-        
-        // Verificar si la respuesta es JSON
-        const contentType = response.headers.get('content-type');
-        console.log('📋 Content-Type:', contentType);
-        
-        if (!contentType || !contentType.includes('application/json')) {
-            const text = await response.text();
-            console.error('❌ Respuesta del servidor (no JSON):', text);
-            throw new Error('El servidor devolvió un formato incorrecto: ' + text.substring(0, 200));
+        if (!response.ok) {
+            throw new Error(`Error HTTP: ${response.status}`);
         }
         
         const data = await response.json();
-        console.log('📊 Datos COMPLETOS recibidos del servidor:', data);
+        console.log('📊 Datos recibidos:', data);
         
-        // Verificar si hay error en la respuesta JSON
         if (data.error) {
-            console.error('❌ Error en respuesta JSON:', data.error);
             throw new Error(data.error);
         }
-        
-        // Validar que los datos existan
-        if (!data) {
-            throw new Error('No se recibieron datos del servidor');
-        }
-        
-        console.log('✅ Estructura de datos recibida:');
-        console.log('  - Campos principales:', Object.keys(data));
-        console.log('  - Número de componentes:', data.componentes ? data.componentes.length : 0);
-        console.log('  - Número de evidencias:', data.evidencias ? data.evidencias.length : 0);
-        console.log('  - Tipo de aeronave:', data.Tipo);
-        
-        if (data.componentes && data.componentes.length > 0) {
-            console.log('📦 Primer componente como ejemplo:', data.componentes[0]);
-        }
 
-        // ⭐⭐ Cargar aeronaves primero para poder mostrar la información ⭐⭐
-        await cargarAeronavesParaSelector();
+        const walkarounds = data.walkarounds;
+        paginaActual = data.paginacion.pagina_actual;
+        totalPaginas = data.paginacion.total_paginas;
+        totalRegistros = data.paginacion.total_registros;
+
+        tablaBody.innerHTML = '';
         
-        // Llenar el formulario con los datos
-        console.log('🖊️ Llenando formulario...');
-        
-        // Fecha y Hora
-        if (data.FechaHora) {
-            const fechaHoraValue = data.FechaHora.replace(' ', 'T');
-            document.getElementById('fechaHora').value = fechaHoraValue;
-            console.log('📅 Fecha asignada:', fechaHoraValue);
-        }
-        
-        // Aeronave
-        const aeronaveSeleccionadaInput = document.getElementById('aeronaveSeleccionada');
-        if (aeronaveSeleccionadaInput) {
-            aeronaveSeleccionadaInput.value = data.Id_Aeronave || '';
-            console.log('🛩️ ID Aeronave asignado al campo oculto:', data.Id_Aeronave);
+        if (walkarounds.length === 0) {
+            tablaBody.innerHTML = '<tr><td colspan="10" class="text-center">No hay walkarounds registrados.</td></tr>';
         } else {
-            console.error('❌ No se encontró el campo oculto aeronaveSeleccionada');
-        }
-        
-        const buscarAeronaveInput = document.getElementById('buscarAeronave');
-        if (buscarAeronaveInput && data.Matricula) {
-            buscarAeronaveInput.value = data.Matricula;
-            console.log('🔍 Matrícula asignada al campo de búsqueda:', data.Matricula);
-        }
-        
-        // Campos de texto
-        document.getElementById('elaboro').value = data.Elaboro || '';
-        document.getElementById('responsable').value = data.Responsable || '';
-        document.getElementById('jefe_area').value = data.JefeArea || '';
-        document.getElementById('vobo').value = data.VoBo || '';
-        document.getElementById('observacionesGenerales').value = data.observaciones || '';
-        document.getElementById('procedencia').value = data.Procedencia || '';
-        document.getElementById('destino').value = data.Destino || '';
-        
-        console.log('✅ Formulario base llenado correctamente');
-        
-        // Mostrar información de la aeronave
-        if (data.Id_Aeronave) {
-            console.log('👁️ Mostrando información de aeronave para ID:', data.Id_Aeronave);
+            // ⭐⭐ AQUÍ ESTÁ EL CAMBIO - Sacar esta línea fuera del forEach
+            const usuarioActual = permisosSistema.usuario.nombre;
             
-            const aeronaveEnModoEdicion = aeronavesData.find(a => a.Id_Aeronave == data.Id_Aeronave);
-            
-            if (aeronaveEnModoEdicion) {
-                console.log('📋 Información de aeronave encontrada en aeronavesData:', aeronaveEnModoEdicion);
-                mostrarInfoAeronaveEnModoEdicion(
-                    aeronaveEnModoEdicion.Matricula,
-                    aeronaveEnModoEdicion.Equipo
-                );
-            } else {
-                console.warn('⚠️ No se encontró la aeronave en aeronavesData, usando datos del walkaround');
-                mostrarInfoAeronaveEnModoEdicion(
-                    data.Matricula,
-                    data.Equipo
-                );
-            }
+            walkarounds.forEach((walkaround) => {
+                console.log(`📝 Procesando walkaround ID ${walkaround.Id_Walk}:`, walkaround);
+                
+                // ⭐⭐ AQUÍ VA EL CÓDIGO NUEVO - Dentro del forEach
+                // Mismo enfoque que entregas_turno
+                const esPropietario = walkaround.Elaboro === usuarioActual;
+                const puedeEditar = permisosSistema.puedeEditar('walkarounds', walkaround);
+                const puedeEliminar = permisosSistema.puedeEliminar('walkarounds');
+                
+                const fila = document.createElement('tr');
+                
+                // Manejo seguro de campos
+                const matricula = walkaround.Matricula || 'No especificada';
+                const equipo = walkaround.Equipo || 'No especificado';
+                const procedencia = walkaround.Procedencia || 'No especificada';
+                const destino = walkaround.Destino || 'No especificada';
+                const elaboro = walkaround.Elaboro || 'No especificado';
+                const responsable = walkaround.Responsable || 'No especificado';
+                
+                // Formatear fecha
+                let fechaFormateada = 'Fecha no válida';
+                try {
+                    if (walkaround.Fechahora) {
+                        fechaFormateada = new Date(walkaround.Fechahora).toLocaleString();
+                    }
+                } catch (e) {
+                    console.warn('Error al formatear fecha:', e);
+                }
+                
+                fila.innerHTML = `
+                    <td>${walkaround.Id_Walk}</td>
+                    <td>${fechaFormateada}</td>
+                    <td>${matricula}</td>
+                    <td>${equipo}</td>
+                    <td>${procedencia}</td>
+                    <td>${destino}</td>
+                    <td>
+                        ${elaboro}
+                        ${esPropietario ? '<span class="badge bg-primary ms-1">Tuyo</span>' : ''}
+                    </td>
+                    <td>${responsable}</td>
+                    
+                    <td>
+                        <div class="btn-group btn-group-sm" role="group">
+                            <!-- Botón Ver Detalles -->
+                            <a href="detalle_walkaround.html?id=${walkaround.Id_Walk}" 
+                               class="btn btn-info" title="Ver detalles">
+                                <i class="fas fa-eye"></i>
+                            </a>
+                            
+                            <!-- Botón Generar PDF -->
+                            <a href="pdf_generator.php?tipo=walkaround&id=${walkaround.Id_Walk}" 
+                               class="btn btn-danger" title="Generar PDF" target="_blank">
+                                <i class="fas fa-file-pdf"></i>
+                            </a>
+                            
+                            <!-- Botón Editar (con permisos) -->
+                            <a href="componenteWk.html?id=${walkaround.Id_Walk}" 
+                               class="btn btn-warning btn-editar" 
+                               data-modulo="walkarounds"
+                               title="${puedeEditar ? 'Editar walkaround' : (esPropietario ? 'Solo puedes editar tus propios walkarounds' : 'No puedes editar walkarounds de otros usuarios')}"
+                               style="${!puedeEditar ? 'opacity: 0.6; pointer-events: none;' : ''}">
+                                <i class="fas fa-edit"></i>
+                            </a>
+                            
+                            <!-- Botón Eliminar (con permisos) -->
+                            <button class="btn btn-danger btn-eliminar" 
+                                    data-modulo="walkarounds"
+                                    onclick="${puedeEliminar ? `eliminarWalkaround(${walkaround.Id_Walk})` : 'mostrarErrorPermisosEliminar()'}" 
+                                    title="${puedeEliminar ? 'Eliminar walkaround' : 'Se requieren permisos de administrador'}"
+                                    style="${!puedeEliminar ? 'opacity: 0.6; pointer-events: none;' : ''}">
+                                <i class="fas fa-trash-alt"></i>
+                            </button>
+                        </div>
+                        
+                        <!-- Indicador visual de permisos -->
+                        ${!puedeEditar && !esPropietario ? 
+                            '<span class="badge bg-secondary ms-1" title="Solo el creador o administrador puede editar">🔒</span>' : 
+                            ''}
+                    </td>
+                `;
+                
+                tablaBody.appendChild(fila);
+            });
         }
         
-        // Deshabilitar el campo de búsqueda en modo edición
-        const buscarAeronave = document.getElementById('buscarAeronave');
-        if (buscarAeronave) {
-            buscarAeronave.disabled = true;
-            buscarAeronave.title = "No se puede cambiar la aeronave en modo edición";
-            console.log('🔒 Campo de búsqueda de aeronave deshabilitado');
-        }
-        
-        // Cargar evidencias existentes
-        if (data.evidencias && data.evidencias.length > 0) {
-            console.log('📸 Cargando evidencias existentes:', data.evidencias);
-            cargarEvidenciasExistentes(data.evidencias);
-        } else {
-            console.log('ℹ️ No hay evidencias existentes para este walkaround');
-        }
-        
-        // Cargar componentes - ¡ESTA ES LA PARTE IMPORTANTE!
-        const tipo = data.Tipo ? data.Tipo.toLowerCase() : 'avion';
-        console.log('✈️ Iniciando carga de componentes para tipo:', tipo);
-        console.log('📦 Datos de componentes a pasar:', data.componentes);
-        
-        cargarComponentes(tipo, data.componentes || []);
-        
-        console.log('🎉 Carga de walkaround completada exitosamente');
+        // Actualizar el paginador
+        actualizarPaginador();
         
     } catch (error) {
-        console.error('❌ Error al cargar walkaround:', error);
-        console.error('🔍 Stack trace:', error.stack);
-        mostrarError('Error al cargar los datos: ' + error.message);
-    } finally {
-        document.getElementById('loading').style.display = 'none';
-        console.log('🏁 Función cargarWalkaround finalizada');
+        console.error('❌ Error al cargar walkarounds:', error);
+        tablaBody.innerHTML = `<tr><td colspan="10" class="text-center text-danger">Error al cargar los datos: ${error.message}</td></tr>`;
     }
 }
 
 /**
- * ⭐⭐ NUEVA FUNCIÓN: Muestra información de aeronave en modo edición ⭐⭐
+ * ⭐⭐ FUNCIÓN MEJORADA: Procesa los componentes para el formulario
+ */
+function procesarComponentesParaFormulario(componentes) {
+    console.log('🔄 Procesando componentes para formulario:', componentes);
+    
+    const componentesProcesados = {};
+    
+    if (!componentes || !Array.isArray(componentes)) {
+        console.warn('⚠️ Componentes no es un array válido:', componentes);
+        return componentesProcesados;
+    }
+    
+    componentes.forEach((componente, index) => {
+        console.log(`🔍 Procesando componente ${index}:`, componente);
+        
+        // ⭐⭐ CORRECCIÓN: Usar el campo correcto según tu base de datos
+        const componenteId = componente.Identificador_Componente;
+        
+        if (componenteId) {
+            componentesProcesados[componenteId] = {
+                derecho: componente.derecho == 1,
+                izquierdo: componente.izquierdo == 1,
+                golpe: componente.golpe == 1,
+                rayon: componente.rayon == 1,
+                fisura: componente.fisura == 1,
+                quebrado: componente.quebrado == 1,
+                pinturaCuarteada: componente.pinturaCuarteada == 1,
+                otroDano: componente.otroDano == 1
+            };
+            
+            console.log(`📝 Componente ${componenteId} procesado:`, componentesProcesados[componenteId]);
+        } else {
+            console.warn('⚠️ Componente sin identificador:', componente);
+        }
+    });
+    
+    console.log('✅ Componentes procesados:', Object.keys(componentesProcesados).length);
+    return componentesProcesados;
+}
+
+/**
+ * Muestra información de aeronave en modo edición - VERSIÓN MEJORADA
  */
 function mostrarInfoAeronaveEnModoEdicion(matricula, equipo) {
     const infoContainer = document.getElementById('infoAeronaveContainer');
@@ -568,34 +655,34 @@ function mostrarInfoAeronaveEnModoEdicion(matricula, equipo) {
 }
 
 /**
- * Carga aeronaves para el selector - VERSIÓN MODIFICADA
+ * Carga aeronaves para el selector - VERSIÓN MEJORADA (funciona en creación y edición)
  */
 async function cargarAeronavesParaSelector() {
-    console.log('Intentando cargar aeronaves...');
+    console.log('🛩️ Intentando cargar aeronaves para selector...');
+    
     try {
         const response = await fetch('obtener_aeronaves.php');
-        console.log('Respuesta de obtener_aeronaves.php:', response);
+        console.log('📨 Respuesta de obtener_aeronaves.php:', response);
         
         if (!response.ok) {
             throw new Error(`Error HTTP: ${response.status}`);
         }
         
         const aeronaves = await response.json();
-        console.log('Aeronaves recibidas:', aeronaves);
+        console.log('📊 Aeronaves recibidas:', aeronaves);
         
         aeronavesData = aeronaves;
         
-        // Configurar el filtro de búsqueda después de cargar las aeronaves
+        // ⭐⭐ CONFIGURAR EL FILTRO DE BÚSQUEDA (siempre, en ambos modos)
         configurarBusquedaAeronaves();
         
-        console.log('Aeronaves cargadas correctamente y filtro configurado');
+        console.log('✅ Aeronaves cargadas correctamente y filtro configurado');
         
     } catch (error) {
-        console.error('Error al cargar aeronaves:', error);
+        console.error('❌ Error al cargar aeronaves:', error);
         mostrarError('Error al cargar las aeronaves. Por favor, recarga la página.');
     }
 }
-
 
 /**
  * Muestra la información adicional de la aeronave seleccionada
@@ -629,11 +716,119 @@ function ocultarInfoAeronave() {
 }
 
 /**
- * Carga componentes según el tipo de aeronave - VERSIÓN ROBUSTA
+ * Configura los checkboxes de Entrada/Salida para que sean exclusivos
  */
-function cargarComponentes(tipoAeronave, componentesGuardados = []) {
+function configurarCheckboxesEntradaSalida() {
+    const entradaCheckbox = document.getElementById('entrada');
+    const salidaCheckbox = document.getElementById('salida');
+    
+    if (entradaCheckbox && salidaCheckbox) {
+        entradaCheckbox.addEventListener('change', function() {
+            if (this.checked) {
+                salidaCheckbox.checked = false;
+            }
+        });
+        
+        salidaCheckbox.addEventListener('change', function() {
+            if (this.checked) {
+                entradaCheckbox.checked = false;
+            }
+        });
+    }
+}
+
+/**
+ * Carga los datos de un walkaround específico para edición
+ */
+async function cargarDatosWalkaround(id) {
+    console.log('🔄 Cargando datos del walkaround ID:', id);
+    
+    try {
+        const response = await fetch(`walkaround_leer_id.php?id=${id}`);
+        
+        if (!response.ok) {
+            throw new Error(`Error HTTP: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        console.log('📊 Datos recibidos para edición:', data);
+        
+        if (data.error) {
+            throw new Error(data.error);
+        }
+        
+        // Llenar el formulario con los datos
+        llenarFormularioConDatos(data);
+        
+    } catch (error) {
+        console.error('❌ Error al cargar datos del walkaround:', error);
+        mostrarError('No se pudieron cargar los datos del walkaround: ' + error.message);
+    }
+}
+
+/**
+ * Llena el formulario con los datos del walkaround - VERSIÓN MEJORADA
+ */
+function llenarFormularioConDatos(data) {
+    console.log('📝 Llenando formulario con datos:', data);
+    
+    // ⭐⭐ PRIMERO: Configurar la aeronave (MEJORADO)
+    if (data.Id_Aeronave && data.Matricula) {
+        // Esperar un momento para asegurar que el sistema de búsqueda esté listo
+        setTimeout(() => {
+            // Establecer la aeronave seleccionada
+            document.getElementById('aeronaveSeleccionada').value = data.Id_Aeronave;
+            document.getElementById('buscarAeronave').value = data.Matricula;
+            
+            // Mostrar información de la aeronave
+            mostrarInfoAeronaveEnModoEdicion(data.Matricula, data.Equipo);
+            
+            // Cargar componentes según el tipo de aeronave
+            const tipo = data.Tipo ? data.Tipo.toLowerCase() : 'avion';
+            console.log('🛩️ Cargando componentes para tipo:', tipo);
+            
+            // Cargar componentes con los datos guardados
+            const componentesGuardados = procesarComponentesParaFormulario(data.componentes || []);
+            cargarComponentes(tipo, componentesGuardados);
+        }, 100);
+    }
+    
+    // ⭐⭐ SEGUNDO: Llenar los campos básicos del formulario
+    if (data.Fechahora) {
+        // Formatear la fecha para el input datetime-local
+        const fecha = new Date(data.Fechahora);
+        const fechaFormateada = fecha.toISOString().slice(0, 16);
+        document.getElementById('fechaHora').value = fechaFormateada;
+    }
+    
+    // Campos de texto
+    if (data.Elaboro) document.getElementById('elaboro').value = data.Elaboro;
+    if (data.Responsable) document.getElementById('responsable').value = data.Responsable;
+    if (data.JefeArea) document.getElementById('jefe_area').value = data.JefeArea;
+    if (data.VoBo) document.getElementById('vobo').value = data.VoBo;
+    if (data.observaciones) document.getElementById('observacionesGenerales').value = data.observaciones;
+    if (data.Procedencia) document.getElementById('procedencia').value = data.Procedencia;
+    if (data.Destino) document.getElementById('destino').value = data.Destino;
+    
+    // Checkboxes de entrada/salida
+    if (data.entrada == 1) document.getElementById('entrada').checked = true;
+    if (data.salida == 1) document.getElementById('salida').checked = true;
+    
+    // ⭐⭐ TERCERO: Cargar evidencias existentes
+    if (data.evidencias && data.evidencias.length > 0) {
+        cargarEvidenciasExistentes(data.evidencias);
+    }
+    
+    console.log('✅ Formulario llenado correctamente');
+}
+
+
+/**
+ * Carga componentes según el tipo de aeronave - VERSIÓN MEJORADA
+ */
+function cargarComponentes(tipoAeronave, componentesGuardados = {}) {
     console.log('🔄 cargarComponentes iniciado');
-    console.log('📋 Parámetros recibidos:', { tipoAeronave, componentesGuardados });
+    console.log('📦 Componentes guardados recibidos:', componentesGuardados);
     
     const componentesContainer = document.getElementById('componentesContainer');
     
@@ -642,176 +837,138 @@ function cargarComponentes(tipoAeronave, componentesGuardados = []) {
         return;
     }
     
-    const componentes = componentesPorTipo[tipoAeronave];
+    const secciones = componentesPorTipo[tipoAeronave];
     
-    if (!componentes) {
+    if (!secciones || Object.keys(secciones).length === 0) {
         console.error('❌ No se encontraron componentes para tipo:', tipoAeronave);
-        console.log('📚 Tipos disponibles:', Object.keys(componentesPorTipo));
         componentesContainer.innerHTML = '<div class="alert alert-warning">No hay componentes definidos para este tipo de aeronave.</div>';
         return;
     }
     
-    console.log('✅ Componentes del tipo encontrados:', componentes.length);
+    console.log('✅ Secciones encontradas:', Object.keys(secciones));
     
-    // Verificar la estructura de componentesGuardados
-    console.log('🔍 Analizando componentes guardados:');
-    componentesGuardados.forEach((comp, index) => {
-        console.log(`  Componente ${index + 1}:`, comp);
-    });
-
-    // Agrupar componentes por sección
-    const secciones = {};
-    componentes.forEach(componente => {
-        if (!secciones[componente.seccion]) {
-            secciones[componente.seccion] = [];
-        }
-        secciones[componente.seccion].push(componente);
-    });
-    
-    console.log('📂 Secciones a generar:', Object.keys(secciones));
-    
-    // Construir HTML para las secciones y componentes
     let html = '';
     let componentesProcesados = 0;
-    
-    for (const seccion in secciones) {
-        html += `
-            <div class="component-section">
-                <div class="section-title">${seccion}</div>
-                <div class="component-grid">
-        `;
+
+    // Generar cada sección (A, B, D, E)
+    for (const letraSeccion in secciones) {
+        const componentesSeccion = secciones[letraSeccion];
         
-        secciones[seccion].forEach(componente => {
-            // Buscar si este componente tiene datos guardados
-            const componenteGuardado = componentesGuardados.find(c => {
-                // Múltiples formas de comparar por si hay diferencias en los nombres de campo
-                const coincide = c.Componente == componente.id || 
-                               c.Identificador_Componente == componente.id ||
-                               c.componente == componente.id;
-                
-                if (coincide) {
-                    console.log(`✅ Coincidencia encontrada para ${componente.id}:`, c);
-                }
-                return coincide;
-            });
-
-            console.log(`🔍 Procesando componente "${componente.id}":`, {
-                encontrado: !!componenteGuardado,
-                datos: componenteGuardado
-            });
-
-            // ⭐⭐ CORRECCIÓN: Manejar diferentes tipos de datos para Estado
-            let estado = '1'; // Por defecto "Sin daño"
-            let observaciones = '';
+        if (componentesSeccion.length > 0) {
+            html += `
+                <div class="section-container mb-4">
+                    <div class="section-header">
+                        <h5 class="mb-0 text-center">SECCIÓN ${letraSeccion}</h5>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-sm component-table">
+                            <tbody>
+            `;
             
-            if (componenteGuardado) {
-                // Convertir Estado a string para comparación consistente
-                if (componenteGuardado.Estado !== undefined && componenteGuardado.Estado !== null) {
-                    estado = componenteGuardado.Estado.toString();
-                }
-                observaciones = componenteGuardado.Observaciones || '';
-                
-                console.log(`📊 Estado final para ${componente.id}:`, estado);
-            }
-            
-            const checkedSinDano = estado === '1' ? 'checked' : '';
-            const checkedConDano = estado === '2' ? 'checked' : '';
-            const displayOpciones = estado === '2' ? 'display:block;' : 'display:none;';
+            componentesSeccion.forEach(componente => {
+                //Obtener datos del componente guardado
+                const estadoGuardado = componentesGuardados[componente.id] || {
+                    derecho: false,
+                    izquierdo: false,
+                    golpe: false,
+                    rayon: false,
+                    fisura: false,
+                    quebrado: false,
+                    pinturaCuarteada: false,
+                    otroDano: false
+                };
+
+                console.log(`🎯 Componente ${componente.id} - Estado:`, estadoGuardado);
+
+                html += `
+                    <tr class="component-row" id="fila-${componente.id}">
+                        <td class="component-name" style="width: 25%">
+                            <strong>${componente.nombre}</strong>
+                        </td>
+                `;
+
+                // Generar checkboxes para cada tipo de daño
+                tiposDano.forEach(tipoDano => {
+                    const checked = estadoGuardado[tipoDano.id] ? 'checked' : '';
+                    html += `
+                        <td class="text-center" style="width: 8%">
+                            <input type="checkbox" 
+                                class="form-check-input damage-checkbox" 
+                                name="dano_${componente.id}_${tipoDano.id}" 
+                                value="1" 
+                                ${checked}
+                                data-componente="${componente.id}"
+                                data-tipo="${tipoDano.id}">
+                        </td>
+                    `;
+                });
+
+                html += `</tr>`;
+
+                componentesProcesados++;
+            });
             
             html += `
-                <div class="component-card" id="componente-${componente.id}">
-                    <h5>${componente.nombre}</h5>
-                    
-                    <div class="form-check">
-                        <input class="form-check-input" type="radio" name="estado_${componente.id}" 
-                            id="estado_ok_${componente.id}" value="1" 
-                            ${checkedSinDano} required>
-                        <label class="form-check-label" for="estado_ok_${componente.id}">
-                            Sin daño
-                        </label>
-                    </div>
-                    
-                    <div class="form-check">
-                        <input class="form-check-input" type="radio" name="estado_${componente.id}" 
-                            id="estado_damage_${componente.id}" value="2"
-                            ${checkedConDano}>
-                        <label class="form-check-label" for="estado_damage_${componente.id}">
-                            Con daño
-                        </label>
-                    </div>
-                    
-                    <div class="damage-options" id="opciones_dano_${componente.id}" 
-                        style="${displayOpciones}">
-                        <div class="form-group mt-2">
-                            <label for="observaciones_${componente.id}" class="form-label">Observaciones:</label>
-                            <textarea class="form-control" id="observaciones_${componente.id}" 
-                                name="observaciones_${componente.id}" rows="2" 
-                                placeholder="Describa el daño encontrado">${observaciones}</textarea>
-                        </div>
-                        <div class="form-group mt-2">
-                            <label for="evidencia_${componente.id}" class="form-label">Subir evidencia:</label>
-                            <input type="file" class="form-control" id="evidencia_${componente.id}" 
-                                name="evidencia_${componente.id}" accept="image/*,video/*">
-                            
-                            ${componenteGuardado && componenteGuardado.Id_Evidencia ? `
-                                <div class="mt-1">
-                                    <small class="text-success">
-                                        <i class="fas fa-paperclip"></i> Evidencia existente (ID: ${componenteGuardado.Id_Evidencia})
-                                    </small>
-                                </div>
-                            ` : ''}
-                        </div>
+                            </tbody>
+                        </table>
                     </div>
                 </div>
             `;
-            
-            componentesProcesados++;
-        });
-        
-        html += `
-                </div>
-            </div>
-        `;
+        }
     }
     
     console.log(`📝 Generando HTML para ${componentesProcesados} componentes...`);
     componentesContainer.innerHTML = html;
-    console.log('✅ HTML de componentes generado correctamente');
     
-    // Configurar eventos para los radio buttons
-    const radios = document.querySelectorAll('.form-check-input');
-    console.log(`🎛️ Configurando eventos para ${radios.length} radio buttons...`);
+    // Configurar eventos para los checkboxes
+    const checkboxes = document.querySelectorAll('.damage-checkbox');
+    console.log(`🎛️ Configurando eventos para ${checkboxes.length} checkboxes...`);
     
-    radios.forEach(radio => {
-        radio.addEventListener('change', function() {
-            const name = this.getAttribute('name');
-            const componenteId = name.replace('estado_', '');
-            const opcionesDano = document.getElementById(`opciones_dano_${componenteId}`);
+    checkboxes.forEach(checkbox => {
+        checkbox.addEventListener('change', function() {
+            const componenteId = this.getAttribute('data-componente');
+            const tipoDano = this.getAttribute('data-tipo');
+            const filaComponente = document.getElementById(`fila-${componenteId}`);
             
-            if (this.value === '2') {
-                opcionesDano.style.display = 'block';
+            // Resaltar fila si hay algún checkbox marcado
+            const checkboxesComponente = document.querySelectorAll(`.damage-checkbox[data-componente="${componenteId}"]`);
+            const algunoMarcado = Array.from(checkboxesComponente).some(cb => cb.checked);
+            
+            if (algunoMarcado) {
+                filaComponente.classList.add('table-warning');
+                filaComponente.classList.add('has-damage');
             } else {
-                opcionesDano.style.display = 'none';
+                filaComponente.classList.remove('table-warning');
+                filaComponente.classList.remove('has-damage');
             }
+            
+            console.log(`🔧 Checkbox cambiado: ${componenteId} - ${tipoDano}: ${this.checked}`);
         });
     });
 
-    // Aplicar estilos visuales
+    // Aplicar estilos iniciales basados en los checkboxes marcados
     setTimeout(() => {
-        componentes.forEach(componente => {
-            const componenteCard = document.getElementById(`componente-${componente.id}`);
-            if (componenteCard) {
-                componenteCard.classList.add('estado-seleccionado');
+        console.log('🎨 Aplicando estilos iniciales a componentes con daños...');
+        checkboxes.forEach(checkbox => {
+            if (checkbox.checked) {
+                const componenteId = checkbox.getAttribute('data-componente');
+                const filaComponente = document.getElementById(`fila-${componenteId}`);
+                if (filaComponente) {
+                    filaComponente.classList.add('table-warning');
+                    filaComponente.classList.add('has-damage');
+                    console.log(`✅ Fila resaltada: ${componenteId}`);
+                }
             }
         });
+        
+        // Contar componentes con daños
+        const componentesConDanos = document.querySelectorAll('.has-damage');
+        console.log(`📊 Componentes con daños detectados: ${componentesConDanos.length}`);
     }, 100);
     
-    console.log('🎉 Función cargarComponentes completada exitosamente');
+    console.log('✅ Función cargarComponentes completada exitosamente');
 }
 
-/**
- * Maneja la selección de evidencias generales
- */
 /**
  * Actualiza el input de evidencias - VERSIÓN ROBUSTA
  */
@@ -871,22 +1028,6 @@ function removeEvidence(fileId) {
     
     // Actualizar el input de archivos
     updateEvidenceInput();
-}
-
-/**
- * Actualiza el input de evidencias
- */
-function updateEvidenceInput() {
-    // Crear un nuevo DataTransfer para los archivos
-    const dataTransfer = new DataTransfer();
-    
-    // Agregar los archivos que quedan
-    generalEvidenceFiles.forEach(f => {
-        dataTransfer.items.add(f.file);
-    });
-    
-    // Actualizar el input de archivos
-    document.getElementById('generalEvidence').files = dataTransfer.files;
 }
 
 /**
@@ -967,7 +1108,47 @@ function handleGeneralEvidenceSelect(files) {
 }
 
 /**
- * Envía el formulario de walkaround - VERSIÓN CORREGIDA Y ROBUSTA
+ * SOLUCIÓN SIMPLE: Asegura que todos los campos existan en el FormData
+ */
+function asegurarTodosLosCampos(formData) {
+    console.log('🔄 Asegurando todos los campos en FormData...');
+    
+    // Obtener todos los componentes posibles
+    const todosComponentes = new Set();
+    const todosTipos = ['derecho', 'izquierdo', 'golpe', 'rayon', 'fisura', 'quebrado', 'pinturaCuarteada', 'otroDano'];
+    
+    document.querySelectorAll('.damage-checkbox').forEach(checkbox => {
+        const componenteId = checkbox.getAttribute('data-componente');
+        todosComponentes.add(componenteId);
+    });
+    
+    console.log(`📦 Componentes encontrados: ${todosComponentes.size}`);
+    console.log(`🎯 Tipos de daño: ${todosTipos.length}`);
+    
+    // Para cada combinación componente-tipo, asegurar que existe en formData
+    todosComponentes.forEach(componenteId => {
+        todosTipos.forEach(tipo => {
+            const campoName = `dano_${componenteId}_${tipo}`;
+            
+            // Verificar si ya existe en el FormData
+            const existe = Array.from(formData.entries()).some(([key]) => key === campoName);
+            
+            if (!existe) {
+                // Buscar el checkbox para ver si está marcado
+                const checkbox = document.querySelector(`[name="${campoName}"]`);
+                const valor = checkbox && checkbox.checked ? '1' : '0';
+                
+                formData.append(campoName, valor);
+                console.log(`➕ Campo agregado: ${campoName} = ${valor}`);
+            }
+        });
+    });
+    
+    console.log('✅ Todos los campos asegurados en FormData');
+}
+
+/**
+ * Envía el formulario de walkaround - VERSIÓN CORREGIDA CON SOLUCIÓN SIMPLE
  */
 async function enviarWalkaround() {
     console.log('🚀 Iniciando envío de walkaround...');
@@ -1003,6 +1184,17 @@ async function enviarWalkaround() {
 
         // En modo edición, el campo de búsqueda está deshabilitado, así que usamos el valor del campo oculto
         formData.append('id_aeronave', aeronaveSeleccionada);
+
+        // ✅ SOLUCIÓN SIMPLE: Asegurar que todos los campos existan
+        asegurarTodosLosCampos(formData);
+        
+        // DIAGNÓSTICO: Verificar específicamente los últimos dos campos
+        console.log('🔍 DIAGNÓSTICO - Buscando campos pinturaCuarteada y otroDano:');
+        for (let [key, value] of formData.entries()) {
+            if (key.includes('pinturaCuarteada') || key.includes('otroDano')) {
+                console.log(`  ${key} = ${value}`);
+            }
+        }
 
         // ✅ Añadir evidencias generales al FormData
         if (generalEvidenceFiles && generalEvidenceFiles.length > 0) {
@@ -1106,28 +1298,38 @@ function validarFormulario() {
         return false;
     }
 
-    // Validar que todos los componentes tengan un estado seleccionado
-    const radios = document.querySelectorAll('.form-check-input');
-    let todosSeleccionados = true;
-    let componentesSinSeleccionar = [];
+    // Validar que se haya seleccionado al menos un tipo de walkaround
+    const entrada = document.getElementById('entrada').checked;
+    const salida = document.getElementById('salida').checked;
+    if (!entrada && !salida) {
+        console.error('❌ No se ha seleccionado tipo de walkaround');
+        mostrarError('Por favor, selecciona al menos un tipo de walkaround (Entrada o Salida).');
+        return false;
+    }
+
+    // Validar campos obligatorios (sin procedencia y destino)
+    const elaboro = document.getElementById('elaboro').value.trim();
+    const responsable = document.getElementById('responsable').value.trim();
+    const jefeArea = document.getElementById('jefe_area').value.trim();
+    const vobo = document.getElementById('vobo').value.trim();
     
-    radios.forEach(radio => {
-        const name = radio.getAttribute('name');
-        const checked = document.querySelector(`input[name="${name}"]:checked`);
-        if (!checked) {
-            todosSeleccionados = false;
-            const componenteId = name.replace('estado_', '');
-            componentesSinSeleccionar.push(componenteId);
-            const componenteCard = document.getElementById(`componente-${componenteId}`);
-            if (componenteCard) {
-                componenteCard.style.borderColor = 'red';
-            }
-        }
-    });
+    if (!elaboro) {
+        mostrarError('El campo "Elaboró" es obligatorio.');
+        return false;
+    }
     
-    if (!todosSeleccionados) {
-        console.error('❌ Componentes sin seleccionar:', componentesSinSeleccionar);
-        mostrarError('Por favor, verifica el estado de todos los componentes antes de enviar.');
+    if (!responsable) {
+        mostrarError('El campo "Responsable" es obligatorio.');
+        return false;
+    }
+    
+    if (!jefeArea) {
+        mostrarError('El campo "Jefe de Área" es obligatorio.');
+        return false;
+    }
+    
+    if (!vobo) {
+        mostrarError('El campo "VoBo Gerente FBO" es obligatorio.');
         return false;
     }
     
@@ -1137,6 +1339,8 @@ function validarFormulario() {
 
 /**
  * Muestra modal de éxito
+ * @param {string} mensaje - Mensaje a mostrar
+ * @param {function} callback - Función a ejecutar al cerrar el modal
  */
 function mostrarExito(mensaje, callback = null) {
     const modalBody = document.getElementById('successModalBody');
@@ -1144,6 +1348,7 @@ function mostrarExito(mensaje, callback = null) {
         modalBody.textContent = mensaje;
         successModal.show();
         
+        // Configurar callback si se proporciona
         if (callback) {
             const modalElement = document.getElementById('successModal');
             const handler = function() {
@@ -1160,6 +1365,7 @@ function mostrarExito(mensaje, callback = null) {
 
 /**
  * Muestra modal de error
+ * @param {string} mensaje - Mensaje a mostrar
  */
 function mostrarError(mensaje) {
     const modalBody = document.getElementById('errorModalBody');
@@ -1170,9 +1376,8 @@ function mostrarError(mensaje) {
         alert('¡Error! ⚠️\n' + mensaje);
     }
 }
-
 /**
- * Carga la lista de walkarounds con paginación
+ * Carga la lista de walkarounds con paginación y permisos
  */
 async function cargarWalkarounds(pagina = 1) {
     const tablaBody = document.querySelector('#tablaWalkarounds tbody');
@@ -1203,8 +1408,16 @@ async function cargarWalkarounds(pagina = 1) {
         if (walkarounds.length === 0) {
             tablaBody.innerHTML = '<tr><td colspan="10" class="text-center">No hay walkarounds registrados.</td></tr>';
         } else {
+            const usuarioActual = permisosSistema.usuario.nombre;
+            const usuarioId = permisosSistema.usuario.id;
+            
             walkarounds.forEach((walkaround) => {
                 console.log(`📝 Procesando walkaround ID ${walkaround.Id_Walk}:`, walkaround);
+                
+                // Determinar permisos para este registro específico
+                const puedeEditar = permisosSistema.puedeEditar('walkarounds', walkaround);
+                const puedeEliminar = permisosSistema.puedeEliminar('walkarounds');
+                const esPropietario = walkaround.creado_por === usuarioId || walkaround.Elaboro === usuarioActual;
                 
                 const fila = document.createElement('tr');
                 
@@ -1233,29 +1446,49 @@ async function cargarWalkarounds(pagina = 1) {
                     <td>${equipo}</td>
                     <td>${procedencia}</td>
                     <td>${destino}</td>
-                    <td>${elaboro}</td>
+                    <td>
+                        ${elaboro}
+                        ${esPropietario ? '<span class="badge bg-primary ms-1">Tuyo</span>' : ''}
+                    </td>
                     <td>${responsable}</td>
                     
                     <td>
                         <div class="btn-group btn-group-sm" role="group">
+                            <!-- Botón Ver Detalles -->
                             <a href="detalle_walkaround.html?id=${walkaround.Id_Walk}" 
                                class="btn btn-info" title="Ver detalles">
                                 <i class="fas fa-eye"></i>
                             </a>
+                            
+                            <!-- Botón Generar PDF -->
                             <a href="pdf_generator.php?tipo=walkaround&id=${walkaround.Id_Walk}" 
                                class="btn btn-danger" title="Generar PDF" target="_blank">
                                 <i class="fas fa-file-pdf"></i>
                             </a>
+                            
+                            <!-- Botón Editar (con permisos) -->
                             <a href="componenteWk.html?id=${walkaround.Id_Walk}" 
-                               class="btn btn-warning" title="Editar">
+                               class="btn btn-warning btn-editar" 
+                               data-modulo="walkarounds"
+                               title="${puedeEditar ? 'Editar walkaround' : (esPropietario ? 'Solo puedes editar tus propios walkarounds' : 'No puedes editar walkarounds de otros usuarios')}"
+                               style="${!puedeEditar ? 'opacity: 0.6; pointer-events: none;' : ''}">
                                 <i class="fas fa-edit"></i>
                             </a>
-                            <button class="btn btn-danger" 
-                                    onclick="eliminarWalkaround(${walkaround.Id_Walk})" 
-                                    title="Eliminar">
+                            
+                            <!-- Botón Eliminar (con permisos) -->
+                            <button class="btn btn-danger btn-eliminar" 
+                                    data-modulo="walkarounds"
+                                    onclick="${puedeEliminar ? `eliminarWalkaround(${walkaround.Id_Walk})` : 'mostrarErrorPermisosEliminar()'}" 
+                                    title="${puedeEliminar ? 'Eliminar walkaround' : 'Se requieren permisos de administrador'}"
+                                    style="${!puedeEliminar ? 'opacity: 0.6; pointer-events: none;' : ''}">
                                 <i class="fas fa-trash-alt"></i>
                             </button>
                         </div>
+                        
+                        <!-- Indicador visual de permisos -->
+                        ${!puedeEditar && !esPropietario ? 
+                            '<span class="badge bg-secondary ms-1" title="Solo el creador o administrador puede editar">🔒</span>' : 
+                            ''}
                     </td>
                 `;
                 
@@ -1270,6 +1503,20 @@ async function cargarWalkarounds(pagina = 1) {
         console.error('❌ Error al cargar walkarounds:', error);
         tablaBody.innerHTML = `<tr><td colspan="10" class="text-center text-danger">Error al cargar los datos: ${error.message}</td></tr>`;
     }
+}
+
+/**
+ * Muestra error de permisos para eliminar
+ */
+function mostrarErrorPermisosEliminar() {
+    mostrarError('Solo los administradores pueden eliminar walkarounds. Contacta al administrador del sistema.');
+}
+
+/**
+ * Función auxiliar para verificar permisos de eliminación
+ */
+function tienePermisosEliminarWalkaround() {
+    return permisosSistema.puedeEliminar('walkarounds');
 }
 
 /**
@@ -1395,6 +1642,7 @@ function cambiarPagina(pagina) {
 
 /**
  * Muestra modal de confirmación para eliminar
+ * @param {string} id - ID del walkaround a eliminar
  */
 function mostrarConfirmacionEliminar(id) {
     const modalBody = document.getElementById('confirmModalBody');
@@ -1405,6 +1653,7 @@ function mostrarConfirmacionEliminar(id) {
         confirmBtn.setAttribute('data-id', id);
         confirmModal.show();
     } else {
+        // Fallback al confirm tradicional
         if (confirm('¿Estás seguro de que quieres eliminar este walkaround?')) {
             eliminarWalkaroundConfirmada(id);
         }
@@ -1426,11 +1675,21 @@ function agregarEvidenciasAlFormData(formData) {
     return formData;
 }
 
+function mostrarErrorPermisosEliminar() {
+    mostrarError('Solo los administradores pueden eliminar walkarounds. Contacta al administrador del sistema.');
+}
+
 
 /**
  * Elimina un walkaround de la base de datos (muestra confirmación primero).
  */
 function eliminarWalkaround(id) {
+    // Verificación de permisos
+    if (!permisosSistema.puedeEliminarWalkaround()) {
+        mostrarErrorPermisosEliminar();
+        return;
+    }
+    
     mostrarConfirmacionEliminar(id);
 }
 

@@ -7,7 +7,6 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="../css/style.css">
     <title>Registro de Aeronave</title>
-   
 </head>
 <body>
     <!-- Navbar -->
@@ -26,31 +25,49 @@
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="../Despacho/ver_walkaround.html"><i class="fas fa-clipboard-check"></i> Walkaround</a>
-                    </li>me 
+                    </li>
                     <li class="nav-item">
                         <a class="nav-link" href="#"><i class="fas fa-images"></i> Evidencias</a>
                     </li>
                 </ul>
             </div>
         </div>
+
+        <div class="navbar-nav ms-auto">
+            <span class="navbar-text text-light me-3" id="userInfo"></span>
+            <button class="btn btn-outline-light btn-sm" onclick="cerrarSesion()">
+                <i class="fas fa-sign-out-alt me-1"></i>Cerrar Sesión
+            </button>
+        </div>
     </nav>
 
     <div class="container container-form">
-        <h2 class="form-title"><i class="fas fa-plane"></i> Registro de Aeronave</h2>
+        <h2 class="form-title">
+            <i class="fas fa-plane"></i> 
+            <span id="tituloFormulario">Registro de Aeronave</span>
+        </h2>
+        
+        <!-- Alerta de permisos -->
+        <div id="alertaSoloLectura" class="alert alert-warning d-none">
+            <i class="fas fa-eye me-2"></i>
+            <strong>Modo de solo lectura:</strong> No tienes permisos para modificar aeronaves. Solo puedes ver la información.
+        </div>
         
         <form id="aeronaveForm" action="aeronaves_crear.php" method="POST">
-             <input type="hidden" id="id_aeronave" name="id_aeronave">
+            <input type="hidden" id="id_aeronave" name="id_aeronave">
             <div class="row">
                 <div class="col-md-6">
                     <div class="form-group">
                         <label for="matricula">Matrícula:</label>
-                        <input type="text" class="form-control" id="matricula" name="matricula" placeholder="Escriba la matrícula de la aeronave" required>
+                        <input type="text" class="form-control" id="matricula" name="matricula" 
+                               placeholder="Escriba la matrícula de la aeronave" required
+                               readonly>
                     </div>
                 </div>
                 <div class="col-md-6">
                     <div class="form-group">
                         <label for="tipo">Tipo:</label>
-                        <select class="form-select" id="tipo" name="tipo" required>
+                        <select class="form-select" id="tipo" name="tipo" required disabled>
                             <option value="" selected>Selecciona el tipo de aeronave</option>
                             <option value="Avion">Avión</option>
                             <option value="Helicoptero">Helicóptero</option>
@@ -62,79 +79,168 @@
             <div class="row">
                 <div class="col-md-6">
                     <div class="form-group">
-                        <label for="equipo">Equipo:</label>
-                        <input type="text" class="form-control" id="equipo" name="equipo" placeholder="Escriba el equipo de la aeronave" required>
+                        <label for="equipo">Tipo Aeronave:</label>
+                        <input type="text" class="form-control" id="equipo" name="equipo" 
+                               placeholder="Escriba el tipo de la aeronave" required
+                               readonly>
                     </div>
                 </div>
-            
+            </div>
+
             <div class="d-grid gap-2 d-md-flex justify-content-md-end">
-                <button type="button" class="btn btn-secondary me-md-2" onclick="window.history.back()">Cancelar</button>
-                <button type="submit" class="btn btn-primary">Guardar Aeronave</button>
+                <button type="button" class="btn btn-secondary me-md-2" onclick="window.history.back()">Volver</button>
+                <button type="submit" class="btn btn-primary" id="btnGuardar" style="display: none;">
+                    Guardar Aeronave
+                </button>
+                <button type="button" class="btn btn-warning" id="btnHabilitarEdicion" style="display: none;">
+                    <i class="fas fa-edit me-1"></i>Habilitar Edición
+                </button>
             </div>
         </form>
     </div>
 
-    <!-- Modal de éxito -->
-<div class="modal fade" id="successModal" tabindex="-1" aria-labelledby="successModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-            <div class="modal-header bg-success text-white">
-                <h5 class="modal-title" id="successModalLabel">
-                    <i class="fas fa-check-circle me-2"></i>¡Éxito! 🎉
-                </h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body" id="successModalBody">
-                <!-- El mensaje se insertará aquí dinámicamente -->
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-success" data-bs-dismiss="modal">Aceptar</button>
+    <!-- Modales -->
+    <div class="modal fade" id="successModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header bg-success text-white">
+                    <h5 class="modal-title">
+                        <i class="fas fa-check-circle me-2"></i>¡Éxito! 🎉
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body" id="successModalBody"></div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-success" data-bs-dismiss="modal">Aceptar</button>
+                </div>
             </div>
         </div>
     </div>
-</div>
 
-<!-- Modal de error -->
-<div class="modal fade" id="errorModal" tabindex="-1" aria-labelledby="errorModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-            <div class="modal-header bg-danger text-white">
-                <h5 class="modal-title" id="errorModalLabel">
-                    <i class="fas fa-exclamation-triangle me-2"></i>¡Error! ⚠️
-                </h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body" id="errorModalBody">
-                <!-- El mensaje se insertará aquí dinámicamente -->
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Aceptar</button>
+    <div class="modal fade" id="errorModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header bg-danger text-white">
+                    <h5 class="modal-title">
+                        <i class="fas fa-exclamation-triangle me-2"></i>¡Error! ⚠️
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body" id="errorModalBody"></div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Aceptar</button>
+                </div>
             </div>
         </div>
     </div>
-</div>
 
-<!-- Modal de confirmación (para eliminar) -->
-<div class="modal fade" id="confirmModal" tabindex="-1" aria-labelledby="confirmModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-            <div class="modal-header bg-warning text-dark">
-                <h5 class="modal-title" id="confirmModalLabel">
-                    <i class="fas fa-question-circle me-2"></i>Confirmar
-                </h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body" id="confirmModalBody">
-                <!-- El mensaje se insertará aquí dinámicamente -->
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                <button type="button" class="btn btn-warning" id="confirmActionBtn">Confirmar</button>
+    <!-- Modal de permisos -->
+    <div class="modal fade" id="permisosModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header bg-warning text-dark">
+                    <h5 class="modal-title">
+                        <i class="fas fa-ban me-2"></i>Permisos Insuficientes
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p>No tienes permisos para modificar aeronaves.</p>
+                    <p class="text-muted">Solo los usuarios administradores pueden gestionar la información de aeronaves.</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-warning" data-bs-dismiss="modal">Entendido</button>
+                </div>
             </div>
         </div>
     </div>
-</div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="../Despacho/aeronaves.js"></script>  
+    <script src="../Login/auth_check.js"></script>
+    <script src="../Login/permisos.js"></script>
+    <script src="../Despacho/aeronaves.js"></script>
+    <script>
+        // Verificar permisos específicos para esta página
+        document.addEventListener('DOMContentLoaded', function() {
+            if (!verificarSesion()) return;
+            
+            // Verificar acceso al módulo
+            if (!permisosSistema.verificarAccesoPagina('aeronaves')) {
+                return;
+            }
+            
+            // Aplicar permisos específicos para el formulario
+            aplicarPermisosFormularioAeronave();
+            
+            // Comprobar si hay un ID en la URL para cargar datos
+            const params = new URLSearchParams(window.location.search);
+            const id = params.get('id');
+            if (id) {
+                cargarAeronaveParaEditar(id);
+            } else {
+                // Si es un nuevo registro, verificar permisos de creación
+                configurarFormularioNuevaAeronave();
+            }
+        });
+        
+        function aplicarPermisosFormularioAeronave() {
+            const puedeGestionar = permisosSistema.puedeCrear('aeronaves');
+            const params = new URLSearchParams(window.location.search);
+            const esEdicion = params.get('id');
+            
+            if (esEdicion) {
+                document.getElementById('tituloFormulario').textContent = 'Edición de Aeronave';
+            }
+            
+            if (!puedeGestionar) {
+                // Modo solo lectura para usuarios no administradores
+                document.getElementById('alertaSoloLectura').classList.remove('d-none');
+                document.getElementById('btnGuardar').style.display = 'none';
+                
+                if (esEdicion) {
+                    document.getElementById('btnHabilitarEdicion').style.display = 'inline-block';
+                }
+            } else {
+                // Modo completo para administradores
+                document.getElementById('btnGuardar').style.display = 'inline-block';
+                habilitarFormulario();
+            }
+        }
+        
+        function configurarFormularioNuevaAeronave() {
+            const puedeGestionar = permisosSistema.puedeCrear('aeronaves');
+            
+            if (!puedeGestionar) {
+                // Redirigir si no tiene permisos para crear
+                mostrarErrorPermisosAeronaves();
+                setTimeout(() => {
+                    window.location.href = 'ver_aeronaves.html';
+                }, 2000);
+            } else {
+                habilitarFormulario();
+            }
+        }
+        
+        function habilitarFormulario() {
+            document.getElementById('matricula').readOnly = false;
+            document.getElementById('tipo').disabled = false;
+            document.getElementById('equipo').readOnly = false;
+        }
+        
+        function mostrarErrorPermisosAeronaves() {
+            const modal = new bootstrap.Modal(document.getElementById('permisosModal'));
+            modal.show();
+        }
+        
+        // Configurar botón de habilitar edición (solo para vista)
+        document.addEventListener('DOMContentLoaded', function() {
+            const btnHabilitar = document.getElementById('btnHabilitarEdicion');
+            if (btnHabilitar) {
+                btnHabilitar.addEventListener('click', function() {
+                    mostrarErrorPermisosAeronaves();
+                });
+            }
+        });
+    </script>
+</body>
 </html>

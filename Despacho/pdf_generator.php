@@ -16,7 +16,7 @@ class PDFGenerator {
     }
     
     /**
-     * Genera PDF para Entrega de Turno - CORREGIDO DEFINITIVO
+     * Genera PDF para Entrega de Turno
      */
     public function generarEntregaTurno($id) {
         require_once('../conexion.php');
@@ -54,49 +54,46 @@ class PDFGenerator {
     }
     
     /**
-     * Genera PDF para Walkaround
+     * Genera PDF para Walkaround - VERSIÓN ACTUALIZADA
      */
-    /**
- * Genera PDF para Walkaround - VERSIÓN CORREGIDA
- */
-public function generarWalkaround($id) {
-    require_once('../conexion.php');
-    
-    try {
-        // Obtener datos del walkaround
-        $sql = "SELECT w.*, a.Matricula, a.Equipo, a.Tipo 
-                FROM walkaround w 
-                LEFT JOIN aeronave a ON w.Id_Aeronave = a.Id_Aeronave 
-                WHERE w.Id_Walk = ?";
-        $stmt = $pdo->prepare($sql);
-        $stmt->execute([$id]);
-        $walkaround = $stmt->fetch(PDO::FETCH_ASSOC);
+    public function generarWalkaround($id) {
+        require_once('../conexion.php');
         
-        if (!$walkaround) {
-            die('Walkaround no encontrado');
+        try {
+            // Obtener datos del walkaround
+            $sql = "SELECT w.*, a.Matricula, a.Equipo, a.Tipo 
+                    FROM walkaround w 
+                    LEFT JOIN aeronave a ON w.Id_Aeronave = a.Id_Aeronave 
+                    WHERE w.Id_Walk = ?";
+            $stmt = $pdo->prepare($sql);
+            $stmt->execute([$id]);
+            $walkaround = $stmt->fetch(PDO::FETCH_ASSOC);
+            
+            if (!$walkaround) {
+                die('Walkaround no encontrado');
+            }
+            
+            // Obtener componentes con la nueva estructura
+            $componentes = $this->getComponentesWalkaround($pdo, $id);
+            
+            // Primera página: Cabecera y componentes en tabla
+            $this->pdf->AddPage();
+            $this->generarCabeceraWalkaround($walkaround);
+            $this->generarComponentesWalkaroundPDF($componentes, $walkaround['Tipo']);
+            
+            // Segunda página: Diagrama
+            $this->generarDiagrama($walkaround['Tipo']);
+            $this->generarObservacionesWalkaroundPDF($walkaround);
+            $this->generarFirmasWalkaroundPDF($walkaround);
+            
+            $this->pdf->Output('walkaround_' . $id . '.pdf', 'I');
+            return true;
+            
+        } catch (Exception $e) {
+            ob_clean();
+            die('Error al generar PDF: ' . $e->getMessage());
         }
-        
-        // Obtener componentes
-        $componentes = $this->getComponentesWalkaround($pdo, $id);
-        
-        // Primera página: Cabecera y componentes en tabla
-        $this->pdf->AddPage();
-        $this->generarCabeceraWalkaround($walkaround);
-        $this->generarComponentesWalkaroundPDF($componentes, $walkaround['Tipo']);
-        
-        // Segunda página: Diagrama
-        $this->generarDiagrama($walkaround['Tipo']);
-        $this->generarObservacionesWalkaroundPDF($walkaround);
-        $this->generarFirmasWalkaroundPDF($walkaround);
-        
-        $this->pdf->Output('walkaround_' . $id . '.pdf', 'I');
-        return true;
-        
-    } catch (Exception $e) {
-        ob_clean();
-        die('Error al generar PDF: ' . $e->getMessage());
     }
-}
     
     /**
      * CABECERA ENTREGA DE TURNO CON LOGO
@@ -158,7 +155,16 @@ public function generarWalkaround($id) {
         // Título centrado
         $this->pdf->SetFont('helvetica', 'B', 14);
         $this->pdf->SetY(25);
-        $this->pdf->Cell(0, 10, 'Reporte de Inspección de Aeronave. Walk Around (Llegada/Salida)', 0, 1, 'C');
+        
+        // Determinar tipo de walkaround
+        $tipoWalkaround = '';
+        if ($walkaround['entrada'] == 1) {
+            $tipoWalkaround = 'ENTRADA';
+        } elseif ($walkaround['salida'] == 1) {
+            $tipoWalkaround = 'SALIDA';
+        }
+        
+        $this->pdf->Cell(0, 10, 'Reporte de Inspección de Aeronave - Walk Around (' . $tipoWalkaround . ')', 0, 1, 'C');
         
         // Tabla de información
         $this->pdf->SetFont('helvetica', '', 10);
@@ -168,40 +174,167 @@ public function generarWalkaround($id) {
         $this->pdf->SetFillColor(240, 240, 240);
         $this->pdf->Cell(30, 8, 'Fecha', 1, 0, 'C', true);
         $this->pdf->Cell(25, 8, 'Hora', 1, 0, 'C', true);
-        $this->pdf->Cell(40, 8, 'Equipo', 1, 0, 'C', true);
+        $this->pdf->Cell(40, 8, 'Tipo Aeronave', 1, 0, 'C', true);
         $this->pdf->Cell(40, 8, 'Matrícula', 1, 0, 'C', true);
-        $this->pdf->Cell(50, 8, 'Procedencia', 1, 1, 'C', true);
+        $this->pdf->Cell(50, 8, 'Destino', 1, 1, 'C', true);
         
-    $fecha = 'No especificada';
-    $hora = 'No especificada';
-    
-    if (isset($walkaround['FechaHora']) && !empty($walkaround['FechaHora']) && $walkaround['FechaHora'] != '0000-00-00 00:00:00') {
-        // Convertir el DateTime a fecha y hora separados
-        $fechaHora = DateTime::createFromFormat('Y-m-d H:i:s', $walkaround['FechaHora']);
+        $fecha = 'No especificada';
+        $hora = 'No especificada';
         
-        if ($fechaHora !== false) {
-            $fecha = $fechaHora->format('d/m/Y');
-            $hora = $fechaHora->format('H:i');
-        } else {
-            // Si el formato falla, intentar con strtotime
-            $timestamp = strtotime($walkaround['FechaHora']);
-            if ($timestamp !== false) {
-                $fecha = date('d/m/Y', $timestamp);
-                $hora = date('H:i', $timestamp);
+        if (isset($walkaround['FechaHora']) && !empty($walkaround['FechaHora']) && $walkaround['FechaHora'] != '0000-00-00 00:00:00') {
+            // Convertir el DateTime a fecha y hora separados
+            $fechaHora = DateTime::createFromFormat('Y-m-d H:i:s', $walkaround['FechaHora']);
+            
+            if ($fechaHora !== false) {
+                $fecha = $fechaHora->format('d/m/Y');
+                $hora = $fechaHora->format('H:i');
+            } else {
+                // Si el formato falla, intentar con strtotime
+                $timestamp = strtotime($walkaround['FechaHora']);
+                if ($timestamp !== false) {
+                    $fecha = date('d/m/Y', $timestamp);
+                    $hora = date('H:i', $timestamp);
+                }
             }
         }
-    }
-        
+            
         $this->pdf->Cell(30, 10, $fecha, 1, 0, 'C');
         $this->pdf->Cell(25, 10, $hora, 1, 0, 'C');
         $this->pdf->Cell(40, 10, isset($walkaround['Equipo']) ? $walkaround['Equipo'] : 'No especificado', 1, 0, 'C');
         $this->pdf->Cell(40, 10, isset($walkaround['Matricula']) ? $walkaround['Matricula'] : 'No especificada', 1, 0, 'C');
-        $this->pdf->Cell(50, 10, isset($walkaround['Procedencia']) ? $walkaround['Procedencia'] : 'No especificada', 1, 1, 'C');
+        $this->pdf->Cell(50, 10, isset($walkaround['Destino']) ? $walkaround['Destino'] : 'No especificado', 1, 1, 'C');
         
     }
     
     /**
-     * EQUIPOS DE COMUNICACIÓN - CORREGIDO DEFINITIVO
+     * COMPONENTES WALKAROUND EN TABLA CON TIPOS DE DAÑO - VERSIÓN ACTUALIZADA
+     */
+    private function generarComponentesWalkaroundPDF($componentes, $tipoAeronave) {
+        $tipo = strtolower($tipoAeronave);
+        
+        $this->pdf->SetFont('helvetica', 'B', 12);
+        if ($tipo === 'avion') {
+            $this->pdf->Cell(0, 10, 'COMPONENTES - AVIONES', 0, 1);
+        } else {
+            $this->pdf->Cell(0, 10, 'COMPONENTES - HELICÓPTEROS', 0, 1);
+        }
+        
+        // Configurar anchos de columnas para los tipos de daño
+        $anchoComponente = 60;
+        $anchoCheckbox = 15;
+        
+        // Cabecera de la tabla con tipos de daño
+        $this->pdf->SetFont('helvetica', 'B', 7);
+        $this->pdf->SetFillColor(240, 240, 240);
+        
+        $this->pdf->Cell($anchoComponente, 8, 'COMPONENTE', 1, 0, 'C', true);
+        $this->pdf->Cell($anchoCheckbox, 8, 'DER', 1, 0, 'C', true);
+        $this->pdf->Cell($anchoCheckbox, 8, 'IZQ', 1, 0, 'C', true);
+        $this->pdf->Cell($anchoCheckbox, 8, 'GOLPE', 1, 0, 'C', true);
+        $this->pdf->Cell($anchoCheckbox, 8, 'RAYÓN', 1, 0, 'C', true);
+        $this->pdf->Cell($anchoCheckbox, 8, 'FISURA', 1, 0, 'C', true);
+        $this->pdf->Cell($anchoCheckbox, 8, 'QUEBR.', 1, 0, 'C', true);
+        $this->pdf->Cell($anchoCheckbox, 8, 'PINT.', 1, 0, 'C', true);
+        $this->pdf->Cell($anchoCheckbox, 8, 'OTRO', 1, 1, 'C', true);
+        
+        $this->pdf->SetFont('helvetica', '', 7);
+        $this->pdf->SetFillColor(255, 255, 255);
+        
+        $componentesPredefinidos = $this->getComponentesPorTipo($tipo);
+        
+        foreach ($componentesPredefinidos as $componente) {
+            $componenteGuardado = $this->findComponente($componentes, $componente['id']);
+            
+            // ALTURA FIJA PARA TODAS LAS FILAS
+            $alturaFila = 8;
+            
+            // Guardar posición Y inicial
+            $yInicial = $this->pdf->GetY();
+            
+            // 1. COMPONENTE
+            $textoComponente = $this->truncarTexto($componente['nombre'], 40);
+            $this->pdf->Cell($anchoComponente, $alturaFila, $textoComponente, 1, 0, 'L');
+
+            // 3. DERECHO
+            $xCheckbox = $this->pdf->GetX();
+            $this->pdf->Cell($anchoCheckbox, $alturaFila, '', 1, 0, 'C');
+            $this->dibujarCheckbox($componenteGuardado && $componenteGuardado['derecho'] == 1, 
+                                $xCheckbox + ($anchoCheckbox/2 - 1.5), 
+                                $yInicial + ($alturaFila/2 - 1.5));
+            
+              // 2. IZQUIERDO
+            $xCheckbox = $this->pdf->GetX();
+            $this->pdf->Cell($anchoCheckbox, $alturaFila, '', 1, 0, 'C');
+            $this->dibujarCheckbox($componenteGuardado && $componenteGuardado['izquierdo'] == 1, 
+                                $xCheckbox + ($anchoCheckbox/2 - 1.5), 
+                                $yInicial + ($alturaFila/2 - 1.5));                    
+            
+            // 4. GOLPE
+            $xCheckbox = $this->pdf->GetX();
+            $this->pdf->Cell($anchoCheckbox, $alturaFila, '', 1, 0, 'C');
+            $this->dibujarCheckbox($componenteGuardado && $componenteGuardado['golpe'] == 1, 
+                                $xCheckbox + ($anchoCheckbox/2 - 1.5), 
+                                $yInicial + ($alturaFila/2 - 1.5));
+            
+            // 5. RAYÓN
+            $xCheckbox = $this->pdf->GetX();
+            $this->pdf->Cell($anchoCheckbox, $alturaFila, '', 1, 0, 'C');
+            $this->dibujarCheckbox($componenteGuardado && $componenteGuardado['rayon'] == 1, 
+                                $xCheckbox + ($anchoCheckbox/2 - 1.5), 
+                                $yInicial + ($alturaFila/2 - 1.5));
+            
+            // 6. FISURA
+            $xCheckbox = $this->pdf->GetX();
+            $this->pdf->Cell($anchoCheckbox, $alturaFila, '', 1, 0, 'C');
+            $this->dibujarCheckbox($componenteGuardado && $componenteGuardado['fisura'] == 1, 
+                                $xCheckbox + ($anchoCheckbox/2 - 1.5), 
+                                $yInicial + ($alturaFila/2 - 1.5));
+            
+            // 7. QUEBRADO
+            $xCheckbox = $this->pdf->GetX();
+            $this->pdf->Cell($anchoCheckbox, $alturaFila, '', 1, 0, 'C');
+            $this->dibujarCheckbox($componenteGuardado && $componenteGuardado['quebrado'] == 1, 
+                                $xCheckbox + ($anchoCheckbox/2 - 1.5), 
+                                $yInicial + ($alturaFila/2 - 1.5));
+            
+            // 8. PINTURA CUARTEADA
+            $xCheckbox = $this->pdf->GetX();
+            $this->pdf->Cell($anchoCheckbox, $alturaFila, '', 1, 0, 'C');
+            $this->dibujarCheckbox($componenteGuardado && $componenteGuardado['pinturaCuarteada'] == 1, 
+                                $xCheckbox + ($anchoCheckbox/2 - 1.5), 
+                                $yInicial + ($alturaFila/2 - 1.5));
+            
+            // 9. OTRO DAÑO
+            $xCheckbox = $this->pdf->GetX();
+            $this->pdf->Cell($anchoCheckbox, $alturaFila, '', 1, 1, 'C');
+            $this->dibujarCheckbox($componenteGuardado && $componenteGuardado['otroDano'] == 1, 
+                                $xCheckbox + ($anchoCheckbox/2 - 1.5), 
+                                $yInicial + ($alturaFila/2 - 1.5));
+            
+            // VERIFICAR SI NECESITAMOS NUEVA PÁGINA
+            if ($this->pdf->GetY() > 250) {
+                $this->pdf->AddPage();
+                // Redibujar cabecera de tabla si es nueva página
+                $this->pdf->SetFont('helvetica', 'B', 7);
+                $this->pdf->SetFillColor(240, 240, 240);
+                $this->pdf->Cell($anchoComponente, 8, 'COMPONENTE', 1, 0, 'C', true);
+                $this->pdf->Cell($anchoCheckbox, 8, 'DER', 1, 0, 'C', true);
+                $this->pdf->Cell($anchoCheckbox, 8, 'IZQ', 1, 0, 'C', true);
+                $this->pdf->Cell($anchoCheckbox, 8, 'GOLPE', 1, 0, 'C', true);
+                $this->pdf->Cell($anchoCheckbox, 8, 'RAYÓN', 1, 0, 'C', true);
+                $this->pdf->Cell($anchoCheckbox, 8, 'FISURA', 1, 0, 'C', true);
+                $this->pdf->Cell($anchoCheckbox, 8, 'QUEBR.', 1, 0, 'C', true);
+                $this->pdf->Cell($anchoCheckbox, 8, 'PINT.', 1, 0, 'C', true);
+                $this->pdf->Cell($anchoCheckbox, 8, 'OTRO', 1, 1, 'C', true);
+                $this->pdf->SetFont('helvetica', '', 7);
+            }
+        }
+        
+        $this->pdf->Ln(8);
+    }
+
+    /**
+     * EQUIPOS DE COMUNICACIÓN
      */
     private function generarEquiposComunicacionPDF($equipos) {
         $this->pdf->SetFont('helvetica', 'B', 12);
@@ -218,7 +351,7 @@ public function generarWalkaround($id) {
         
         $this->pdf->SetFont('helvetica', '', 9);
         
-        // Generar filas de equipos CORREGIDAS
+        // Generar filas de equipos
         $this->generarFilaEquipoComCorregida('CELULAR ZTE', '1', $equipos, 'CELULAR ZTE', 'Cargado');
         $this->generarFilaEquipoComCorregida('RADIO MOTOROLA', '2', $equipos, 'RADIO MOTOROLA', 'Cargado');
         $this->generarFilaEquipoComCorregida('RADIO VHF Portátil', '2', $equipos, 'RADIO VHF Portátil', 'Cargado');
@@ -305,58 +438,59 @@ public function generarWalkaround($id) {
     }
     
     /**
-     * COPIADORAS - CORREGIDO DEFINITIVO (SIN SUPERPOSICIÓN)
+     * COPIADORAS
      */
     private function generarCopiadorasPDF($equipos, $entrega) {
-    // Título de la sección
-    $this->pdf->SetFont('helvetica', 'B', 10);
-    $this->pdf->Cell(0, 8, 'COPIADORAS FUNCIONA TONER', 0, 1);
-    $this->pdf->SetFont('helvetica', '', 9);
+        // Título de la sección
+        $this->pdf->SetFont('helvetica', 'B', 10);
+        $this->pdf->Cell(0, 8, 'COPIADORAS FUNCIONA TONER', 0, 1);
+        $this->pdf->SetFont('helvetica', '', 9);
 
-    // Obtener datos del equipo
-    $copiadoras = $this->getEquipoOficina($equipos, 'COPIADORAS');
-    $funciona = $copiadoras ? $copiadoras['Funciona'] : 1;
-    $toner_estado = $copiadoras ? $copiadoras['Toner_Estado'] : 'bueno';
+        // Obtener datos del equipo
+        $copiadoras = $this->getEquipoOficina($equipos, 'COPIADORAS');
+        $funciona = $copiadoras ? $copiadoras['Funciona'] : 1;
+        $toner_estado = $copiadoras ? $copiadoras['Toner_Estado'] : 'bueno';
 
-    // Guardar la posición Y inicial para alinear los checkboxes
-    $yPos = $this->pdf->GetY();
+        // Guardar la posición Y inicial para alinear los checkboxes
+        $yPos = $this->pdf->GetY();
 
-    // Texto "HP"
-    $this->pdf->Cell(20, 20, 'HP', 0, 0);
+        // Texto "HP"
+        $this->pdf->Cell(20, 20, 'HP', 0, 0);
 
-    // Posición para el checkbox de 'SI'
-    $xSi = $this->pdf->GetX();
-    $this->pdf->Cell(30, 20, 'SI', 0, 0);
-    $this->dibujarCheckbox($funciona, $xSi, $yPos + 4);
+        // Posición para el checkbox de 'SI'
+        $xSi = $this->pdf->GetX();
+        $this->pdf->Cell(30, 20, 'SI', 0, 0);
+        $this->dibujarCheckbox($funciona, $xSi, $yPos + 4);
 
-    // Posición para el checkbox de 'NO'
-    $xNo = $this->pdf->GetX();
-    $this->pdf->Cell(10, 20, 'NO', 0, 0);
-    $this->dibujarCheckbox(!$funciona, $xNo, $yPos + 4);
+        // Posición para el checkbox de 'NO'
+        $xNo = $this->pdf->GetX();
+        $this->pdf->Cell(10, 20, 'NO', 0, 0);
+        $this->dibujarCheckbox(!$funciona, $xNo, $yPos + 4);
 
-    // Espacio entre grupos
-    $this->pdf->Cell(30, 12, '', 0, 0);
+        // Espacio entre grupos
+        $this->pdf->Cell(30, 12, '', 0, 0);
 
-    // Posición para el checkbox de 'BUENO'
-    $xBueno = $this->pdf->GetX();
-    $this->pdf->Cell(20, 20, 'BUENO', 0, 0);
-    $this->dibujarCheckbox($toner_estado === 'bueno', $xBueno, $yPos + 4);
+        // Posición para el checkbox de 'BUENO'
+        $xBueno = $this->pdf->GetX();
+        $this->pdf->Cell(20, 20, 'BUENO', 0, 0);
+        $this->dibujarCheckbox($toner_estado === 'bueno', $xBueno, $yPos + 4);
 
-    // Posición para el checkbox de 'MALO'
-    $xMalo = $this->pdf->GetX();
-    $this->pdf->Cell(15, 20, 'MALO', 0, 1);
-    $this->dibujarCheckbox($toner_estado === 'malo', $xMalo, $yPos + 4);
+        // Posición para el checkbox de 'MALO'
+        $xMalo = $this->pdf->GetX();
+        $this->pdf->Cell(15, 20, 'MALO', 0, 1);
+        $this->dibujarCheckbox($toner_estado === 'malo', $xMalo, $yPos + 4);
+        
+        // Paquetes de hojas
+        $this->pdf->Cell(0, 8, 'PAQUETES DE HOJAS PARA IMPRESIÓN: ' . $entrega['Paquetes_Hojas'], 0, 1);
+
+        // Líneas de separación
+        $this->pdf->Ln(8);
+        $this->pdf->Line(15, $this->pdf->GetY(), 195, $this->pdf->GetY());
+        $this->pdf->Ln(8);
+    }
     
-    // Paquetes de hojas
-    $this->pdf->Cell(0, 8, 'PAQUETES DE HOJAS PARA IMPRESIÓN: ' . $entrega['Paquetes_Hojas'], 0, 1);
-
-    // Líneas de separación
-    $this->pdf->Ln(8);
-    $this->pdf->Line(15, $this->pdf->GetY(), 195, $this->pdf->GetY());
-    $this->pdf->Ln(8);
-}
     /**
-     * FONDO Y DOCUMENTACIÓN - CORREGIDO DEFINITIVO
+     * FONDO Y DOCUMENTACIÓN
      */
     private function generarFondoYDocumentacionPDF($entrega) {
         $this->pdf->SetFont('helvetica', 'B', 10);
@@ -365,7 +499,7 @@ public function generarWalkaround($id) {
         // VALES DE GASOLINA
         $this->pdf->Cell(0, 8, 'VALES DE GASOLINA:          CANTIDAD: ' . $entrega['Vales_Gasolina'] . '              FOLIO: ' . $entrega['Vales_Gasolina_Folio'], 0, 1);
         
-        // REPORTE DE ATERRIZAJES - CORREGIDO (SIN SUPERPOSICIÓN)
+        // REPORTE DE ATERRIZAJES
         $this->pdf->Cell(50, 10, 'REPORTE DE ATERRIZAJES:    ', 0, 0);
         
         // Más espacio entre elementos
@@ -385,17 +519,17 @@ public function generarWalkaround($id) {
     }
     
     /**
-     * CAJA FUERTE Y FIRMAS - SIN PÁGINA EXTRA
+     * CAJA FUERTE Y FIRMAS
      */
-     private function generarCajaFuerteYFirmasPDF($entrega) {
-        /// CORRECCIÓN: Verificar si necesitamos nueva página ANTES de agregar contenido
+    private function generarCajaFuerteYFirmasPDF($entrega) {
+        // CORRECCIÓN: Verificar si necesitamos nueva página ANTES de agregar contenido
         $alturaNecesaria = 50;
 
-         // Calcular espacio disponible en la página actual
+        // Calcular espacio disponible en la página actual
         $espacioDisponible = 297 - $this->pdf->GetY() - 20; // Altura A4 - posición Y - margen inferior
         
         // Si el espacio es insuficiente para el contenido restante, forzar nueva página
-        if ($espacioDisponible < $alturaNecesaria) { // 60mm es el espacio aproximado que necesitamos
+        if ($espacioDisponible < $alturaNecesaria) {
             $this->pdf->AddPage();
             $this->generarCabeceraEntregaTurno($entrega, true);
             $this->pdf->SetY(40);
@@ -403,151 +537,28 @@ public function generarWalkaround($id) {
         
         // CAJA FUERTE - versión más compacta
         $this->pdf->SetFont('helvetica', 'B', 10);
-        $this->pdf->Cell(0, 6, 'CAJA FUERTE:', 0, 1); // Reducido de 8 a 6
+        $this->pdf->Cell(0, 6, 'CAJA FUERTE:', 0, 1);
         $this->pdf->SetFont('helvetica', '', 9);
         
         $contenido = $entrega['Caja_Fuerte_Contenido'] ?: 'Sin observaciones';
         
-         // Usar MultiCell para contenido largo
+        // Usar MultiCell para contenido largo
         $this->pdf->MultiCell(0, 6, $contenido, 0, 'L');
         
         $this->pdf->Ln(8);
         
         // FIRMAS más compactas
         $this->pdf->SetFont('helvetica', 'B', 10); 
-        $this->pdf->Cell(95, 6, 'FIRMA Y NOMBRE DE QUIEN ENTREGA', 0, 0); // Reducido de 8 a 6
-        $this->pdf->Cell(95, 6, 'JEFE TURNO DE DESPACHO', 0, 1); // Reducido de 8 a 6
+        $this->pdf->Cell(95, 6, 'FIRMA Y NOMBRE DE QUIEN ENTREGA', 0, 0);
+        $this->pdf->Cell(95, 6, 'JEFE TURNO DE DESPACHO', 0, 1);
         
         $this->pdf->SetFont('helvetica', '', 9);
         
         // Líneas para firmas más compactas
-        $this->pdf->Cell(95, 15, $entrega['Firma_Entrega'] ?: '_________________________', 0, 0, 'C'); // Reducido de 12 a 8
-        $this->pdf->Cell(95, 15, $entrega['Firma_Recibe'] ?: '_________________________', 0, 1, 'C'); // Reducido de 12 a 8
+        $this->pdf->Cell(95, 15, $entrega['Firma_Entrega'] ?: '_________________________', 0, 0, 'C');
+        $this->pdf->Cell(95, 15, $entrega['Firma_Recibe'] ?: '_________________________', 0, 1, 'C');
     }
 
-    /**
-     * Método auxiliar para calcular altura del texto
-     */
-    private function calcularAlturaTexto($texto, $ancho, $alturaLinea, $maxCaracteres) {
-        $texto = substr($texto, 0, $maxCaracteres);
-        $numLineas = ceil(strlen($texto) / 80); // Aproximar líneas necesarias
-        return $numLineas * $alturaLinea;
-    }
-    
-    /**
- * COMPONENTES WALKAROUND EN TABLA CON BORDES - NUEVA VERSIÓN
- */
-private function generarComponentesWalkaroundPDF($componentes, $tipoAeronave) {
-    $tipo = strtolower($tipoAeronave);
-    
-    $this->pdf->SetFont('helvetica', 'B', 12);
-    if ($tipo === 'avion') {
-        $this->pdf->Cell(0, 10, 'COMPONENTES - AVIONES', 0, 1);
-    } else {
-        $this->pdf->Cell(0, 10, 'COMPONENTES - HELICÓPTEROS', 0, 1);
-    }
-    
-    // Configurar anchos de columnas PERFECTOS
-    $anchoComponente = 75;
-    $anchoCheckbox = 25;
-    $anchoObservaciones = 60;
-    
-    // Cabecera de la tabla
-    $this->pdf->SetFont('helvetica', 'B', 8);
-    $this->pdf->SetFillColor(240, 240, 240);
-    
-    $this->pdf->Cell($anchoComponente, 8, 'COMPONENTE', 1, 0, 'C', true);
-    $this->pdf->Cell($anchoCheckbox, 8, 'SIN DAÑO', 1, 0, 'C', true);
-    $this->pdf->Cell($anchoCheckbox, 8, 'CON DAÑO', 1, 0, 'C', true);
-    $this->pdf->Cell($anchoObservaciones, 8, 'OBSERVACIONES', 1, 1, 'C', true);
-    
-    $this->pdf->SetFont('helvetica', '', 8);
-    $this->pdf->SetFillColor(255, 255, 255);
-    
-    $componentesPredefinidos = $this->getComponentesPorTipo($tipo);
-    
-    foreach ($componentesPredefinidos as $componente) {
-        $componenteGuardado = $this->findComponente($componentes, $componente['id']);
-        $estado = $componenteGuardado ? $componenteGuardado['Estado'] : 0;
-        $observaciones = $componenteGuardado ? $componenteGuardado['Observaciones'] : '';
-        
-        // ALTURA FIJA PARA TODAS LAS FILAS
-        $alturaFila = 9;
-        
-        // Guardar posición Y inicial
-        $yInicial = $this->pdf->GetY();
-        
-        // 1. COMPONENTE (usar Cell normal, no MultiCell)
-        $textoComponente = $this->truncarTexto($componente['nombre'], 45);
-        $this->pdf->Cell($anchoComponente, $alturaFila, $textoComponente, 1, 0, 'L');
-        
-        // 2. SIN DAÑO - Checkbox
-        $xCheckbox1 = $this->pdf->GetX();
-        $this->pdf->Cell($anchoCheckbox, $alturaFila, '', 1, 0, 'C');
-        // Dibujar checkbox CENTRADO
-        $this->dibujarCheckbox($estado == 1, $xCheckbox1 + ($anchoCheckbox/2 - 1.5), $yInicial + ($alturaFila/2 - 1.5));
-        
-        // 3. CON DAÑO - Checkbox
-        $xCheckbox2 = $this->pdf->GetX();
-        $this->pdf->Cell($anchoCheckbox, $alturaFila, '', 1, 0, 'C');
-        // Dibujar checkbox CENTRADO
-        $this->dibujarCheckbox($estado == 2, $xCheckbox2 + ($anchoCheckbox/2 - 1.5), $yInicial + ($alturaFila/2 - 1.5));
-        
-        // 4. OBSERVACIONES (usar Cell normal)
-        $textoObservaciones = $this->truncarTexto($observaciones, 30);
-        $this->pdf->Cell($anchoObservaciones, $alturaFila, $textoObservaciones, 1, 1, 'L');
-        
-        // VERIFICAR SI NECESITAMOS NUEVA PÁGINA
-        if ($this->pdf->GetY() > 250) {
-            $this->pdf->AddPage();
-            // Redibujar cabecera de tabla si es nueva página
-            $this->pdf->SetFont('helvetica', 'B', 8);
-            $this->pdf->SetFillColor(240, 240, 240);
-            $this->pdf->Cell($anchoComponente, 8, 'COMPONENTE', 1, 0, 'C', true);
-            $this->pdf->Cell($anchoCheckbox, 8, 'SIN DAÑO', 1, 0, 'C', true);
-            $this->pdf->Cell($anchoCheckbox, 8, 'CON DAÑO', 1, 0, 'C', true);
-            $this->pdf->Cell($anchoObservaciones, 8, 'OBSERVACIONES', 1, 1, 'C', true);
-            $this->pdf->SetFont('helvetica', '', 8);
-        }
-    }
-    
-    $this->pdf->Ln(8);
-}
-
-/**
- * Método auxiliar para truncar texto muy largo
- */
-private function truncarTexto($texto, $maxCaracteres) {
-    if (strlen($texto) > $maxCaracteres) {
-        return substr($texto, 0, $maxCaracteres - 3) . '...';
-    }
-    return $texto;
-}
-
-/**
- * Método auxiliar para calcular líneas de texto
- */
-private function calcularLineasTexto($texto, $anchoMaximo) {
-    if (empty($texto)) return 1;
-    
-    $palabras = explode(' ', $texto);
-    $lineaActual = '';
-    $lineas = 1;
-    
-    foreach ($palabras as $palabra) {
-        $lineaPrueba = $lineaActual . ($lineaActual ? ' ' : '') . $palabra;
-        // Estimación aproximada de ancho (1mm por carácter en font size 8)
-        if (strlen($lineaPrueba) * 0.5 > $anchoMaximo) {
-            $lineas++;
-            $lineaActual = $palabra;
-        } else {
-            $lineaActual = $lineaPrueba;
-        }
-    }
-    
-    return $lineas;
-}
-    
     /**
      * MÉTODO PARA DIBUJAR CHECKBOX
      */
@@ -563,7 +574,116 @@ private function calcularLineasTexto($texto, $anchoMaximo) {
         }
     }
     
-    // MÉTODOS AUXILIARES
+    /**
+     * GENERAR DIAGRAMA EN SEGUNDA HOJA
+     */
+    private function generarDiagrama($tipoVehiculo) {
+        // Forzar segunda página
+        
+        $rutaDiagrama = '';        
+        // Determinar ruta del diagrama según el tipo - CORREGIDA LA RUTA
+        $basePath = __DIR__ . '/../diagramas/';
+        
+        if (strtoupper($tipoVehiculo) === 'AVION' || strtoupper($tipoVehiculo) === 'AVIÓN') {
+            $rutaDiagrama = $basePath . 'diagrama_avion.jpg';
+        } elseif (strtoupper($tipoVehiculo) === 'HELICOPTERO' || strtoupper($tipoVehiculo) === 'HELICÓPTERO') {
+            $rutaDiagrama = $basePath . 'diagrama_helicoptero.jpg';
+        } else {
+            // Por defecto avión
+            $rutaDiagrama = $basePath . 'diagrama_avion.jpg';
+        }
+        // Mostrar imagen si existe - VERIFICAR EXTENSIONES
+        $extensiones = ['.jpg', '.jpeg', '.png', '.gif'];
+        $imagenEncontrada = false;
+        
+        foreach ($extensiones as $ext) {
+            $rutaConExtension = preg_replace('/\.[^.]*$/', $ext, $rutaDiagrama);
+            if (file_exists($rutaConExtension)) {
+                $rutaDiagrama = $rutaConExtension;
+                $imagenEncontrada = true;
+                break;
+            }
+        }
+        
+        if ($imagenEncontrada) {
+            // Centrar la imagen con tamaño ajustado
+            $anchoDisponible = 160;
+            $altoDisponible = 100;
+            $x = (210 - $anchoDisponible) / 2;
+            
+            $this->pdf->Image($rutaDiagrama, $x, $this->pdf->GetY(), $anchoDisponible, $altoDisponible, 'JPG', '', 'T', false, 300, '', false, false, 0, false, false, false);
+            $this->pdf->Ln(130);
+        } else {
+            $this->pdf->SetFont('helvetica', 'I', 12);
+            $this->pdf->Cell(0, 10, 'Diagrama no disponible: ' . basename($rutaDiagrama), 0, 1, 'C');
+            $this->pdf->Cell(0, 10, 'Buscado en: ' . $basePath, 0, 1, 'C');
+        }
+    }
+
+    /**
+     * OBSERVACIONES WALKAROUND
+     */
+    private function generarObservacionesWalkaroundPDF($walkaround) {
+        $this->pdf->SetFont('helvetica', 'B', 12);
+        $this->pdf->Cell(0, 10, 'OBSERVACIONES/OTRO (ESPECIFICAR)', 0, 1);
+        
+        $this->pdf->SetFont('helvetica', '', 10);
+        
+        // CORRECCIÓN: Usar el campo 'observaciones' en minúsculas
+        $observaciones = 'No hay observaciones registradas.';
+        
+        if (isset($walkaround['observaciones']) && !empty(trim($walkaround['observaciones']))) {
+            $observaciones = $walkaround['observaciones'];
+        }
+        
+        // Crear un cuadro para las observaciones
+        $this->pdf->SetFillColor(245, 245, 245);
+        $this->pdf->MultiCell(0, 8, $observaciones, 1, 'L', true);
+        
+        $this->pdf->Ln(10);
+    }
+    
+    /**
+     * FIRMAS WALKAROUND
+     */
+    private function generarFirmasWalkaroundPDF($walkaround) {
+        $this->pdf->SetFont('helvetica', 'B', 10);
+        $this->pdf->Cell(0, 8, 'Responsable de la operación (Nombre y firma):', 0, 1);
+        $this->pdf->SetFont('helvetica', '', 9);
+        
+        // CORRECCIÓN: Verificar que la clave existe
+        $responsable = isset($walkaround['Responsable']) ? $walkaround['Responsable'] : '_________________________';
+        $this->pdf->Cell(0, 20, $responsable, 'B', 1);
+        $this->pdf->Ln(8);
+        
+        // Tabla de firmas
+        $this->pdf->SetFont('helvetica', 'B', 10);
+        $this->pdf->Cell(60, 8, 'Elaboró', 0, 0);
+        $this->pdf->Cell(60, 8, 'Jefe de área', 0, 0);
+        $this->pdf->Cell(60, 8, 'Vo Bo Gerente FBO', 0, 1);
+        
+        $this->pdf->SetFont('helvetica', '', 9);
+        
+        $elaboro = isset($walkaround['Elaboro']) ? $walkaround['Elaboro'] : '_________________________';
+        $jefeArea = isset($walkaround['JefeArea']) ? $walkaround['JefeArea'] : '_________________________';
+        $voBo = isset($walkaround['VoBo']) ? $walkaround['VoBo'] : '_________________________';
+        
+        $this->pdf->Cell(60, 20, $elaboro, 'B', 0);
+        $this->pdf->Cell(60, 20, $jefeArea, 'B', 0);
+        $this->pdf->Cell(60, 20, $voBo, 'B', 1);
+    }
+
+    /**
+     * Método auxiliar para truncar texto muy largo
+     */
+    private function truncarTexto($texto, $maxCaracteres) {
+        if (strlen($texto) > $maxCaracteres) {
+            return substr($texto, 0, $maxCaracteres - 3) . '...';
+        }
+        return $texto;
+    }
+    
+    // MÉTODOS AUXILIARES PARA BASE DE DATOS
     private function getEquiposComunicacion($pdo, $id) {
         $sql = "SELECT * FROM equipocomunicacion WHERE Entrega_Turno_Id = ?";
         $stmt = $pdo->prepare($sql);
@@ -606,31 +726,42 @@ private function calcularLineasTexto($texto, $anchoMaximo) {
     private function getComponentesPorTipo($tipo) {
         $componentes = [
             'avion' => [
-                ['id' => 'radomo', 'nombre' => 'Radomo'],
-                ['id' => 'parabrisas', 'nombre' => 'Parabrisas, limpiadores'],
-                ['id' => 'tubos_pitot', 'nombre' => 'Tubos Pitot'],
-                ['id' => 'tren_nariz', 'nombre' => 'Tren de nariz (llantas, luces, fugas)'],
-                ['id' => 'fuselaje_izq', 'nombre' => 'Fuselaje lado izquierdo (Antenas, luces, ventanillas)'],
-                ['id' => 'puerta_acceso_cabina', 'nombre' => 'Puerta de acceso a cabina (escalera, barandillas, marco)'],
-                ['id' => 'antenas', 'nombre' => 'Antenas'],
-                ['id' => 'semiala_izq', 'nombre' => 'Semiala izquierda (Bordes, winglet, estáticas, sup. de control)'],
-                ['id' => 'tren_principal_izq', 'nombre' => 'Tren principal izquierdo (Llantas, fugas...)'],
-                ['id' => 'compartimiento_carga', 'nombre' => 'Compartimiento de carga (exterior e interior)'],
-                ['id' => 'empenaje', 'nombre' => 'Empenaje (Bordes, estáticas, superficies de control)'],
-                ['id' => 'semiala_der', 'nombre' => 'Semiala derecha (Bordes, winglet, estáticas, sup. de control)'],
-                ['id' => 'tren_principal_der', 'nombre' => 'Tren principal derecho (Llantas, fugas...)'],
-                ['id' => 'valvulas_servicio', 'nombre' => 'Válvulas de servicio (Combustible, agua, libre de fugas)'],
-                ['id' => 'motores', 'nombre' => 'Motores (Cowling, carenados...)'],
-                ['id' => 'fuselaje_der', 'nombre' => 'Fuselaje lado derecho (Antenas, luces, ventanillas)'],
-                ['id' => 'registros_servicios', 'nombre' => 'Registros de Servicios']
+                ['id' => 'tren_nariz', 'nombre' => 'TREN DE NARIZ'],
+                ['id' => 'compuertas_tren', 'nombre' => 'COMPUERTAS TREN DE ATERRIZAJE'],
+                ['id' => 'parabrisas_limpiadores', 'nombre' => 'PARABRISAS / LIMPIADORES'],
+                ['id' => 'radomo', 'nombre' => 'RADOMO'],
+                ['id' => 'tubo_pitot', 'nombre' => 'TUBO PITOT'],
+                ['id' => 'fuselaje', 'nombre' => 'FUSELAJE'],
+                ['id' => 'antena', 'nombre' => 'ANTENA'],
+                ['id' => 'aleta', 'nombre' => 'ALETA'],
+                ['id' => 'aleron', 'nombre' => 'ALERON'],
+                ['id' => 'compensador_aleron', 'nombre' => 'COMPENSADOR DE ALERON'],
+                ['id' => 'mechas_descarga', 'nombre' => 'MECHAS DE DESCARGA ESTÁTICA'],
+                ['id' => 'punta_ala', 'nombre' => 'PUNTA DE ALA'],
+                ['id' => 'luces_carretero', 'nombre' => 'LUCES DE CARRETEO / ATERRIZAJE'],
+                ['id' => 'luces_navegacion', 'nombre' => 'LUCES DE NAVEGACIÓN, BEACON'],
+                ['id' => 'borde_ataque', 'nombre' => 'BORDE DE ATAQUE'],
+                ['id' => 'tren_principal', 'nombre' => 'TREN DE ATERRIZAJE PRINCIPAL'],
+                ['id' => 'valvulas_servicio', 'nombre' => 'VÁLVULAS DE SERVICIO (COMBUSTIBLE, ETC)'],
+                ['id' => 'motor', 'nombre' => 'MOTOR'],
+                ['id' => 'estabilizador_vertical', 'nombre' => 'ESTABILIZADOR VERTICAL'],
+                ['id' => 'timon_direccion', 'nombre' => 'TIMÓN DE DIRECCIÓN'],
+                ['id' => 'compensador_timon_direccion', 'nombre' => 'COMPENSADOR TIMÓN DE DIRECCIÓN'],
+                ['id' => 'estabilizador_horizontal', 'nombre' => 'ESTABILIZADOR HORIZONTAL'],
+                ['id' => 'timon_profundidad', 'nombre' => 'TIMÓN DE PROFUNDIDAD'],
+                ['id' => 'compensador_timon_profundidad', 'nombre' => 'COMPENSADOR TIMÓN DE PROFUNDIDAD'],
+                ['id' => 'borde_empenaje', 'nombre' => 'BORDE DE EMPEÑAJE'],
+                ['id' => 'alas_delta', 'nombre' => 'ALAS DELTA']
             ],
             'helicoptero' => [
-                ['id' => 'fuselaje', 'nombre' => 'Fuselaje (Puertas, ventanas, antenas, luces)'],
-                ['id' => 'esqui_neumaticos', 'nombre' => 'Esquí/Neumáticos'],
-                ['id' => 'palas', 'nombre' => 'Palas'],
-                ['id' => 'boom', 'nombre' => 'Boom'],
-                ['id' => 'estabilizadores', 'nombre' => 'Estabilizadores'],
-                ['id' => 'rotor_cola', 'nombre' => 'Rotor de Cola']
+                ['id' => 'fuselaje', 'nombre' => 'FUSELAJE'],
+                ['id' => 'puertas', 'nombre' => 'PUERTAS, VENTANAS, ANTENAS, LUCES'],
+                ['id' => 'esqui', 'nombre' => 'ESQUÍ / NEUMÁTICOS'],
+                ['id' => 'palas', 'nombre' => 'PALAS'],
+                ['id' => 'boom', 'nombre' => 'BOOM'],
+                ['id' => 'estabilizadores', 'nombre' => 'ESTABILIZADORES'],
+                ['id' => 'rotor', 'nombre' => 'ROTOR DE COLA'],
+                ['id' => 'parabrisas', 'nombre' => 'PARABRISAS']
             ]
         ];
         
@@ -645,117 +776,7 @@ private function calcularLineasTexto($texto, $anchoMaximo) {
         }
         return null;
     }
-    
-    /**
- * GENERAR DIAGRAMA EN SEGUNDA HOJA
- */
- private function generarDiagrama($tipoVehiculo) {
-        // Forzar segunda página
-        $this->pdf->AddPage();
-        
-        $rutaDiagrama = '';
-        $titulo = '';
-        
-        // Determinar ruta del diagrama según el tipo - CORREGIDA LA RUTA
-        $basePath = __DIR__ . '/../diagramas/';
-        
-        if (strtoupper($tipoVehiculo) === 'AVION' || strtoupper($tipoVehiculo) === 'AVIÓN') {
-            $rutaDiagrama = $basePath . 'diagrama_avion.jpg';
-            $titulo = 'DIAGRAMA DE AVIÓN';
-        } elseif (strtoupper($tipoVehiculo) === 'HELICOPTERO' || strtoupper($tipoVehiculo) === 'HELICÓPTERO') {
-            $rutaDiagrama = $basePath . 'diagrama_helicoptero.jpg';
-            $titulo = 'DIAGRAMA DE HELICÓPTERO';
-        } else {
-            // Por defecto avión
-            $rutaDiagrama = $basePath . 'diagrama_avion.jpg';
-            $titulo = 'DIAGRAMA DE AVIÓN';
-        }
-        
-        // Título
-        $this->pdf->SetFont('helvetica', 'B', 16);
-        $this->pdf->Cell(0, 15, $titulo, 0, 1, 'C');
-        $this->pdf->Ln(5);
-        
-        // Mostrar imagen si existe - VERIFICAR EXTENSIONES
-        $extensiones = ['.jpg', '.jpeg', '.png', '.gif'];
-        $imagenEncontrada = false;
-        
-        foreach ($extensiones as $ext) {
-            $rutaConExtension = preg_replace('/\.[^.]*$/', $ext, $rutaDiagrama);
-            if (file_exists($rutaConExtension)) {
-                $rutaDiagrama = $rutaConExtension;
-                $imagenEncontrada = true;
-                break;
-            }
-        }
-        
-        if ($imagenEncontrada) {
-            // Centrar la imagen con tamaño ajustado
-            $anchoDisponible = 160;
-            $altoDisponible = 120;
-            $x = (210 - $anchoDisponible) / 2;
-            
-            $this->pdf->Image($rutaDiagrama, $x, $this->pdf->GetY(), $anchoDisponible, $altoDisponible, 'JPG', '', 'T', false, 300, '', false, false, 0, false, false, false);
-            $this->pdf->Ln(130);
-        } else {
-            $this->pdf->SetFont('helvetica', 'I', 12);
-            $this->pdf->Cell(0, 10, 'Diagrama no disponible: ' . basename($rutaDiagrama), 0, 1, 'C');
-            $this->pdf->Cell(0, 10, 'Buscado en: ' . $basePath, 0, 1, 'C');
-        }
-    }
-
-     /**
-     * OBSERVACIONES WALKAROUND - NUEVO MÉTODO
-     */
-    private function generarObservacionesWalkaroundPDF($walkaround) {
-        $this->pdf->SetFont('helvetica', 'B', 12);
-        $this->pdf->Cell(0, 10, 'OBSERVACIONES/OTRO (ESPECIFICAR)', 0, 1);
-        
-        $this->pdf->SetFont('helvetica', '', 10);
-        
-        // CORRECCIÓN: Usar el campo 'observaciones' en minúsculas
-    $observaciones = 'No hay observaciones registradas.';
-    
-    if (isset($walkaround['observaciones']) && !empty(trim($walkaround['observaciones']))) {
-        $observaciones = $walkaround['observaciones'];
-    }
-    
-    // Crear un cuadro para las observaciones
-    $this->pdf->SetFillColor(245, 245, 245);
-    $this->pdf->MultiCell(0, 8, $observaciones, 1, 'L', true);
-    
-    $this->pdf->Ln(10);
 }
-    
-    private function generarFirmasWalkaroundPDF($walkaround) {
-
-        $this->pdf->SetFont('helvetica', 'B', 10);
-        $this->pdf->Cell(0, 8, 'Responsable de la operación (Nombre y firma):', 0, 1);
-        $this->pdf->SetFont('helvetica', '', 9);
-        
-        // CORRECCIÓN: Verificar que la clave existe
-        $responsable = isset($walkaround['Responsable']) ? $walkaround['Responsable'] : '_________________________';
-        $this->pdf->Cell(0, 20, $responsable, 'B', 1);
-        $this->pdf->Ln(8);
-        
-        // Tabla de firmas
-        $this->pdf->SetFont('helvetica', 'B', 10);
-        $this->pdf->Cell(60, 8, 'Elaboró', 0, 0);
-        $this->pdf->Cell(60, 8, 'Jefe de área', 0, 0);
-        $this->pdf->Cell(60, 8, 'Vo Bo Gerente FBO', 0, 1);
-        
-        $this->pdf->SetFont('helvetica', '', 9);
-        
-        $elaboro = isset($walkaround['Elaboro']) ? $walkaround['Elaboro'] : '_________________________';
-        $jefeArea = isset($walkaround['JefeArea']) ? $walkaround['JefeArea'] : '_________________________';
-        $voBo = isset($walkaround['VoBo']) ? $walkaround['VoBo'] : '_________________________';
-        
-        $this->pdf->Cell(60, 20, $elaboro, 'B', 0);
-        $this->pdf->Cell(60, 20, $jefeArea, 'B', 0);
-        $this->pdf->Cell(60, 20, $voBo, 'B', 1);
-    }
-}
-
 
 // USO DEL GENERADOR
 $tipo = isset($_GET['tipo']) ? $_GET['tipo'] : '';
