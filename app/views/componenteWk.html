@@ -108,19 +108,44 @@
             </div>
 
             <div class="row mb-4">
-                <div class="col-md-6">
-                    <div class="form-group">
-                        <label for="procedencia" class="form-label">Procedencia:</label>
-                        <input type="text" class="form-control" id="procedencia" name="procedencia" placeholder="Escriba la procedencia del vuelo" >
-                    </div>
-                </div>
-                <div class="col-md-6">
-                    <div class="form-group">
-                        <label for="destino" class="form-label">Destino:</label>
-                        <input type="text" class="form-control" id="destino" name="destino" placeholder="Escriba el destino del vuelo" >
+    <div class="col-md-6">
+        <div class="form-group position-relative">
+            <label for="procedencia" class="form-label">Procedencia:</label>
+            <input type="text" class="form-control" id="procedencia" name="procedencia" 
+                   placeholder="Escriba IATA, OACI o nombre del aeropuerto" autocomplete="off">
+            
+            <!-- Contenedor para resultados de búsqueda -->
+            <div id="resultadosProcedencia" class="search-results-container">
+                <div class="card">
+                    <div class="card-body p-2">
+                        <div class="list-group list-group-flush" id="listaProcedencia">
+                            <!-- Resultados se cargarán aquí -->
+                        </div>
                     </div>
                 </div>
             </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6">
+        <div class="form-group position-relative">
+            <label for="destino" class="form-label">Destino:</label>
+            <input type="text" class="form-control" id="destino" name="destino" 
+                   placeholder="Escriba IATA, OACI o nombre del aeropuerto" autocomplete="off">
+            
+            <!-- Contenedor para resultados de búsqueda -->
+            <div id="resultadosDestino" class="search-results-container">
+                <div class="card">
+                    <div class="card-body p-2">
+                        <div class="list-group list-group-flush" id="listaDestino">
+                            <!-- Resultados se cargarán aquí -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
             
             <!-- NUEVA SECCIÓN: Información adicional de la aeronave seleccionada -->
             <div class="row mb-4" id="infoAeronaveContainer" style="display: none;">

@@ -941,3 +941,37 @@ body {
         font-size: 3rem;
     }
 }
+
+/* Estilos para la búsqueda de aeropuertos */
+.search-results-container {
+    display: none;
+    position: absolute;
+    z-index: 1000;
+    width: 100%;
+    max-height: 250px;
+    overflow-y: auto;
+    border: 1px solid #ddd;
+    border-radius: 0.375rem;
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+    background: white;
+}
+
+.search-results-container .list-group-item {
+    border: none;
+    border-bottom: 1px solid #eee;
+    padding: 0.75rem 1rem;
+    cursor: pointer;
+    text-align: left;
+}
+
+.search-results-container .list-group-item:hover {
+    background-color: #f8f9fa;
+}
+
+.search-results-container .list-group-item:last-child {
+    border-bottom: none;
+}
+
+.search-results-container .small {
+    font-size: 0.875em;
+}

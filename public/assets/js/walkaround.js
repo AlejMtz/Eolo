@@ -109,6 +109,9 @@ document.addEventListener('DOMContentLoaded', () => {
     if (document.getElementById('walkaroundForm')) {
         // ⭐⭐ PRIMERO: Cargar aeronaves para el selector (SIEMPRE, en ambos modos)
         cargarAeronavesParaSelector();
+
+         // ⭐⭐ NUEVO: Configurar búsqueda de aeropuertos
+        configurarBusquedaAeropuertos();
         
         // Comprobar si hay un ID en la URL para modo edición
         const params = new URLSearchParams(window.location.search);
@@ -311,6 +314,138 @@ function limpiarAeronaveSeleccionada() {
             <p class="mt-3 text-muted">Selecciona una aeronave para mostrar sus componentes</p>
         </div>
     `;
+}
+
+/**
+ * Configura el filtro de búsqueda de aeropuertos para procedencia/destino
+ */
+function configurarBusquedaAeropuertos() {
+    // Configurar para procedencia
+    const inputProcedencia = document.getElementById('procedencia');
+    const resultadosProcedencia = document.getElementById('resultadosProcedencia');
+    
+    // Configurar para destino
+    const inputDestino = document.getElementById('destino');
+    const resultadosDestino = document.getElementById('resultadosDestino');
+    
+    if (inputProcedencia) {
+        configurarInputAeropuerto(inputProcedencia, resultadosProcedencia);
+    }
+    
+    if (inputDestino) {
+        configurarInputAeropuerto(inputDestino, resultadosDestino);
+    }
+}
+
+/**
+ * Configura un input individual para búsqueda de aeropuertos
+ */
+function configurarInputAeropuerto(inputElement, resultadosDiv) {
+    let timeoutBusqueda = null;
+    
+    inputElement.addEventListener('input', function(e) {
+        const termino = e.target.value.trim();
+        
+        // Limpiar timeout anterior
+        if (timeoutBusqueda) {
+            clearTimeout(timeoutBusqueda);
+        }
+        
+        // Esperar 300ms después de que el usuario deje de escribir
+        timeoutBusqueda = setTimeout(() => {
+            if (termino.length >= 2) {
+                buscarAeropuertos(termino, resultadosDiv, inputElement);
+            } else {
+                ocultarResultadosAeropuertos(resultadosDiv);
+            }
+        }, 300);
+    });
+    
+    // Ocultar resultados al hacer clic fuera
+    document.addEventListener('click', function(e) {
+        if (!inputElement.contains(e.target) && !resultadosDiv.contains(e.target)) {
+            ocultarResultadosAeropuertos(resultadosDiv);
+        }
+    });
+    
+    // Manejar teclas especiales
+    inputElement.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            ocultarResultadosAeropuertos(resultadosDiv);
+            inputElement.blur();
+        }
+    });
+}
+
+/**
+ * Busca aeropuertos por término (IATA, OACI o nombre)
+ */
+async function buscarAeropuertos(termino, resultadosDiv, inputElement) {
+    try {
+        const response = await fetch(`/Eolo/app/models/obtener_aeropuertos.php?q=${encodeURIComponent(termino)}`);
+        const data = await response.json();
+        
+        if (data.success && data.aeropuertos.length > 0) {
+            mostrarResultadosAeropuertos(data.aeropuertos, resultadosDiv, inputElement);
+        } else {
+            ocultarResultadosAeropuertos(resultadosDiv);
+        }
+    } catch (error) {
+        console.error('Error buscando aeropuertos:', error);
+        ocultarResultadosAeropuertos(resultadosDiv);
+    }
+}
+
+/**
+ * Muestra los resultados de búsqueda de aeropuertos
+ */
+function mostrarResultadosAeropuertos(aeropuertos, resultadosDiv, inputElement) {
+    resultadosDiv.innerHTML = '';
+    
+    aeropuertos.forEach(aeropuerto => {
+        const item = document.createElement('button');
+        item.type = 'button';
+        item.className = 'list-group-item list-group-item-action text-start';
+        item.innerHTML = `
+            <div class="d-flex justify-content-between align-items-start">
+                <div>
+                    <strong>${aeropuerto.codigo_iata} / ${aeropuerto.codigo_oaci}</strong>
+                    <div class="small">${aeropuerto.nombre}</div>
+                    <div class="small text-muted">${aeropuerto.municipio}, ${aeropuerto.estado}</div>
+                </div>
+            </div>
+        `;
+        
+        item.addEventListener('click', function() {
+            seleccionarAeropuerto(aeropuerto, inputElement, resultadosDiv);
+        });
+        
+        resultadosDiv.appendChild(item);
+    });
+    
+    resultadosDiv.style.display = 'block';
+}
+
+/**
+ * Selecciona un aeropuerto de los resultados
+ */
+function seleccionarAeropuerto(aeropuerto, inputElement, resultadosDiv) {
+    // Mostrar el código IATA en el input (puedes cambiar a OACI si prefieres)
+    inputElement.value = aeropuerto.codigo_iata;
+    
+    // Ocultar resultados
+    ocultarResultadosAeropuertos(resultadosDiv);
+    
+    console.log('Aeropuerto seleccionado:', aeropuerto);
+}
+
+/**
+ * Oculta los resultados de búsqueda de aeropuertos
+ */
+function ocultarResultadosAeropuertos(resultadosDiv) {
+    if (resultadosDiv) {
+        resultadosDiv.style.display = 'none';
+    }
 }
 
 /**
