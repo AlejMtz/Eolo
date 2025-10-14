@@ -1,7 +1,8 @@
-// Variables globales para los modales
-let successModal = null;
-let errorModal = null;
-let confirmModal = null;
+// Variables globales para paginación
+let paginaActualTurnos = 1;
+const registrosPorPaginaTurnos = 15;
+let totalPaginasTurnos = 1;
+let totalRegistrosTurnos = 0;
 
 // Función para verificar permisos de edición/eliminación
 function tienePermisosAdmin() {
@@ -413,25 +414,55 @@ function generarPDFEntregaTurno(id) {
 }
 
 /**
- * Carga la lista de entregas en la tabla
+ * Carga la lista de entregas en la tabla con paginación
  */
-async function cargarEntregasTurno() {
+async function cargarEntregasTurno(pagina = 1) {
     const tablaBody = document.querySelector('#tablaTurnos tbody');
     if (!tablaBody) return;
 
     tablaBody.innerHTML = '<tr><td colspan="9" class="text-center">Cargando...</td></tr>';
 
     try {
-        const response = await fetch('../models/entrega_turno_leer.php');
+        const response = await fetch(`../models/entrega_turno_leer.php?pagina=${pagina}&registros_por_pagina=${registrosPorPaginaTurnos}`);
         if (!response.ok) {
             throw new Error(`Error HTTP: ${response.status}`);
         }
         
-        const entregas = await response.json();
+        const data = await response.json();
         
-        if (entregas.error) {
-            throw new Error(entregas.error);
+        if (data.error) {
+            throw new Error(data.error);
         }
+
+        // Manejar diferentes estructuras de respuesta
+        let entregas = [];
+        let infoPaginacion = {
+            pagina_actual: pagina,
+            total_paginas: 1,
+            total_registros: 0,
+            registros_por_pagina: registrosPorPaginaTurnos
+        };
+
+        if (data.entregas && data.paginacion) {
+            // Nueva estructura con paginación
+            entregas = data.entregas;
+            infoPaginacion = data.paginacion;
+        } else if (Array.isArray(data)) {
+            // Estructura antigua (array simple) - aplicar paginación manual
+            const inicio = (pagina - 1) * registrosPorPaginaTurnos;
+            const fin = inicio + registrosPorPaginaTurnos;
+            entregas = data.slice(inicio, fin);
+            infoPaginacion.total_registros = data.length;
+            infoPaginacion.total_paginas = Math.ceil(data.length / registrosPorPaginaTurnos);
+        } else {
+            throw new Error('Formato de respuesta no reconocido');
+        }
+
+        paginaActualTurnos = infoPaginacion.pagina_actual;
+        totalPaginasTurnos = infoPaginacion.total_paginas;
+        totalRegistrosTurnos = infoPaginacion.total_registros;
+
+        console.log('🔄 Información de paginación entregas:', infoPaginacion);
 
         tablaBody.innerHTML = '';
         
@@ -503,6 +534,10 @@ async function cargarEntregasTurno() {
                 tablaBody.appendChild(fila);
             });
         }
+        
+        // Actualizar el paginador
+        actualizarPaginadorTurnos();
+        
     } catch (error) {
         console.error('Error al cargar entregas:', error);
         tablaBody.innerHTML = '<tr><td colspan="9" class="text-center text-danger">Error al cargar los datos.</td></tr>';
@@ -597,7 +632,8 @@ function eliminarEntregaConfirmada(id) {
         .then(data => {
             if (data.success) {
                 mostrarExito(data.success, () => {
-                    cargarEntregasTurno();
+                    // Recargar manteniendo la página actual
+                    cargarEntregasTurno(paginaActualTurnos);
                 });
             } else {
                 mostrarError(data.error);
@@ -618,5 +654,145 @@ function mostrarMensaje(titulo, cuerpo, tipo) {
         mostrarExito(cuerpo);
     } else {
         mostrarError(cuerpo);
+    }
+}
+
+/**
+ * Actualiza el paginador en la interfaz para entregas de turno
+ */
+function actualizarPaginadorTurnos() {
+    const tabla = document.getElementById('tablaTurnos');
+    if (!tabla) return;
+    
+    // Eliminar paginador existente
+    const paginadorExistente = tabla.nextElementSibling;
+    if (paginadorExistente && paginadorExistente.classList.contains('paginador-container')) {
+        paginadorExistente.remove();
+    }
+    
+    // Crear contenedor del paginador
+    const paginadorContainer = document.createElement('div');
+    paginadorContainer.className = 'paginador-container mt-4';
+    paginadorContainer.id = 'paginadorTurnos';
+    
+    let html = '';
+    
+    // Información de registros
+    const inicio = ((paginaActualTurnos - 1) * registrosPorPaginaTurnos) + 1;
+    const fin = Math.min(paginaActualTurnos * registrosPorPaginaTurnos, totalRegistrosTurnos);
+    
+    html += `
+        <div class="d-flex justify-content-between align-items-center">
+            <div class="text-muted">
+                Mostrando ${inicio} a ${fin} de ${totalRegistrosTurnos} entregas
+            </div>
+            <nav aria-label="Paginación de entregas de turno">
+                <ul class="pagination pagination-sm mb-0">
+    `;
+    
+    // Botón Anterior
+    if (paginaActualTurnos > 1) {
+        html += `
+            <li class="page-item">
+                <a class="page-link" href="javascript:void(0)" onclick="cambiarPaginaTurnos(${paginaActualTurnos - 1})" aria-label="Anterior">
+                    <i class="fas fa-chevron-left"></i>
+                </a>
+            </li>
+        `;
+    } else {
+        html += `
+            <li class="page-item disabled">
+                <span class="page-link"><i class="fas fa-chevron-left"></i></span>
+            </li>
+        `;
+    }
+    
+    // Números de página
+    const paginasAMostrar = 5;
+    let inicioPaginas = Math.max(1, paginaActualTurnos - Math.floor(paginasAMostrar / 2));
+    let finPaginas = Math.min(totalPaginasTurnos, inicioPaginas + paginasAMostrar - 1);
+    
+    // Ajustar si estamos cerca del final
+    if (finPaginas - inicioPaginas + 1 < paginasAMostrar) {
+        inicioPaginas = Math.max(1, finPaginas - paginasAMostrar + 1);
+    }
+    
+    // Página inicial
+    if (inicioPaginas > 1) {
+        html += `
+            <li class="page-item">
+                <a class="page-link" href="javascript:void(0)" onclick="cambiarPaginaTurnos(1)">1</a>
+            </li>
+            ${inicioPaginas > 2 ? '<li class="page-item disabled"><span class="page-link">...</span></li>' : ''}
+        `;
+    }
+    
+    // Páginas intermedias
+    for (let i = inicioPaginas; i <= finPaginas; i++) {
+        if (i === paginaActualTurnos) {
+            html += `
+                <li class="page-item active">
+                    <span class="page-link">${i}</span>
+                </li>
+            `;
+        } else {
+            html += `
+                <li class="page-item">
+                    <a class="page-link" href="javascript:void(0)" onclick="cambiarPaginaTurnos(${i})">${i}</a>
+                </li>
+            `;
+        }
+    }
+    
+    // Página final
+    if (finPaginas < totalPaginasTurnos) {
+        html += `
+            ${finPaginas < totalPaginasTurnos - 1 ? '<li class="page-item disabled"><span class="page-link">...</span></li>' : ''}
+            <li class="page-item">
+                <a class="page-link" href="javascript:void(0)" onclick="cambiarPaginaTurnos(${totalPaginasTurnos})">${totalPaginasTurnos}</a>
+            </li>
+        `;
+    }
+    
+    // Botón Siguiente
+    if (paginaActualTurnos < totalPaginasTurnos) {
+        html += `
+            <li class="page-item">
+                <a class="page-link" href="javascript:void(0)" onclick="cambiarPaginaTurnos(${paginaActualTurnos + 1})" aria-label="Siguiente">
+                    <i class="fas fa-chevron-right"></i>
+                </a>
+            </li>
+        `;
+    } else {
+        html += `
+            <li class="page-item disabled">
+                <span class="page-link"><i class="fas fa-chevron-right"></i></span>
+            </li>
+        `;
+    }
+    
+    html += `
+                </ul>
+            </nav>
+        </div>
+    `;
+    
+    paginadorContainer.innerHTML = html;
+    tabla.parentNode.appendChild(paginadorContainer);
+}
+
+/**
+ * Cambia a una página específica para entregas de turno
+ * @param {number} pagina - Número de página a cargar
+ */
+function cambiarPaginaTurnos(pagina) {
+    if (pagina >= 1 && pagina <= totalPaginasTurnos && pagina !== paginaActualTurnos) {
+        cargarEntregasTurno(pagina);
+        
+        // Scroll suave hacia la parte superior de la tabla
+        const tabla = document.getElementById('tablaTurnos');
+        if (tabla) {
+            tabla.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
     }
 }

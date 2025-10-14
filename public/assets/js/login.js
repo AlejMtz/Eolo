@@ -6,7 +6,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Si ya está logueado, redirigir al menú principal
     if (localStorage.getItem('usuario_logueado')) {
-        window.location.href = '../app/views/Index.html';
+        window.location.href = '/Eolo/app/views/Index.html';
     }
     
     loginForm.addEventListener('submit', function(e) {

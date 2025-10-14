@@ -158,13 +158,22 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 /**
- * Configura el filtro de búsqueda de aeronaves
+ * Configura el filtro de búsqueda de aeronaves - VERSIÓN MEJORADA
  */
 function configurarBusquedaAeronaves() {
     const inputBusqueda = document.getElementById('buscarAeronave');
     const resultadosDiv = document.getElementById('resultadosBusqueda');
     
-    if (!inputBusqueda) return;
+    if (!inputBusqueda) {
+        console.warn('⚠️ No se encontró el input de búsqueda de aeronaves');
+        return;
+    }
+    
+    // ⭐⭐ CORRECCIÓN: Inicializar aeronavesData si está undefined
+    if (typeof aeronavesData === 'undefined') {
+        aeronavesData = [];
+        console.warn('⚠️ aeronavesData estaba undefined, inicializado como array vacío');
+    }
     
     inputBusqueda.addEventListener('input', function(e) {
         const termino = e.target.value.trim();
@@ -205,14 +214,30 @@ function configurarBusquedaAeronaves() {
 /**
  * Busca aeronaves por matrícula
  */
+/**
+ * Busca aeronaves por matrícula - VERSIÓN CORREGIDA
+ */
 function buscarAeronaves(termino) {
     const listaAeronaves = document.getElementById('listaAeronaves');
     const resultadosDiv = document.getElementById('resultadosBusqueda');
     
+    // ⭐⭐ CORRECCIÓN: Verificar que aeronavesData sea un array
+    if (!Array.isArray(aeronavesData)) {
+        console.error('❌ aeronavesData no es un array:', aeronavesData);
+        aeronavesData = []; // Forzar a array vacío
+    }
+    
     // Filtrar aeronaves que coincidan con la búsqueda
     const resultados = aeronavesData.filter(aeronave => {
+        if (!aeronave || typeof aeronave !== 'object') {
+            return false; // Saltar elementos inválidos
+        }
+        
         const matricula = aeronave.Matricula || '';
-        return matricula.toLowerCase().includes(termino.toLowerCase());
+        const matriculaLower = matricula.toLowerCase();
+        const terminoLower = termino.toLowerCase();
+        
+        return matriculaLower.includes(terminoLower);
     });
     
     if (resultados.length === 0) {
@@ -226,6 +251,12 @@ function buscarAeronaves(termino) {
         listaAeronaves.innerHTML = '';
         
         resultados.forEach(aeronave => {
+            // Validar que la aeronave tenga los campos necesarios
+            if (!aeronave || !aeronave.Matricula) {
+                console.warn('⚠️ Aeronave inválida encontrada:', aeronave);
+                return; // Saltar esta aeronave
+            }
+            
             const item = document.createElement('button');
             item.type = 'button';
             item.className = 'list-group-item list-group-item-action';
@@ -235,7 +266,7 @@ function buscarAeronaves(termino) {
                         <strong>${aeronave.Matricula}</strong>
                         <br>
                         <small class="text-muted">
-                            ${aeronave.Equipo || 'Sin equipo'} - ${aeronave.Tipo}
+                            ${aeronave.Equipo || 'Sin equipo'} - ${aeronave.Tipo || 'Sin tipo'}
                         </small>
                     </div>
                     <i class="fas fa-chevron-right text-muted"></i>
@@ -252,7 +283,6 @@ function buscarAeronaves(termino) {
     
     resultadosDiv.style.display = 'block';
 }
-
 /**
  * Selecciona una aeronave de los resultados de búsqueda - VERSIÓN MEJORADA
  */
@@ -792,6 +822,9 @@ function mostrarInfoAeronaveEnModoEdicion(matricula, equipo) {
 /**
  * Carga aeronaves para el selector - VERSIÓN MEJORADA (funciona en creación y edición)
  */
+/**
+ * Carga aeronaves para el selector - VERSIÓN CORREGIDA
+ */
 async function cargarAeronavesParaSelector() {
     console.log('🛩️ Intentando cargar aeronaves para selector...');
     
@@ -803,18 +836,31 @@ async function cargarAeronavesParaSelector() {
             throw new Error(`Error HTTP: ${response.status}`);
         }
         
-        const aeronaves = await response.json();
-        console.log('📊 Aeronaves recibidas:', aeronaves);
+        const data = await response.json();
+        console.log('📊 Datos recibidos:', data);
         
-        aeronavesData = aeronaves;
+        // ⭐⭐ CORRECCIÓN: Asegurar que aeronavesData sea siempre un array
+        if (Array.isArray(data)) {
+            aeronavesData = data;
+        } else if (data.aeronaves && Array.isArray(data.aeronaves)) {
+            // Si viene con estructura de paginación
+            aeronavesData = data.aeronaves;
+        } else if (data.error) {
+            throw new Error(data.error);
+        } else {
+            // Si es un objeto u otra estructura, convertirlo a array
+            aeronavesData = Object.values(data);
+        }
+        
+        console.log('✅ Aeronaves cargadas correctamente:', aeronavesData.length, 'aeronaves');
         
         // ⭐⭐ CONFIGURAR EL FILTRO DE BÚSQUEDA (siempre, en ambos modos)
         configurarBusquedaAeronaves();
         
-        console.log('✅ Aeronaves cargadas correctamente y filtro configurado');
-        
     } catch (error) {
         console.error('❌ Error al cargar aeronaves:', error);
+        // Asegurar que aeronavesData sea un array vacío en caso de error
+        aeronavesData = [];
         mostrarError('Error al cargar las aeronaves. Por favor, recarga la página.');
     }
 }

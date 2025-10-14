@@ -1,7 +1,8 @@
-// Variables globales para los modales
-let successModal = null;
-let errorModal = null;
-let confirmModal = null;
+// Variables globales para paginación
+let paginaActual = 1;
+const registrosPorPagina = 15;
+let totalPaginas = 1;
+let totalRegistros = 0;
 
 document.addEventListener('DOMContentLoaded', () => {
     // Inicializar modales de Bootstrap
@@ -175,27 +176,56 @@ function configurarFormularioAeronave() {
         cargarAeronaveParaEditar(id);
     }
 }
-
 /**
- * Carga la lista de aeronaves y la muestra en la tabla.
+ * Carga la lista de aeronaves y la muestra en la tabla con paginación.
  */
-async function cargarAeronaves() {
+async function cargarAeronaves(pagina = 1) {
     const tablaBody = document.querySelector('#tablaAeronaves tbody');
     if (!tablaBody) return;
 
     tablaBody.innerHTML = '<tr><td colspan="5" class="text-center">Cargando...</td></tr>';
 
     try {
-        // ⭐⭐ RUTA CORRECTA desde public/assets/js/
-        const response = await fetch('../../app/models/leer_aeronaves.php');
+        // ⭐⭐ RUTA CORRECTA con parámetros de paginación
+        const response = await fetch(`../../app/models/leer_aeronaves.php?pagina=${pagina}&registros_por_pagina=${registrosPorPagina}`);
         if (!response.ok) {
             throw new Error(`Error HTTP: ${response.status}`);
         }
-        const aeronaves = await response.json();
         
-        if (aeronaves.error) {
-            throw new Error(aeronaves.error);
+        const data = await response.json();
+        console.log('📊 Datos recibidos del servidor:', data); // DEBUG
+        
+        if (data.error) {
+            throw new Error(data.error);
         }
+
+        // ⭐⭐ CORRECCIÓN: Manejar diferentes estructuras de respuesta
+        let aeronaves = [];
+        let infoPaginacion = {
+            pagina_actual: pagina,
+            total_paginas: 1,
+            total_registros: 0,
+            registros_por_pagina: registrosPorPagina
+        };
+
+        if (data.aeronaves && data.paginacion) {
+            // Nueva estructura con paginación
+            aeronaves = data.aeronaves;
+            infoPaginacion = data.paginacion;
+        } else if (Array.isArray(data)) {
+            // Estructura antigua (array simple)
+            aeronaves = data;
+            infoPaginacion.total_registros = data.length;
+            infoPaginacion.total_paginas = Math.ceil(data.length / registrosPorPagina);
+        } else {
+            throw new Error('Formato de respuesta no reconocido');
+        }
+
+        paginaActual = infoPaginacion.pagina_actual;
+        totalPaginas = infoPaginacion.total_paginas;
+        totalRegistros = infoPaginacion.total_registros;
+
+        console.log('🔄 Información de paginación:', infoPaginacion); // DEBUG
 
         tablaBody.innerHTML = '';
         if (aeronaves.length === 0) {
@@ -235,9 +265,13 @@ async function cargarAeronaves() {
                 tablaBody.appendChild(fila);
             });
         }
+        
+        // Actualizar el paginador
+        actualizarPaginador();
+        
     } catch (error) {
-        console.error('Error al cargar aeronaves:', error);
-        tablaBody.innerHTML = `<tr><td colspan="5" class="text-center text-danger">Error al cargar los datos.</td></tr>`;
+        console.error('❌ Error al cargar aeronaves:', error);
+        tablaBody.innerHTML = `<tr><td colspan="5" class="text-center text-danger">Error al cargar los datos: ${error.message}</td></tr>`;
     }
 }
 
@@ -478,7 +512,8 @@ function eliminarAeronaveConfirmada(id) {
         .then(data => {
             if (data.success) {
                 mostrarExito(data.success, () => {
-                    cargarAeronaves();
+                    // Recargar manteniendo la página actual
+                    cargarAeronaves(paginaActual);
                 });
             } else {
                 mostrarError(data.error);
@@ -488,7 +523,7 @@ function eliminarAeronaveConfirmada(id) {
             console.error('Error:', error);
             mostrarError('Ocurrió un error al conectar con el servidor.');
         });
-    }, 300); // 300ms es el tiempo de la animación de fade de Bootstrap
+    }, 300);
 }
 
 /**
@@ -499,5 +534,145 @@ function mostrarMensaje(titulo, cuerpo, tipo) {
         mostrarExito(cuerpo);
     } else {
         mostrarError(cuerpo);
+    }
+}
+
+/**
+ * Actualiza el paginador en la interfaz
+ */
+function actualizarPaginador() {
+    const tabla = document.getElementById('tablaAeronaves');
+    if (!tabla) return;
+    
+    // Eliminar paginador existente
+    const paginadorExistente = tabla.nextElementSibling;
+    if (paginadorExistente && paginadorExistente.classList.contains('paginador-container')) {
+        paginadorExistente.remove();
+    }
+    
+    // Crear contenedor del paginador
+    const paginadorContainer = document.createElement('div');
+    paginadorContainer.className = 'paginador-container mt-4';
+    paginadorContainer.id = 'paginadorAeronaves';
+    
+    let html = '';
+    
+    // Información de registros
+    const inicio = ((paginaActual - 1) * registrosPorPagina) + 1;
+    const fin = Math.min(paginaActual * registrosPorPagina, totalRegistros);
+    
+    html += `
+        <div class="d-flex justify-content-between align-items-center">
+            <div class="text-muted">
+                Mostrando ${inicio} a ${fin} de ${totalRegistros} aeronaves
+            </div>
+            <nav aria-label="Paginación de aeronaves">
+                <ul class="pagination pagination-sm mb-0">
+    `;
+    
+    // Botón Anterior
+    if (paginaActual > 1) {
+        html += `
+            <li class="page-item">
+                <a class="page-link" href="javascript:void(0)" onclick="cambiarPaginaAeronaves(${paginaActual - 1})" aria-label="Anterior">
+                    <i class="fas fa-chevron-left"></i>
+                </a>
+            </li>
+        `;
+    } else {
+        html += `
+            <li class="page-item disabled">
+                <span class="page-link"><i class="fas fa-chevron-left"></i></span>
+            </li>
+        `;
+    }
+    
+    // Números de página
+    const paginasAMostrar = 5; // Número máximo de páginas a mostrar en el paginador
+    let inicioPaginas = Math.max(1, paginaActual - Math.floor(paginasAMostrar / 2));
+    let finPaginas = Math.min(totalPaginas, inicioPaginas + paginasAMostrar - 1);
+    
+    // Ajustar si estamos cerca del final
+    if (finPaginas - inicioPaginas + 1 < paginasAMostrar) {
+        inicioPaginas = Math.max(1, finPaginas - paginasAMostrar + 1);
+    }
+    
+    // Página inicial
+    if (inicioPaginas > 1) {
+        html += `
+            <li class="page-item">
+                <a class="page-link" href="javascript:void(0)" onclick="cambiarPaginaAeronaves(1)">1</a>
+            </li>
+            ${inicioPaginas > 2 ? '<li class="page-item disabled"><span class="page-link">...</span></li>' : ''}
+        `;
+    }
+    
+    // Páginas intermedias
+    for (let i = inicioPaginas; i <= finPaginas; i++) {
+        if (i === paginaActual) {
+            html += `
+                <li class="page-item active">
+                    <span class="page-link">${i}</span>
+                </li>
+            `;
+        } else {
+            html += `
+                <li class="page-item">
+                    <a class="page-link" href="javascript:void(0)" onclick="cambiarPaginaAeronaves(${i})">${i}</a>
+                </li>
+            `;
+        }
+    }
+    
+    // Página final
+    if (finPaginas < totalPaginas) {
+        html += `
+            ${finPaginas < totalPaginas - 1 ? '<li class="page-item disabled"><span class="page-link">...</span></li>' : ''}
+            <li class="page-item">
+                <a class="page-link" href="javascript:void(0)" onclick="cambiarPaginaAeronaves(${totalPaginas})">${totalPaginas}</a>
+            </li>
+        `;
+    }
+    
+    // Botón Siguiente
+    if (paginaActual < totalPaginas) {
+        html += `
+            <li class="page-item">
+                <a class="page-link" href="javascript:void(0)" onclick="cambiarPaginaAeronaves(${paginaActual + 1})" aria-label="Siguiente">
+                    <i class="fas fa-chevron-right"></i>
+                </a>
+            </li>
+        `;
+    } else {
+        html += `
+            <li class="page-item disabled">
+                <span class="page-link"><i class="fas fa-chevron-right"></i></span>
+            </li>
+        `;
+    }
+    
+    html += `
+                </ul>
+            </nav>
+        </div>
+    `;
+    
+    paginadorContainer.innerHTML = html;
+    tabla.parentNode.appendChild(paginadorContainer);
+}
+
+/**
+ * Cambia a una página específica
+ * @param {number} pagina - Número de página a cargar
+ */
+function cambiarPaginaAeronaves(pagina) {
+    if (pagina >= 1 && pagina <= totalPaginas && pagina !== paginaActual) {
+        cargarAeronaves(pagina);
+        
+        // Scroll suave hacia la parte superior de la tabla
+        const tabla = document.getElementById('tablaAeronaves');
+        if (tabla) {
+            tabla.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
     }
 }
