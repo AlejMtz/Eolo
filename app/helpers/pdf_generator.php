@@ -56,44 +56,47 @@ class PDFGenerator {
     /**
      * Genera PDF para Walkaround - VERSIÓN ACTUALIZADA
      */
-    public function generarWalkaround($id) {
-        require_once('../models/conexion.php');
+    /**
+ * Genera PDF para Walkaround - VERSIÓN ACTUALIZADA CON PROCEDENCIA
+ */
+public function generarWalkaround($id) {
+    require_once('../models/conexion.php');
+    
+    try {
+        // Obtener datos del walkaround - ACTUALIZADA PARA INCLUIR PROCEDENCIA
+        $sql = "SELECT w.*, a.Matricula, a.Equipo, a.Tipo 
+                FROM walkaround w 
+                LEFT JOIN aeronave a ON w.Id_Aeronave = a.Id_Aeronave 
+                WHERE w.Id_Walk = ?";
+        $stmt = $pdo->prepare($sql);
+        $stmt->execute([$id]);
+        $walkaround = $stmt->fetch(PDO::FETCH_ASSOC);
         
-        try {
-            // Obtener datos del walkaround
-            $sql = "SELECT w.*, a.Matricula, a.Equipo, a.Tipo 
-                    FROM walkaround w 
-                    LEFT JOIN aeronave a ON w.Id_Aeronave = a.Id_Aeronave 
-                    WHERE w.Id_Walk = ?";
-            $stmt = $pdo->prepare($sql);
-            $stmt->execute([$id]);
-            $walkaround = $stmt->fetch(PDO::FETCH_ASSOC);
-            
-            if (!$walkaround) {
-                die('Walkaround no encontrado');
-            }
-            
-            // Obtener componentes con la nueva estructura
-            $componentes = $this->getComponentesWalkaround($pdo, $id);
-            
-            // Primera página: Cabecera y componentes en tabla
-            $this->pdf->AddPage();
-            $this->generarCabeceraWalkaround($walkaround);
-            $this->generarComponentesWalkaroundPDF($componentes, $walkaround['Tipo']);
-            
-            // Segunda página: Diagrama
-            $this->generarDiagrama($walkaround['Tipo']);
-            $this->generarObservacionesWalkaroundPDF($walkaround);
-            $this->generarFirmasWalkaroundPDF($walkaround);
-            
-            $this->pdf->Output('walkaround_' . $id . '.pdf', 'I');
-            return true;
-            
-        } catch (Exception $e) {
-            ob_clean();
-            die('Error al generar PDF: ' . $e->getMessage());
+        if (!$walkaround) {
+            die('Walkaround no encontrado');
         }
+        
+        // Obtener componentes con la nueva estructura
+        $componentes = $this->getComponentesWalkaround($pdo, $id);
+        
+        // Primera página: Cabecera y componentes en tabla
+        $this->pdf->AddPage();
+        $this->generarCabeceraWalkaround($walkaround);
+        $this->generarComponentesWalkaroundPDF($componentes, $walkaround['Tipo']);
+        
+        // Segunda página: Diagrama
+        $this->generarDiagrama($walkaround['Tipo']);
+        $this->generarObservacionesWalkaroundPDF($walkaround);
+        $this->generarFirmasWalkaroundPDF($walkaround);
+        
+        $this->pdf->Output('walkaround_' . $id . '.pdf', 'I');
+        return true;
+        
+    } catch (Exception $e) {
+        ob_clean();
+        die('Error al generar PDF: ' . $e->getMessage());
     }
+}
     
     /**
      * CABECERA ENTREGA DE TURNO CON LOGO
@@ -132,79 +135,106 @@ class PDFGenerator {
     /**
      * CABECERA WALKAROUND CON LOGO
      */
-    private function generarCabeceraWalkaround($walkaround) {
-        // Logo EOLO (izquierda)
-        $logoPath = __DIR__ . '/../../public/assets/images/eolo_logo.png';
-        if (file_exists($logoPath)) {
-            $this->pdf->Image($logoPath, 15, 10, 20, 0, 'PNG', '', 'T', false, 300, '', false, false, 0, false, false, false);
-        }
-        
-        // Título EOLO centrado
-        $this->pdf->SetFont('helvetica', 'B', 16);
-        $this->pdf->SetY(12);
-        $this->pdf->Cell(0, 10, 'E O L O', 0, 1, 'C');
+    /**
+ * CABECERA WALKAROUND CON LOGO - VERSIÓN ACTUALIZADA CON PROCEDENCIA
+ */
+/**
+ * CABECERA WALKAROUND CON LOGO - VERSIÓN OPTIMIZADA Y CENTRADA
+ */
+private function generarCabeceraWalkaround($walkaround) {
+    // Logo EOLO (izquierda)
+    $logoPath = __DIR__ . '/../../public/assets/images/eolo_logo.png';
+    if (file_exists($logoPath)) {
+        $this->pdf->Image($logoPath, 15, 10, 20, 0, 'PNG', '', 'T', false, 300, '', false, false, 0, false, false, false);
+    }
+    
+    // Título EOLO centrado
+    $this->pdf->SetFont('helvetica', 'B', 16);
+    $this->pdf->SetY(12);
+    $this->pdf->Cell(0, 10, 'E O L O', 0, 1, 'C');
 
-        $this->pdf->SetFont('helvetica', 'B', 12);
-        $this->pdf->SetY(5);
-        $this->pdf->SetX(150);
-        $this->pdf->SetTextColor(255, 0, 0); // Rojo
-        $this->pdf->Cell(0, 6, 'ID DEL REPORTE: ' . $walkaround['Id_Walk'], 0, 1);
+    $this->pdf->SetFont('helvetica', 'B', 12);
+    $this->pdf->SetY(5);
+    $this->pdf->SetX(150);
+    $this->pdf->SetTextColor(255, 0, 0); // Rojo
+    $this->pdf->Cell(0, 6, 'ID DEL REPORTE: ' . $walkaround['Id_Walk'], 0, 1);
 
-        $this->pdf->SetTextColor(0, 0, 0); // Negro
+    $this->pdf->SetTextColor(0, 0, 0); // Negro
 
-        // Título centrado
-        $this->pdf->SetFont('helvetica', 'B', 14);
-        $this->pdf->SetY(25);
+    // Título centrado
+    $this->pdf->SetFont('helvetica', 'B', 14);
+    $this->pdf->SetY(25);
+    
+    // Determinar tipo de walkaround
+    $tipoWalkaround = '';
+    if ($walkaround['entrada'] == 1) {
+        $tipoWalkaround = 'ENTRADA';
+    } elseif ($walkaround['salida'] == 1) {
+        $tipoWalkaround = 'SALIDA';
+    }
+    
+    $this->pdf->Cell(0, 10, 'Reporte de Inspección de Aeronave - Walk Around (' . $tipoWalkaround . ')', 0, 1, 'C');
+    
+    // Tabla de información - OPTIMIZADA PARA MEJOR CENTRADO
+    $this->pdf->SetFont('helvetica', '', 9); // Reducido ligeramente para mejor ajuste
+    $this->pdf->SetY(35);
+    
+    // CALCULAR ANCHOS OPTIMIZADOS (total 180mm para centrar en página de 210mm)
+    $anchos = [
+        'fecha' => 28,    // Fecha
+        'hora' => 20,     // Hora  
+        'tipo' => 32,     // Tipo Aeronave
+        'matricula' => 28, // Matrícula
+        'procedencia' => 36, // Procedencia
+        'destino' => 36    // Destino
+    ];
+    
+    // Cabecera de la tabla - CENTRADA
+    $this->pdf->SetFillColor(240, 240, 240);
+    $this->pdf->Cell($anchos['fecha'], 8, 'FECHA', 1, 0, 'C', true);
+    $this->pdf->Cell($anchos['hora'], 8, 'HORA', 1, 0, 'C', true);
+    $this->pdf->Cell($anchos['tipo'], 8, 'TIPO AERONAVE', 1, 0, 'C', true);
+    $this->pdf->Cell($anchos['matricula'], 8, 'MATRÍCULA', 1, 0, 'C', true);
+    $this->pdf->Cell($anchos['procedencia'], 8, 'PROCEDENCIA', 1, 0, 'C', true);
+    $this->pdf->Cell($anchos['destino'], 8, 'DESTINO', 1, 1, 'C', true);
+    
+    $fecha = 'No especificada';
+    $hora = 'No especificada';
+    
+    if (isset($walkaround['FechaHora']) && !empty($walkaround['FechaHora']) && $walkaround['FechaHora'] != '0000-00-00 00:00:00') {
+        // Convertir el DateTime a fecha y hora separados
+        $fechaHora = DateTime::createFromFormat('Y-m-d H:i:s', $walkaround['FechaHora']);
         
-        // Determinar tipo de walkaround
-        $tipoWalkaround = '';
-        if ($walkaround['entrada'] == 1) {
-            $tipoWalkaround = 'ENTRADA';
-        } elseif ($walkaround['salida'] == 1) {
-            $tipoWalkaround = 'SALIDA';
-        }
-        
-        $this->pdf->Cell(0, 10, 'Reporte de Inspección de Aeronave - Walk Around (' . $tipoWalkaround . ')', 0, 1, 'C');
-        
-        // Tabla de información
-        $this->pdf->SetFont('helvetica', '', 10);
-        $this->pdf->SetY(35);
-        
-        // Cabecera de la tabla
-        $this->pdf->SetFillColor(240, 240, 240);
-        $this->pdf->Cell(30, 8, 'Fecha', 1, 0, 'C', true);
-        $this->pdf->Cell(25, 8, 'Hora', 1, 0, 'C', true);
-        $this->pdf->Cell(40, 8, 'Tipo Aeronave', 1, 0, 'C', true);
-        $this->pdf->Cell(40, 8, 'Matrícula', 1, 0, 'C', true);
-        $this->pdf->Cell(50, 8, 'Destino', 1, 1, 'C', true);
-        
-        $fecha = 'No especificada';
-        $hora = 'No especificada';
-        
-        if (isset($walkaround['FechaHora']) && !empty($walkaround['FechaHora']) && $walkaround['FechaHora'] != '0000-00-00 00:00:00') {
-            // Convertir el DateTime a fecha y hora separados
-            $fechaHora = DateTime::createFromFormat('Y-m-d H:i:s', $walkaround['FechaHora']);
-            
-            if ($fechaHora !== false) {
-                $fecha = $fechaHora->format('d/m/Y');
-                $hora = $fechaHora->format('H:i');
-            } else {
-                // Si el formato falla, intentar con strtotime
-                $timestamp = strtotime($walkaround['FechaHora']);
-                if ($timestamp !== false) {
-                    $fecha = date('d/m/Y', $timestamp);
-                    $hora = date('H:i', $timestamp);
-                }
+        if ($fechaHora !== false) {
+            $fecha = $fechaHora->format('d/m/Y');
+            $hora = $fechaHora->format('H:i');
+        } else {
+            // Si el formato falla, intentar con strtotime
+            $timestamp = strtotime($walkaround['FechaHora']);
+            if ($timestamp !== false) {
+                $fecha = date('d/m/Y', $timestamp);
+                $hora = date('H:i', $timestamp);
             }
         }
-            
-        $this->pdf->Cell(30, 10, $fecha, 1, 0, 'C');
-        $this->pdf->Cell(25, 10, $hora, 1, 0, 'C');
-        $this->pdf->Cell(40, 10, isset($walkaround['Equipo']) ? $walkaround['Equipo'] : 'No especificado', 1, 0, 'C');
-        $this->pdf->Cell(40, 10, isset($walkaround['Matricula']) ? $walkaround['Matricula'] : 'No especificada', 1, 0, 'C');
-        $this->pdf->Cell(50, 10, isset($walkaround['Destino']) ? $walkaround['Destino'] : 'No especificado', 1, 1, 'C');
-        
     }
+    
+    // Función auxiliar para truncar texto largo
+    $truncarTexto = function($texto, $maxLength) {
+        if (strlen($texto) > $maxLength) {
+            return substr($texto, 0, $maxLength - 2) . '..';
+        }
+        return $texto;
+    };
+        
+    // Datos de la tabla - CON TEXTO OPTIMIZADO
+    $this->pdf->Cell($anchos['fecha'], 10, $fecha, 1, 0, 'C');
+    $this->pdf->Cell($anchos['hora'], 10, $hora, 1, 0, 'C');
+    $this->pdf->Cell($anchos['tipo'], 10, $truncarTexto(isset($walkaround['Equipo']) ? $walkaround['Equipo'] : 'No esp.', 15), 1, 0, 'C');
+    $this->pdf->Cell($anchos['matricula'], 10, $truncarTexto(isset($walkaround['Matricula']) ? $walkaround['Matricula'] : 'No esp.', 10), 1, 0, 'C');
+    $this->pdf->Cell($anchos['procedencia'], 10, $truncarTexto(isset($walkaround['Procedencia']) ? $walkaround['Procedencia'] : 'No esp.', 12), 1, 0, 'C');
+    $this->pdf->Cell($anchos['destino'], 10, $truncarTexto(isset($walkaround['Destino']) ? $walkaround['Destino'] : 'No esp.', 12), 1, 1, 'C');
+    
+}
     
     /**
      * COMPONENTES WALKAROUND EN TABLA CON TIPOS DE DAÑO - VERSIÓN ACTUALIZADA
