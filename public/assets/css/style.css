@@ -1005,3 +1005,898 @@ body {
         background-color: #fff;
         border-color: #dee2e6;
     }
+
+    /* ===== ESTILOS RESPONSIVE PARA DISPOSITIVOS MÓVILES ===== */
+
+/* Contenedores principales responsive */
+.container-responsive {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch; /* Scroll suave en iOS */
+    margin-bottom: 1rem;
+}
+
+/* Tablas responsive con scroll horizontal */
+.table-responsive-custom {
+    min-width: 800px; /* Ancho mínimo para mantener legibilidad */
+    margin-bottom: 0;
+}
+
+/* Header fijo mejorado para móviles */
+.global-table-header {
+    position: sticky;
+    top: 0;
+    background: #f8f9fa;
+    z-index: 100;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    margin-bottom: 0;
+    min-width: 800px; /* Mismo ancho mínimo que la tabla */
+}
+
+/* Ajustes para pantallas pequeñas */
+@media (max-width: 1200px) {
+    .container-form {
+        padding: 20px 15px;
+        margin: 20px 10px;
+    }
+    
+    .form-title {
+        font-size: 1.5rem;
+    }
+}
+
+/* Tablets */
+@media (max-width: 992px) {
+    .container-form {
+        padding: 15px 12px;
+        margin: 15px 8px;
+    }
+    
+    .navbar-brand {
+        font-size: 1rem;
+    }
+    
+    .navbar-nav .nav-link {
+        font-size: 0.9rem;
+        padding: 0.5rem 0.8rem;
+    }
+    
+    /* Reducir padding en tablas para tablets */
+    .table-responsive-custom th,
+    .table-responsive-custom td {
+        padding: 6px 3px;
+        font-size: 0.8rem;
+    }
+    
+    .global-table-header th {
+        font-size: 0.7rem;
+        padding: 8px 3px;
+    }
+}
+
+/* Teléfonos grandes */
+@media (max-width: 768px) {
+    body {
+        font-size: 14px;
+    }
+    
+    .container-form {
+        padding: 12px 8px;
+        margin: 10px 5px;
+        border-radius: 8px;
+    }
+    
+    .form-title {
+        font-size: 1.3rem;
+        margin-bottom: 20px;
+        padding-bottom: 8px;
+    }
+    
+    /* Navbar compacta para móviles */
+    .navbar-brand {
+        font-size: 0.9rem;
+    }
+    
+    .navbar-text {
+        font-size: 0.8rem;
+        margin-right: 10px !important;
+    }
+    
+    .btn-outline-light {
+        font-size: 0.8rem;
+        padding: 4px 8px;
+    }
+    
+    /* Tablas ultra compactas para móviles */
+    .table-responsive-custom {
+        min-width: 700px;
+        font-size: 0.75rem;
+    }
+    
+    .table-responsive-custom th,
+    .table-responsive-custom td {
+        padding: 4px 2px;
+        font-size: 0.7rem;
+    }
+    
+    .global-table-header th {
+        font-size: 0.65rem;
+        padding: 6px 2px;
+    }
+    
+    /* Botones más pequeños en móviles */
+    .btn-group-sm .btn {
+        padding: 0.2rem 0.4rem;
+        font-size: 0.7rem;
+    }
+    
+    .btn-group-sm .btn i {
+        font-size: 0.8rem;
+    }
+    
+    /* Badges más pequeños */
+    .badge {
+        font-size: 0.6rem;
+        padding: 0.2em 0.4em;
+    }
+    
+    /* Formularios responsive */
+    .form-group label {
+        font-size: 0.9rem;
+        margin-bottom: 0.3rem;
+    }
+    
+    .form-control {
+        font-size: 0.9rem;
+        padding: 0.4rem 0.75rem;
+    }
+    
+    .form-text {
+        font-size: 0.8rem;
+    }
+    
+    /* Botones de acción en formularios */
+    .d-grid .btn {
+        font-size: 0.9rem;
+        padding: 0.5rem 1rem;
+    }
+    
+    /* Paginación responsive */
+    .paginador-container {
+        padding: 0.8rem;
+    }
+    
+    .pagination-sm .page-link {
+        padding: 0.25rem 0.5rem;
+        font-size: 0.8rem;
+    }
+    
+    .text-muted {
+        font-size: 0.8rem;
+    }
+}
+
+/* Teléfonos pequeños */
+@media (max-width: 576px) {
+    .container-form {
+        padding: 10px 6px;
+        margin: 8px 4px;
+    }
+    
+    .form-title {
+        font-size: 1.1rem;
+        margin-bottom: 15px;
+    }
+    
+    /* Tablas aún más compactas */
+    .table-responsive-custom {
+        min-width: 650px;
+        font-size: 0.7rem;
+    }
+    
+    .table-responsive-custom th,
+    .table-responsive-custom td {
+        padding: 3px 1px;
+        font-size: 0.65rem;
+    }
+    
+    .global-table-header th {
+        font-size: 0.6rem;
+        padding: 4px 1px;
+    }
+    
+    /* Botones de acción mini */
+    .btn-group-sm .btn {
+        padding: 0.15rem 0.3rem;
+        font-size: 0.65rem;
+        margin: 1px;
+    }
+    
+    .btn-group-sm .btn i {
+        font-size: 0.7rem;
+    }
+    
+    /* Ocultar texto en botones, solo íconos */
+    .btn-text-hidden .btn-text {
+        display: none;
+    }
+    
+    /* Paginación ultra compacta */
+    .pagination-sm .page-link {
+        padding: 0.2rem 0.4rem;
+        font-size: 0.7rem;
+        min-width: 30px;
+    }
+    
+    .pagination-sm .page-item:not(.active):not(.disabled) .page-link {
+        padding: 0.2rem 0.3rem;
+    }
+    
+    /* Info de paginación más compacta */
+    .text-muted {
+        font-size: 0.7rem;
+    }
+    
+    /* Modal responsive */
+    .modal-dialog {
+        margin: 10px;
+    }
+    
+    .modal-content {
+        border-radius: 8px;
+    }
+    
+    .modal-header {
+        padding: 15px 20px;
+    }
+    
+    .modal-body {
+        padding: 20px;
+    }
+    
+    .modal-footer {
+        padding: 15px 20px;
+    }
+}
+
+/* Teléfonos muy pequeños (menos de 400px) */
+@media (max-width: 400px) {
+    .table-responsive-custom {
+        min-width: 600px;
+    }
+    
+    .navbar-brand {
+        font-size: 0.8rem;
+    }
+    
+    .navbar-text {
+        display: none; /* Ocultar info de usuario en pantallas muy pequeñas */
+    }
+    
+    .container-form {
+        padding: 8px 4px;
+        margin: 5px 2px;
+    }
+}
+
+/* ===== CORRECCIÓN COMPLETA PARA SCROLL HORIZONTAL ===== */
+
+/* Contenedor principal con scroll horizontal COMPLETO */
+.components-main-container {
+    position: relative;
+    max-height: 70vh;
+    overflow: auto;
+    border: 1px solid #dee2e6;
+    border-radius: 0.375rem;
+    background: white;
+}
+
+/* Header fijo que se desplaza horizontalmente */
+.global-table-header {
+    position: sticky;
+    top: 0;
+    background: #f8f9fa;
+    z-index: 100;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    margin-bottom: 0;
+    min-width: 1150px; /* ANCHO TOTAL DE TODAS LAS COLUMNAS */
+}
+
+.global-table-header table {
+    margin-bottom: 0;
+    width: 1150px; /* MISMO ANCHO QUE LA TABLA DE COMPONENTES */
+    table-layout: fixed;
+}
+
+/* CONTENEDOR DE COMPONENTES CON SCROLL HORIZONTAL COMPLETO */
+.components-content {
+    padding-top: 0;
+    overflow-x: auto;
+    width: 100%;
+    min-width: 1150px; /* MISMO ANCHO MÍNIMO QUE EL HEADER */
+}
+
+/* TABLA DE COMPONENTES CON ANCHO COMPLETO FIJO */
+.component-table {
+    margin-bottom: 0;
+    width: 1150px; /* MISMO ANCHO EXACTO QUE EL HEADER */
+    table-layout: fixed;
+}
+
+/* ANCHO FIJO PARA CADA COLUMNA - EXACTAMENTE IGUAL EN HEADER Y CONTENIDO */
+.global-table-header th:nth-child(1),
+.component-table th:nth-child(1),
+.component-table td:nth-child(1) {
+    width: 250px; /* COMPONENTE */
+    min-width: 250px;
+    max-width: 250px;
+}
+
+.global-table-header th:nth-child(2),
+.component-table th:nth-child(2),
+.component-table td:nth-child(2) {
+    width: 100px; /* DERECHO */
+    min-width: 100px;
+    max-width: 100px;
+}
+
+.global-table-header th:nth-child(3),
+.component-table th:nth-child(3),
+.component-table td:nth-child(3) {
+    width: 100px; /* IZQUIERDO */
+    min-width: 100px;
+    max-width: 100px;
+}
+
+.global-table-header th:nth-child(4),
+.component-table th:nth-child(4),
+.component-table td:nth-child(4) {
+    width: 100px; /* GOLPE */
+    min-width: 100px;
+    max-width: 100px;
+}
+
+.global-table-header th:nth-child(5),
+.component-table th:nth-child(5),
+.component-table td:nth-child(5) {
+    width: 100px; /* RAYÓN */
+    min-width: 100px;
+    max-width: 100px;
+}
+
+.global-table-header th:nth-child(6),
+.component-table th:nth-child(6),
+.component-table td:nth-child(6) {
+    width: 100px; /* FISURA */
+    min-width: 100px;
+    max-width: 100px;
+}
+
+.global-table-header th:nth-child(7),
+.component-table th:nth-child(7),
+.component-table td:nth-child(7) {
+    width: 100px; /* QUEBRADO */
+    min-width: 100px;
+    max-width: 100px;
+}
+
+.global-table-header th:nth-child(8),
+.component-table th:nth-child(8),
+.component-table td:nth-child(8) {
+    width: 100px; /* PINT. CUARTEADA */
+    min-width: 100px;
+    max-width: 100px;
+}
+
+.global-table-header th:nth-child(9),
+.component-table th:nth-child(9),
+.component-table td:nth-child(9) {
+    width: 100px; /* OTRO DAÑO */
+    min-width: 100px;
+    max-width: 100px;
+}
+
+/* ESTILOS COMUNES PARA CELDAS */
+.component-table th,
+.component-table td {
+    vertical-align: middle;
+    text-align: center;
+    padding: 8px 4px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.global-table-header th {
+    vertical-align: middle;
+    text-align: center;
+    padding: 10px 4px;
+    font-weight: 600;
+    background: #f8f9fa;
+    border-bottom: 2px solid #dee2e6;
+    white-space: nowrap;
+    font-size: 0.75rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* COLUMNA DE NOMBRE FIJA A LA IZQUIERDA */
+.component-table td:first-child {
+    position: sticky;
+    left: 0;
+    background: white;
+    z-index: 10;
+    border-right: 2px solid #dee2e6;
+    text-align: left;
+}
+
+.global-table-header th:first-child {
+    position: sticky;
+    left: 0;
+    background: #f8f9fa;
+    z-index: 110;
+    border-right: 2px solid #dee2e6;
+    text-align: left;
+}
+
+/* Cuando la fila tiene daños, mantener el fondo en la columna fija */
+.has-damage .component-table td:first-child {
+    background: #fff3cd;
+}
+
+/* RESPONSIVE PARA SCROLL HORIZONTAL - MÓVIL */
+@media (max-width: 768px) {
+    .components-main-container {
+        max-height: 60vh;
+    }
+    
+    .global-table-header {
+        min-width: 800px; /* ANCHO REDUCIDO PARA MÓVILES */
+    }
+    
+    .global-table-header table {
+        width: 800px; /* ANCHO REDUCIDO PARA MÓVILES */
+    }
+    
+    .components-content {
+        min-width: 800px; /* ANCHO REDUCIDO PARA MÓVILES */
+    }
+    
+    .component-table {
+        width: 800px; /* ANCHO REDUCIDO PARA MÓVILES */
+    }
+    
+    /* REDUCIR ANCHOS EN MÓVILES */
+    .global-table-header th:nth-child(1),
+    .component-table th:nth-child(1),
+    .component-table td:nth-child(1) {
+        width: 200px;
+        min-width: 200px;
+        max-width: 200px;
+    }
+    
+    .global-table-header th:nth-child(n+2),
+    .component-table th:nth-child(n+2),
+    .component-table td:nth-child(n+2) {
+        width: 75px;
+        min-width: 75px;
+        max-width: 75px;
+    }
+    
+    .component-table th,
+    .component-table td {
+        font-size: 0.7rem;
+        padding: 6px 2px;
+    }
+    
+    .global-table-header th {
+        font-size: 0.7rem;
+        padding: 8px 2px;
+    }
+}
+
+@media (max-width: 576px) {
+    .components-main-container {
+        max-height: 55vh;
+    }
+    
+    .global-table-header {
+        min-width: 700px; /* ANCHO MÁS REDUCIDO PARA TELÉFONOS */
+    }
+    
+    .global-table-header table {
+        width: 700px;
+    }
+    
+    .components-content {
+        min-width: 700px;
+    }
+    
+    .component-table {
+        width: 700px;
+    }
+    
+    /* ANCHOS MÁS PEQUEÑOS PARA TELÉFONOS */
+    .global-table-header th:nth-child(1),
+    .component-table th:nth-child(1),
+    .component-table td:nth-child(1) {
+        width: 180px;
+        min-width: 180px;
+        max-width: 180px;
+    }
+    
+    .global-table-header th:nth-child(n+2),
+    .component-table th:nth-child(n+2),
+    .component-table td:nth-child(n+2) {
+        width: 65px;
+        min-width: 65px;
+        max-width: 65px;
+    }
+    
+    .component-table th,
+    .component-table td {
+        font-size: 0.65rem;
+        padding: 5px 1px;
+    }
+    
+    .global-table-header th {
+        font-size: 0.65rem;
+        padding: 6px 1px;
+    }
+    
+    .damage-checkbox {
+        transform: scale(1);
+    }
+}
+
+/* ===== CORRECCIÓN ESPECÍFICA PARA BOTONES EN MÓVILES ===== */
+
+/* Botones principales de formulario (Guardar, Cancelar) */
+.d-grid .btn {
+    font-size: 0.9rem;
+    padding: 0.5rem 1rem;
+}
+
+/* Ajustes específicos para móviles */
+@media (max-width: 768px) {
+    /* Botones principales más compactos */
+    .d-grid .btn {
+        font-size: 0.85rem;
+        padding: 0.4rem 0.8rem;
+        min-height: auto;
+    }
+    
+    /* Botones en grupos más pequeños */
+    .btn-group-sm .btn {
+        padding: 0.2rem 0.4rem;
+        font-size: 0.7rem;
+    }
+    
+    /* Botones de acción específicos */
+    .btn-crear, .btn-editar, .btn-eliminar {
+        font-size: 0.8rem;
+        padding: 0.35rem 0.7rem;
+    }
+    
+    /* Botón de envío principal */
+    #submitButton {
+        font-size: 0.85rem;
+        padding: 0.4rem 0.8rem;
+    }
+    
+    /* Botones secundarios */
+    .btn-secondary {
+        font-size: 0.85rem;
+        padding: 0.4rem 0.8rem;
+    }
+}
+
+@media (max-width: 576px) {
+    /* Botones ultra compactos para teléfonos pequeños */
+    .d-grid .btn {
+        font-size: 0.8rem;
+        padding: 0.35rem 0.7rem;
+    }
+    
+    .btn-group-sm .btn {
+        padding: 0.15rem 0.3rem;
+        font-size: 0.65rem;
+    }
+    
+    .btn-crear, .btn-editar, .btn-eliminar {
+        font-size: 0.75rem;
+        padding: 0.3rem 0.6rem;
+    }
+    
+    #submitButton {
+        font-size: 0.8rem;
+        padding: 0.35rem 0.7rem;
+    }
+    
+    .btn-secondary {
+        font-size: 0.8rem;
+        padding: 0.35rem 0.7rem;
+    }
+    
+    /* Asegurar que los botones no sean demasiado altos */
+    .btn {
+        line-height: 1.2;
+    }
+}
+
+/* Para pantallas muy pequeñas (menos de 400px) */
+@media (max-width: 400px) {
+    .d-grid .btn {
+        font-size: 0.75rem;
+        padding: 0.3rem 0.6rem;
+    }
+    
+    /* Hacer los botones un poco más angostos */
+    .btn {
+        min-width: 80px;
+    }
+    
+    /* Botones con íconos más compactos */
+    .btn i {
+        margin-right: 0.25rem;
+    }
+}
+
+/* ===== SCROLL HORIZONTAL SOLO PARA TABLAS ANCHAS ===== */
+
+/* Contenedor de scroll para tablas específicas */
+.table-scroll-container {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    margin-bottom: 1rem;
+    border: 1px solid #dee2e6;
+    border-radius: 6px;
+    background: white;
+    position: relative;
+    padding: 5px 0;
+}
+
+/* Indicador de scroll para tablas específicas */
+.table-scroll-indicator {
+    position: absolute;
+    top: -20px;
+    right: 10px;
+    background: #3498db;
+    color: white;
+    padding: 3px 10px;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    z-index: 10;
+    display: none;
+}
+
+/* Mostrar indicador en móviles */
+@media (max-width: 768px) {
+    .table-scroll-indicator {
+        display: block;
+    }
+}
+
+/* Tablas anchas que requieren scroll */
+.table-wide {
+    min-width: 600px;
+    width: 100%;
+    margin-bottom: 0;
+}
+
+/* Estilos base para tablas de equipos */
+.equipment-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9rem;
+    background: white;
+}
+
+.equipment-table th {
+    background: linear-gradient(135deg, #2c3e50 0%, #3498db 100%);
+    color: white;
+    font-weight: 600;
+    padding: 12px 8px;
+    text-align: center;
+    border: none;
+    white-space: nowrap;
+    position: sticky;
+    top: 0;
+}
+
+.equipment-table td {
+    padding: 10px 8px;
+    text-align: center;
+    border-bottom: 1px solid #e9ecef;
+    vertical-align: middle;
+    background: white;
+}
+
+.equipment-table tr:nth-child(even) td {
+    background: #f8f9fa;
+}
+
+.equipment-table tr:hover td {
+    background: #e3f2fd;
+}
+
+/* Estilos para checkboxes y radios en tablas */
+.equipment-table .form-check {
+    margin-bottom: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 1.5rem;
+}
+
+.equipment-table .form-check-input {
+    margin-top: 0;
+    margin-right: 5px;
+}
+
+.equipment-table .form-check-label {
+    font-size: 0.85rem;
+    white-space: nowrap;
+}
+
+.equipment-table .form-check-inline {
+    margin-right: 0;
+    display: inline-flex;
+    align-items: center;
+}
+
+.equipment-table .checkbox-group {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    align-items: center;
+}
+
+/* Inputs en tablas */
+.equipment-table .form-control {
+    font-size: 0.85rem;
+    padding: 4px 6px;
+    text-align: center;
+    max-width: 80px;
+    margin: 0 auto;
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+}
+
+.equipment-table .form-control-sm {
+    padding: 2px 4px;
+    font-size: 0.8rem;
+}
+
+/* Scrollbar personalizado para contenedores de tabla */
+.table-scroll-container::-webkit-scrollbar {
+    height: 8px;
+}
+
+.table-scroll-container::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 4px;
+    margin: 0 5px;
+}
+
+.table-scroll-container::-webkit-scrollbar-thumb {
+    background: #3498db;
+    border-radius: 4px;
+}
+
+.table-scroll-container::-webkit-scrollbar-thumb:hover {
+    background: #2980b9;
+}
+
+/* Estilos para secciones */
+.component-section {
+    margin-bottom: 2rem;
+    padding: 1.5rem;
+    border: 1px solid #e9ecef;
+    border-radius: 8px;
+    background: #f8f9fa;
+}
+
+.section-title {
+    background: linear-gradient(135deg, #3498db 0%, #2c3e50 100%);
+    color: white;
+    padding: 12px 20px;
+    border-radius: 6px;
+    margin: -1.5rem -1.5rem 1.5rem -1.5rem;
+    font-weight: 600;
+    font-size: 1.2rem;
+}
+
+.form-section {
+    margin-top: 1.5rem;
+    padding: 1rem;
+    background: white;
+    border-radius: 6px;
+    border: 1px solid #dee2e6;
+}
+
+/* Responsive para tablets */
+@media (max-width: 768px) {
+    .table-wide {
+        min-width: 550px;
+    }
+    
+    .equipment-table {
+        font-size: 0.85rem;
+    }
+    
+    .equipment-table th {
+        padding: 10px 6px;
+        font-size: 0.8rem;
+    }
+    
+    .equipment-table td {
+        padding: 8px 6px;
+    }
+    
+    .component-section {
+        padding: 1rem;
+    }
+    
+    .section-title {
+        padding: 10px 15px;
+        margin: -1rem -1rem 1rem -1rem;
+        font-size: 1.1rem;
+    }
+}
+
+/* Responsive para móviles */
+@media (max-width: 576px) {
+    .table-wide {
+        min-width: 500px;
+    }
+    
+    .equipment-table {
+        font-size: 0.8rem;
+    }
+    
+    .equipment-table th {
+        padding: 8px 4px;
+        font-size: 0.75rem;
+    }
+    
+    .equipment-table td {
+        padding: 6px 4px;
+    }
+    
+    .equipment-table .form-check-input {
+        transform: scale(0.9);
+    }
+    
+    .equipment-table .form-check-label {
+        font-size: 0.75rem;
+    }
+    
+    .component-section {
+        padding: 0.8rem;
+    }
+    
+    .section-title {
+        padding: 8px 12px;
+        margin: -0.8rem -0.8rem 0.8rem -0.8rem;
+        font-size: 1rem;
+    }
+}
+
+/* Para pantallas muy pequeñas */
+@media (max-width: 400px) {
+    .table-wide {
+        min-width: 450px;
+    }
+    
+    .equipment-table th {
+        padding: 6px 3px;
+        font-size: 0.7rem;
+    }
+    
+    .equipment-table td {
+        padding: 5px 3px;
+        font-size: 0.75rem;
+    }
+}

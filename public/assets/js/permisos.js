@@ -38,17 +38,27 @@ class SistemaPermisos {
                 importar: esAdmin
             },
 
-       walkarounds: {
-    ver: true,
-    crear: true,
-    editar: function(registro) {
-        if (esAdmin) return true;
-        // Mismo que entregas_turno - usar nombre del elaborador
-        return registro.Elaboro === this.usuario.nombre;
-    }.bind(this),
-    eliminar: esAdmin,
-    aprobar: esAdmin
-},
+            // Módulo de Aeropuertos
+            aeropuertos: {
+                ver: true,
+                crear: true,
+                editar: esAdmin,
+                eliminar: esAdmin,
+                importar: esAdmin
+            },
+
+            // Módulo de Walkarounds
+            walkarounds: {
+                ver: true,
+                crear: true,
+                editar: function(registro) {
+                    if (esAdmin) return true;
+                    // Mismo que entregas_turno - usar nombre del elaborador
+                    return registro.Elaboro === this.usuario.nombre;
+                }.bind(this),
+                eliminar: esAdmin,
+                aprobar: esAdmin
+            },
 
             // Módulo de Entregas de Turno
             entregas_turno: {

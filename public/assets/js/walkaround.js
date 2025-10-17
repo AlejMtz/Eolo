@@ -1003,13 +1003,11 @@ function llenarFormularioConDatos(data) {
     console.log('✅ Formulario llenado correctamente');
 }
 
-
 /**
- * Carga componentes según el tipo de aeronave - VERSIÓN MEJORADA
+ * Carga componentes según el tipo de aeronave - VERSIÓN CON SCROLL HORIZONTAL COMPLETO
  */
 function cargarComponentes(tipoAeronave, componentesGuardados = {}) {
-    console.log('🔄 cargarComponentes iniciado');
-    console.log('📦 Componentes guardados recibidos:', componentesGuardados);
+    console.log('🔄 cargarComponentes iniciado con scroll horizontal completo');
     
     const componentesContainer = document.getElementById('componentesContainer');
     
@@ -1022,7 +1020,12 @@ function cargarComponentes(tipoAeronave, componentesGuardados = {}) {
     
     if (!secciones || Object.keys(secciones).length === 0) {
         console.error('❌ No se encontraron componentes para tipo:', tipoAeronave);
-        componentesContainer.innerHTML = '<div class="alert alert-warning">No hay componentes definidos para este tipo de aeronave.</div>';
+        componentesContainer.innerHTML = `
+            <div class="alert alert-warning m-3">
+                <i class="fas fa-exclamation-triangle me-2"></i>
+                No hay componentes definidos para este tipo de aeronave.
+            </div>
+        `;
         return;
     }
     
@@ -1031,39 +1034,36 @@ function cargarComponentes(tipoAeronave, componentesGuardados = {}) {
     let html = '';
     let componentesProcesados = 0;
 
-    // Generar cada sección (A, B, D, E)
+    // Generar cada sección (A, B, C, D, E)
     for (const letraSeccion in secciones) {
         const componentesSeccion = secciones[letraSeccion];
         
         if (componentesSeccion.length > 0) {
             html += `
-                <div class="section-container mb-4">
+                <div class="section-container">
                     <div class="section-header">
                         <h5 class="mb-0 text-center">SECCIÓN ${letraSeccion}</h5>
                     </div>
-                    <div class="table-responsive">
-                        <table class="table table-bordered table-sm component-table">
-                            <tbody>
+                    <table class="table table-bordered table-sm component-table mb-0">
+                        <tbody>
             `;
             
             componentesSeccion.forEach(componente => {
-                //Obtener datos del componente guardado
+                // Obtener datos del componente guardado
                 const estadoGuardado = componentesGuardados[componente.id] || {
-                    derecho: false,
-                    izquierdo: false,
-                    golpe: false,
-                    rayon: false,
-                    fisura: false,
-                    quebrado: false,
-                    pinturaCuarteada: false,
-                    otroDano: false
+                    derecho: false, izquierdo: false, golpe: false, rayon: false,
+                    fisura: false, quebrado: false, pinturaCuarteada: false, otroDano: false
                 };
 
                 console.log(`🎯 Componente ${componente.id} - Estado:`, estadoGuardado);
 
+                // Determinar si la fila debe resaltarse
+                const tieneDanos = Object.values(estadoGuardado).some(v => v);
+                const claseFila = tieneDanos ? 'table-warning has-damage' : '';
+
                 html += `
-                    <tr class="component-row" id="fila-${componente.id}">
-                        <td class="component-name" style="width: 25%">
+                    <tr class="component-row ${claseFila}" id="fila-${componente.id}">
+                        <td class="component-name">
                             <strong>${componente.nombre}</strong>
                         </td>
                 `;
@@ -1072,7 +1072,7 @@ function cargarComponentes(tipoAeronave, componentesGuardados = {}) {
                 tiposDano.forEach(tipoDano => {
                     const checked = estadoGuardado[tipoDano.id] ? 'checked' : '';
                     html += `
-                        <td class="text-center" style="width: 8%">
+                        <td class="text-center">
                             <input type="checkbox" 
                                 class="form-check-input damage-checkbox" 
                                 name="dano_${componente.id}_${tipoDano.id}" 
@@ -1085,20 +1085,18 @@ function cargarComponentes(tipoAeronave, componentesGuardados = {}) {
                 });
 
                 html += `</tr>`;
-
                 componentesProcesados++;
             });
             
             html += `
-                            </tbody>
-                        </table>
-                    </div>
+                        </tbody>
+                    </table>
                 </div>
             `;
         }
     }
     
-    console.log(`📝 Generando HTML para ${componentesProcesados} componentes...`);
+    console.log(`📝 Generando HTML para ${componentesProcesados} componentes con scroll horizontal completo...`);
     componentesContainer.innerHTML = html;
     
     // Configurar eventos para los checkboxes
@@ -1125,29 +1123,18 @@ function cargarComponentes(tipoAeronave, componentesGuardados = {}) {
             
             console.log(`🔧 Checkbox cambiado: ${componenteId} - ${tipoDano}: ${this.checked}`);
         });
-    });
-
-    // Aplicar estilos iniciales basados en los checkboxes marcados
-    setTimeout(() => {
-        console.log('🎨 Aplicando estilos iniciales a componentes con daños...');
-        checkboxes.forEach(checkbox => {
-            if (checkbox.checked) {
-                const componenteId = checkbox.getAttribute('data-componente');
-                const filaComponente = document.getElementById(`fila-${componenteId}`);
-                if (filaComponente) {
-                    filaComponente.classList.add('table-warning');
-                    filaComponente.classList.add('has-damage');
-                    console.log(`✅ Fila resaltada: ${componenteId}`);
-                }
-            }
+        
+        // Aplicar efecto táctil
+        checkbox.addEventListener('touchstart', function() {
+            this.style.transform = 'scale(0.95)';
         });
         
-        // Contar componentes con daños
-        const componentesConDanos = document.querySelectorAll('.has-damage');
-        console.log(`📊 Componentes con daños detectados: ${componentesConDanos.length}`);
-    }, 100);
-    
-    console.log('✅ Función cargarComponentes completada exitosamente');
+        checkbox.addEventListener('touchend', function() {
+            this.style.transform = 'scale(1.3)';
+        });
+    });
+
+    console.log('✅ Función cargarComponentes con scroll horizontal completo finalizada');
 }
 
 /**

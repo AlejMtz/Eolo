@@ -10,21 +10,57 @@ function tienePermisosAdmin() {
     return tipoUsuario === 'admin';
 }
 
-document.addEventListener('DOMContentLoaded', () => {
+/**
+ * Configura mejoras específicas para dispositivos móviles
+ */
+function configurarResponsividadMovil() {
+    // Detectar si es un dispositivo móvil
+    const esMovil = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    
+    if (esMovil) {
+        console.log('📱 Configurando responsividad para dispositivo móvil');
+        
+        // Agregar indicadores de scroll a las tablas específicas
+        const tableContainers = document.querySelectorAll('.table-scroll-container');
+        tableContainers.forEach(container => {
+            if (!container.querySelector('.table-scroll-indicator')) {
+                const indicator = document.createElement('div');
+                indicator.className = 'table-scroll-indicator';
+                indicator.innerHTML = '<i class="fas fa-arrows-left-right me-1"></i>Desplaza';
+                container.appendChild(indicator);
+            }
+        });
+        
+        // Optimizar tablas para touch
+        const tablas = document.querySelectorAll('.table-scroll-container');
+        tablas.forEach(tabla => {
+            tabla.style.webkitOverflowScrolling = 'touch';
+        });
+    }
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('🚀 DOM cargado - Inicializando entrega_turno.js');
+    
     // Inicializar modales de Bootstrap
     if (typeof bootstrap !== 'undefined') {
-        successModal = new bootstrap.Modal(document.getElementById('successModal'));
-        errorModal = new bootstrap.Modal(document.getElementById('errorModal'));
-        confirmModal = new bootstrap.Modal(document.getElementById('confirmModal'));
+        window.successModal = new bootstrap.Modal(document.getElementById('successModal'));
+        window.errorModal = new bootstrap.Modal(document.getElementById('errorModal'));
+        window.confirmModal = new bootstrap.Modal(document.getElementById('confirmModal'));
     }
+
+    // Configurar responsividad para móviles
+    configurarResponsividadMovil();
 
     // Detecta si estamos en la página de listado
     if (document.getElementById('tablaTurnos')) {
+        console.log('📋 Inicializando página de listado de turnos');
         cargarEntregasTurno();
     }
 
     // Detecta si estamos en la página del formulario
     if (document.getElementById('formEntregaTurno')) {
+        console.log('📝 Inicializando formulario de entrega de turno');
         configurarFormulario();
     }
 
@@ -38,6 +74,8 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
     }
+    
+    console.log('✅ entrega_turno.js inicializado correctamente');
 });
 
 /**
@@ -58,6 +96,7 @@ function configurarFormulario() {
     const params = new URLSearchParams(window.location.search);
     const id = params.get('id');
     if (id) {
+        console.log('✏️ Modo edición detectado, ID:', id);
         cargarEntregaParaEditar(id);
     }
 
@@ -66,6 +105,7 @@ function configurarFormulario() {
     if (fechaInput && !fechaInput.value) {
         const today = new Date().toISOString().split('T')[0];
         fechaInput.value = today;
+        console.log('📅 Fecha predeterminada establecida:', today);
     }
 }
 
@@ -83,6 +123,8 @@ function guardarEntregaTurno() {
     for (let [key, value] of formData.entries()) {
         console.log(key + ': ' + value);
     }
+    console.log('URL:', url);
+    console.log('ID Entrega:', id_entrega);
     console.log('============================');
     
     // Mostrar loading
@@ -123,7 +165,6 @@ function guardarEntregaTurno() {
         }
     });
 }
-
 /**
  * Recopila todos los datos del formulario y los agrega al FormData
  */
@@ -189,9 +230,6 @@ function recopilarDatosFormulario(formData) {
     }
 }
 
-/**
- * Carga los datos de una entrega para editar
- */
 /**
  * Carga los datos de una entrega para editar
  */
@@ -796,3 +834,4 @@ function cambiarPaginaTurnos(pagina) {
         }
     }
 }
+

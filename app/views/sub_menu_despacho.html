@@ -33,6 +33,12 @@
     <div class="container">
         <h1 class="card-title-main">Bienvenido al Módulo de Despacho</h1>
         <div class="mosaic-grid">
+
+            <a href="../../app/views/ver_aeropuertos.html" class="mosaic-card">
+                <i class="fas fa-warehouse icon"></i>
+                <h4>Sección de Aeropuertos</h4>
+                <p>Aqui podras realizar procesos con el catalogo de aeropuertos</p>
+            </a>
             
             <a href="../../app/views/ver_aeronaves.html" class="mosaic-card">
                 <i class="fas fa-plane icon"></i>
@@ -63,7 +69,7 @@
     // Verificar sesión al cargar la página
     document.addEventListener('DOMContentLoaded', function() {
         if (!localStorage.getItem('usuario_logueado')) {
-            window.location.href = '../Login/login.html';
+            window.location.href = '../../app/views/login.html';
             return;
         }
         
@@ -79,7 +85,7 @@
         localStorage.removeItem('tipo_usuario');
         
         // Redirigir al login
-        window.location.href = '../Login/login.html';
+        window.location.href = '../../app/views/login.html';
     }
 </script>
 </html>

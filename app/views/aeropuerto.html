@@ -6,7 +6,7 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="../../public/assets/css/style.css">
-    <title>Registro de Aeronave</title>
+    <title>Registro de Aeropuerto</title>
 </head>
 <body>
     <!-- Navbar -->
@@ -22,6 +22,9 @@
                 <ul class="navbar-nav ms-auto">
                     <li class="nav-item">
                         <a class="nav-link" href="../../app/views/ver_aeronaves.html"><i class="fas fa-plane"></i> Aeronaves</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="../../app/views/ver_aeropuertos.html"><i class="fas fa-map-marker-alt"></i> Aeropuertos</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="../../app/views/ver_walkaround.html"><i class="fas fa-clipboard-check"></i> Walkaround</a>
@@ -43,45 +46,63 @@
 
     <div class="container container-form">
         <h2 class="form-title">
-            <i class="fas fa-plane"></i> 
-            <span id="tituloFormulario">Registro de Aeronave</span>
+            <i class="fas fa-map-marker-alt"></i> 
+            <span id="tituloFormulario">Registro de Aeropuerto</span>
         </h2>
         
         <!-- Alerta de permisos -->
         <div id="alertaSoloLectura" class="alert alert-warning d-none">
             <i class="fas fa-eye me-2"></i>
-            <strong>Modo de solo lectura:</strong> No tienes permisos para modificar aeronaves. Solo puedes ver la información.
+            <strong>Modo de solo lectura:</strong> No tienes permisos para modificar aeropuertos. Solo puedes ver la información.
         </div>
         
-        <form id="aeronaveForm" action="../../app/controllers/aeronaves_crear.php" method="POST">
-            <input type="hidden" id="id_aeronave" name="id_aeronave">
+        <form id="aeropuertoForm" action="../../app/controllers/aeropuerto_crear.php" method="POST">
+            <input type="hidden" id="Id_Aeropuerto" name="Id_Aeropuerto">
+            
             <div class="row">
                 <div class="col-md-6">
                     <div class="form-group">
-                        <label for="matricula">Matrícula:</label>
-                        <input type="text" class="form-control" id="matricula" name="matricula" 
-                               placeholder="Escriba la matrícula de la aeronave" required
+                        <label for="Codigo_IATA">Código IATA:</label>
+                        <input type="text" class="form-control" id="Codigo_IATA" name="Codigo_IATA" 
+                               placeholder="Ej: MEX, MTY, CUN" maxlength="3" required
+                               style="text-transform: uppercase"
+                               readonly>
+                        <div class="form-text">Código de 3 letras (Ej: MEX, MTY)</div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label for="Codigo_OACI">Código OACI:</label>
+                        <input type="text" class="form-control" id="Codigo_OACI" name="Codigo_OACI" 
+                               placeholder="Ej: MMMX, MMMY, MMUN" maxlength="4" required
+                               style="text-transform: uppercase"
+                               readonly>
+                        <div class="form-text">Código de 4 letras (Ej: MMMX, MMMY)</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label for="Nombre">Nombre del Aeropuerto:</label>
+                <input type="text" class="form-control" id="Nombre" name="Nombre" 
+                       placeholder="Ej: Aeropuerto Internacional de la Ciudad de México" required
+                       readonly>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label for="Estado">Estado:</label>
+                        <input type="text" class="form-control" id="Estado" name="Estado" 
+                               placeholder="Ej: Ciudad de México, Nuevo León, Quintana Roo" required
                                readonly>
                     </div>
                 </div>
                 <div class="col-md-6">
                     <div class="form-group">
-                        <label for="tipo">Tipo:</label>
-                        <select class="form-select" id="tipo" name="tipo" required disabled>
-                            <option value="" selected>Selecciona el tipo de aeronave</option>
-                            <option value="Avion">Avión</option>
-                            <option value="Helicoptero">Helicóptero</option>
-                        </select>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="row">
-                <div class="col-md-6">
-                    <div class="form-group">
-                        <label for="equipo">Tipo Aeronave:</label>
-                        <input type="text" class="form-control" id="equipo" name="equipo" 
-                               placeholder="Escriba el tipo de la aeronave" required
+                        <label for="Municipio">Municipio:</label>
+                        <input type="text" class="form-control" id="Municipio" name="Municipio" 
+                               placeholder="Ej: Venustiano Carranza, Apodaca, Benito Juárez" required
                                readonly>
                     </div>
                 </div>
@@ -90,7 +111,7 @@
             <div class="d-grid gap-2 d-md-flex justify-content-md-end">
                 <button type="button" class="btn btn-secondary me-md-2" onclick="window.history.back()">Volver</button>
                 <button type="submit" class="btn btn-primary" id="btnGuardar" style="display: none;">
-                    Guardar Aeronave
+                    Guardar Aeropuerto
                 </button>
                 <button type="button" class="btn btn-warning" id="btnHabilitarEdicion" style="display: none;">
                     <i class="fas fa-edit me-1"></i>Habilitar Edición
@@ -145,8 +166,8 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
-                    <p>No tienes permisos para modificar aeronaves.</p>
-                    <p class="text-muted">Solo los usuarios administradores pueden gestionar la información de aeronaves.</p>
+                    <p>No tienes permisos para modificar aeropuertos.</p>
+                    <p class="text-muted">Solo los usuarios administradores pueden gestionar la información de aeropuertos.</p>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-warning" data-bs-dismiss="modal">Entendido</button>
@@ -158,38 +179,38 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"></script>
     <script src="../../public/assets/js/auth_check.js"></script>
     <script src="../../public/assets/js/permisos.js"></script>
-    <script src="../../public/assets/js/aeronaves.js"></script>
+    <script src="../../public/assets/js/aeropuertos.js"></script>
     <script>
         // Verificar permisos específicos para esta página
         document.addEventListener('DOMContentLoaded', function() {
             if (!verificarSesion()) return;
             
             // Verificar acceso al módulo
-            if (!permisosSistema.verificarAccesoPagina('aeronaves')) {
+            if (!permisosSistema.verificarAccesoPagina('aeropuertos')) {
                 return;
             }
             
             // Aplicar permisos específicos para el formulario
-            aplicarPermisosFormularioAeronave();
+            aplicarPermisosFormularioAeropuerto();
             
             // Comprobar si hay un ID en la URL para cargar datos
             const params = new URLSearchParams(window.location.search);
             const id = params.get('id');
             if (id) {
-                cargarAeronaveParaEditar(id);
+                cargarAeropuertoParaEditar(id);
             } else {
                 // Si es un nuevo registro, verificar permisos de creación
-                configurarFormularioNuevaAeronave();
+                configurarFormularioNuevoAeropuerto();
             }
         });
         
-        function aplicarPermisosFormularioAeronave() {
-            const puedeGestionar = permisosSistema.puedeCrear('aeronaves');
+        function aplicarPermisosFormularioAeropuerto() {
+            const puedeGestionar = permisosSistema.puedeCrear('aeropuertos');
             const params = new URLSearchParams(window.location.search);
             const esEdicion = params.get('id');
             
             if (esEdicion) {
-                document.getElementById('tituloFormulario').textContent = 'Edición de Aeronave';
+                document.getElementById('tituloFormulario').textContent = 'Edición de Aeropuerto';
             }
             
             if (!puedeGestionar) {
@@ -207,14 +228,14 @@
             }
         }
         
-        function configurarFormularioNuevaAeronave() {
-            const puedeGestionar = permisosSistema.puedeCrear('aeronaves');
+        function configurarFormularioNuevoAeropuerto() {
+            const puedeGestionar = permisosSistema.puedeCrear('aeropuertos');
             
             if (!puedeGestionar) {
                 // Redirigir si no tiene permisos para crear
-                mostrarErrorPermisosAeronaves();
+                mostrarErrorPermisosAeropuertos();
                 setTimeout(() => {
-                    window.location.href = 'ver_aeronaves.html';
+                    window.location.href = 'ver_aeropuertos.html';
                 }, 2000);
             } else {
                 habilitarFormulario();
@@ -222,12 +243,14 @@
         }
         
         function habilitarFormulario() {
-            document.getElementById('matricula').readOnly = false;
-            document.getElementById('tipo').disabled = false;
-            document.getElementById('equipo').readOnly = false;
+            document.getElementById('Codigo_IATA').readOnly = false;
+            document.getElementById('Codigo_OACI').readOnly = false;
+            document.getElementById('Nombre').readOnly = false;
+            document.getElementById('Estado').readOnly = false;
+            document.getElementById('Municipio').readOnly = false;
         }
         
-        function mostrarErrorPermisosAeronaves() {
+        function mostrarErrorPermisosAeropuertos() {
             const modal = new bootstrap.Modal(document.getElementById('permisosModal'));
             modal.show();
         }
@@ -237,7 +260,7 @@
             const btnHabilitar = document.getElementById('btnHabilitarEdicion');
             if (btnHabilitar) {
                 btnHabilitar.addEventListener('click', function() {
-                    mostrarErrorPermisosAeronaves();
+                    mostrarErrorPermisosAeropuertos();
                 });
             }
         });

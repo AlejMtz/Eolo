@@ -8,10 +8,9 @@
     <link rel="stylesheet" href="../../public/assets/css/style.css">
     <script src="../../public/assets/js/auth_check.js"></script>
     <title>Detalle de Walkaround</title>
-    
+
 </head>
 <body>
-    <!-- Navbar -->
     <nav class="navbar navbar-expand-lg navbar-dark navbar-custom">
         <div class="container">
             <a href="../../app/views/Index.html" class="navbar-brand">
@@ -24,6 +23,9 @@
                 <ul class="navbar-nav ms-auto">
                     <li class="nav-item">
                         <a class="nav-link" href="../../app/views/ver_aeronaves.html"><i class="fas fa-plane"></i> Aeronaves</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="../../app/views/ver_aeropuertos.html"><i class="fas fa-map-marker-alt"></i> Aeropuertos</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="../../app/views/ver_walkaround.html"><i class="fas fa-clipboard-check"></i> Walkaround</a>
@@ -47,7 +49,7 @@
         <h2 class="form-title"><i class="fas fa-clipboard-check"></i> Detalle de Walkaround</h2>
     </div>
 
-      <!-- Información de permisos -->
+    <!-- Información de permisos -->
     <div id="infoPermisos"></div>
 
     <div class="container mt-4">
@@ -84,44 +86,48 @@
             </div>
         </div>
 
-        <!-- Componentes CON HEADER FIJO -->
-        <div class="card mb-4">
-            <div class="card-header bg-success text-white">
-                <h5 class="mb-0"><i class="fas fa-cogs"></i> Componentes Inspeccionados</h5>
+        <!-- COMPONENTES CON SCROLL HORIZONTAL COMPLETO CORREGIDO -->
+<div class="card mb-4">
+    <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+        <h5 class="mb-0"><i class="fas fa-cogs me-2"></i>Componentes de la Aeronave</h5>
+        <span class="badge bg-light text-primary desktop-only">Desplaza horizontalmente →</span>
+    </div>
+    <div class="card-body p-0">
+        <!-- Indicador de scroll para móviles -->
+        <div class="scroll-hint mobile-only">
+            <i class="fas fa-arrows-left-right"></i> 
+            Desliza horizontalmente para ver todos los tipos de daño
+            <i class="fas fa-arrows-left-right"></i>
+        </div>
+        
+        <!-- CONTENEDOR PRINCIPAL CON SCROLL HORIZONTAL COMPLETO -->
+        <div class="components-main-container">
+            <!-- HEADER FIJO QUE SE DESPLAZA HORIZONTALMENTE -->
+            <div class="global-table-header">
+                <table class="table table-bordered table-sm mb-0">
+                    <thead>
+                        <tr>
+                            <th>COMPONENTE</th>
+                            <th>DERECHO</th>
+                            <th>IZQUIERDO</th>
+                            <th>GOLPE</th>
+                            <th>RAYÓN</th>
+                            <th>FISURA</th>
+                            <th>QUEBRADO</th>
+                            <th>PINT. CUARTEADA</th>
+                            <th>OTRO DAÑO</th>
+                        </tr>
+                    </thead>
+                </table>
             </div>
-            <div class="card-body p-0">
-                <div class="components-main-container">
-                    <!-- HEADER FIJO GLOBAL -->
-                    <div class="global-table-header">
-                        <table class="table table-bordered table-sm mb-0">
-                            <thead>
-                                <tr>
-                                    <th style="width: 25%">COMPONENTE</th>
-                                    <th style="width: 8%">DERECHO</th>
-                                    <th style="width: 8%">IZQUIERDO</th>
-                                    <th style="width: 8%">GOLPE</th>
-                                    <th style="width: 8%">RAYÓN</th>
-                                    <th style="width: 8%">FISURA</th>
-                                    <th style="width: 8%">QUEBRADO</th>
-                                    <th style="width: 8%">PINT. CUARTEADA</th>
-                                    <th style="width: 8%">OTRO DAÑO</th>
-                                </tr>
-                            </thead>
-                        </table>
-                    </div>
-                    
-                    <!-- CONTENIDO DESPLAZABLE -->
-                    <div class="components-content p-3" id="componentesContainer">
-                        <div class="text-center py-4">
-                            <div class="spinner-border text-primary" role="status">
-                                <span class="visually-hidden">Cargando...</span>
-                            </div>
-                            <p class="mt-2">Cargando componentes...</p>
-                        </div>
-                    </div>
-                </div>
+            
+            <!-- CONTENIDO CON SCROLL HORIZONTAL COMPLETO -->
+            <div class="components-content" id="componentesContainer">
+                <!-- El contenido se genera dinámicamente aquí -->
             </div>
         </div>
+    </div>
+</div>
 
         <!-- Evidencias -->
         <div class="card mb-4">
@@ -140,22 +146,23 @@
             </div>
         </div>
 
-       <!-- Botones de acción con permisos -->
-<div class="d-flex gap-2 mb-4">
-    <a href="../../app/views/ver_walkaround.html" class="btn btn-secondary">
-        <i class="fas fa-arrow-left"></i> Volver a la lista
-    </a>
-    
-    <!-- Botón Editar (condicional) -->
-    <button id="btnEditar" class="btn btn-warning btn-editar" data-modulo="walkarounds">
-        <i class="fas fa-edit"></i> Editar
-    </button>
-    
-    <!-- Botón Eliminar (condicional) -->
-    <button id="btnEliminar" class="btn btn-danger btn-eliminar" data-modulo="walkarounds">
-        <i class="fas fa-trash"></i> Eliminar
-    </button>
-</div>
+        <!-- Botones de acción con permisos -->
+        <div class="d-flex gap-2 mb-4">
+            <a href="../../app/views/ver_walkaround.html" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i> Volver a la lista
+            </a>
+            
+            <!-- Botón Editar (condicional) -->
+            <button id="btnEditar" class="btn btn-warning btn-editar" data-modulo="walkarounds">
+                <i class="fas fa-edit"></i> Editar
+            </button>
+            
+            <!-- Botón Eliminar (condicional) -->
+            <button id="btnEliminar" class="btn btn-danger btn-eliminar" data-modulo="walkarounds">
+                <i class="fas fa-trash"></i> Eliminar
+            </button>
+        </div>
+    </div>
 
     <!-- Modales -->
     <div class="modal fade" id="errorModal" tabindex="-1" aria-labelledby="errorModalLabel" aria-hidden="true">

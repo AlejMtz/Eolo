@@ -29,11 +29,11 @@ try {
     $usuario = $stmt->fetch(PDO::FETCH_ASSOC);
     
     if (!$usuario) {
-        throw new Exception('Usuario no encontrado o inactivo');
+        throw new Exception('Credenciales incorrectas');
     }
     
-    // Por ahora usamos una verificación simple para testing
-    if ($password === 'password') {
+    // ✅ VERIFICACIÓN CON password_verify (IMPORTANTE)
+    if (password_verify($password, $usuario['Password'])) {
         // Contraseña correcta
         $_SESSION['usuario_id'] = $usuario['Id_Usuario'];
         $_SESSION['usuario_nombre'] = $usuario['Nombre_Completo'];
@@ -53,7 +53,7 @@ try {
         ]);
         
     } else {
-        throw new Exception('Contraseña incorrecta');
+        throw new Exception('Credenciales incorrectas');
     }
     
 } catch (Exception $e) {
