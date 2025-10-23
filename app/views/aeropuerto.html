@@ -85,8 +85,7 @@
             <div class="form-group">
                 <label for="Nombre">Nombre del Aeropuerto:</label>
                 <input type="text" class="form-control" id="Nombre" name="Nombre" 
-                       placeholder="Ej: Aeropuerto Internacional de la Ciudad de México" required
-                       readonly>
+                       placeholder="Ej: Aeropuerto Internacional de la Ciudad de México" readonly>
             </div>
 
             <div class="row">
@@ -100,9 +99,9 @@
                 </div>
                 <div class="col-md-6">
                     <div class="form-group">
-                        <label for="Municipio">Municipio:</label>
-                        <input type="text" class="form-control" id="Municipio" name="Municipio" 
-                               placeholder="Ej: Venustiano Carranza, Apodaca, Benito Juárez" required
+                        <label for="Pais">Pais:</label>
+                        <input type="text" class="form-control" id="Pais" name="Pais" 
+                               placeholder="Ej: México, USA, Chile"
                                readonly>
                     </div>
                 </div>
@@ -247,7 +246,7 @@
             document.getElementById('Codigo_OACI').readOnly = false;
             document.getElementById('Nombre').readOnly = false;
             document.getElementById('Estado').readOnly = false;
-            document.getElementById('Municipio').readOnly = false;
+            document.getElementById('Pais').readOnly = false;
         }
         
         function mostrarErrorPermisosAeropuertos() {

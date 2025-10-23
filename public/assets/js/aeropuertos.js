@@ -148,7 +148,7 @@ function configurarFormularioAeropuerto() {
         }
         
         // Validar campos requeridos
-        const camposRequeridos = ['Codigo_IATA', 'Codigo_OACI', 'Nombre', 'Estado', 'Municipio'];
+        const camposRequeridos = ['Codigo_IATA', 'Codigo_OACI', 'Estado', 'Pais'];
         for (const campo of camposRequeridos) {
             const valor = document.getElementById(campo).value.trim();
             if (!valor) {
@@ -180,7 +180,7 @@ function configurarFormularioAeropuerto() {
             Codigo_OACI: document.getElementById('Codigo_OACI').value.trim().toUpperCase(),
             Nombre: document.getElementById('Nombre').value.trim(),
             Estado: document.getElementById('Estado').value.trim(),
-            Municipio: document.getElementById('Municipio').value.trim()
+            Pais: document.getElementById('Pais').value.trim()
         };
 
         // Mostrar loading
@@ -319,7 +319,7 @@ async function cargarAeropuertos(pagina = 1) {
                     <td>${aeropuerto.Codigo_OACI}</td>
                     <td>${aeropuerto.Nombre}</td>
                     <td>${aeropuerto.Estado}</td>
-                    <td>${aeropuerto.Municipio}</td>
+                    <td>${aeropuerto.Pais}</td>
                     <td>
                         <!-- Botón Editar -->
                         <a href="../../app/views/aeropuerto.html?id=${aeropuerto.Id_Aeropuerto}" 
@@ -428,7 +428,7 @@ async function cargarAeropuertoParaEditar(id) {
         document.getElementById('Codigo_OACI').value = aeropuerto.Codigo_OACI || '';
         document.getElementById('Nombre').value = aeropuerto.Nombre || '';
         document.getElementById('Estado').value = aeropuerto.Estado || '';
-        document.getElementById('Municipio').value = aeropuerto.Municipio || '';
+        document.getElementById('Pais').value = aeropuerto.Pais || '';
 
         // Cambiar estilo del botón
         document.getElementById('btnGuardar').innerText = 'Actualizar Aeropuerto';

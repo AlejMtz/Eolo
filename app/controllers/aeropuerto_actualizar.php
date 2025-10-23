@@ -26,7 +26,7 @@ try {
         exit;
     }
 
-    $required_fields = ['Codigo_IATA', 'Codigo_OACI', 'Nombre', 'Estado', 'Municipio'];
+    $required_fields = ['Codigo_IATA', 'Codigo_OACI', 'Estado', 'Pais'];
     foreach ($required_fields as $field) {
         if (empty($data[$field])) {
             echo json_encode(['success' => false, 'error' => "El campo $field es requerido"]);
@@ -47,7 +47,7 @@ try {
 
     // Actualizar aeropuerto
     $sql = "UPDATE aeropuertos 
-            SET Codigo_IATA = ?, Codigo_OACI = ?, Nombre = ?, Estado = ?, Municipio = ?
+            SET Codigo_IATA = ?, Codigo_OACI = ?, Nombre = ?, Estado = ?, Pais = ?
             WHERE Id_Aeropuerto = ?";
     
     $stmt = $pdo->prepare($sql);
@@ -56,7 +56,7 @@ try {
         strtoupper(trim($data['Codigo_OACI'])),
         trim($data['Nombre']),
         trim($data['Estado']),
-        trim($data['Municipio']),
+        trim($data['Pais']),
         $data['Id_Aeropuerto']
     ]);
 

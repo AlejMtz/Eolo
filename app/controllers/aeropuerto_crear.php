@@ -22,7 +22,7 @@ try {
     }
     
     // Validar campos requeridos
-    $required_fields = ['Codigo_IATA', 'Codigo_OACI', 'Nombre', 'Estado', 'Municipio'];
+    $required_fields = ['Codigo_IATA', 'Codigo_OACI', 'Estado', 'Pais'];
     foreach ($required_fields as $field) {
         if (empty($data[$field])) {
             echo json_encode(['success' => false, 'error' => "El campo $field es requerido"]);
@@ -42,7 +42,7 @@ try {
     }
 
     // Insertar aeropuerto
-    $sql = "INSERT INTO aeropuertos (Codigo_IATA, Codigo_OACI, Nombre, Estado, Municipio) 
+    $sql = "INSERT INTO aeropuertos (Codigo_IATA, Codigo_OACI, Nombre, Estado, Pais) 
             VALUES (?, ?, ?, ?, ?)";
     
     $stmt = $pdo->prepare($sql);
@@ -51,7 +51,7 @@ try {
         strtoupper(trim($data['Codigo_OACI'])),
         trim($data['Nombre']),
         trim($data['Estado']),
-        trim($data['Municipio'])
+        trim($data['Pais'])
     ]);
 
     if ($result) {

@@ -28,13 +28,13 @@ try {
                 Codigo_OACI as codigo_oaci, 
                 Nombre as nombre,
                 Estado as estado,
-                Municipio as municipio
+                Pais as pais
             FROM aeropuertos 
             WHERE 
                 Codigo_IATA LIKE ? OR 
                 Codigo_OACI LIKE ? OR 
                 Nombre LIKE ? OR
-                Municipio LIKE ? OR
+                Pais LIKE ? OR
                 Estado LIKE ?
             ORDER BY 
                 CASE 
@@ -62,7 +62,7 @@ try {
                 Codigo_OACI as codigo_oaci, 
                 Nombre as nombre,
                 Estado as estado,
-                Municipio as municipio
+                Pais as pais
             FROM aeropuertos 
             WHERE Codigo_IATA IN ('MEX', 'CUN', 'GDL', 'MTY', 'TIJ', 'BJX', 'PVR', 'SJD', 'HMO')
             ORDER BY Nombre 
@@ -81,8 +81,8 @@ try {
             'codigo_oaci' => $row['codigo_oaci'],
             'nombre' => $row['nombre'],
             'estado' => $row['estado'],
-            'municipio' => $row['municipio'],
-            'display' => "{$row['codigo_iata']} / {$row['codigo_oaci']} - {$row['nombre']} ({$row['municipio']}, {$row['estado']})"
+            'pais' => $row['pais'],
+            'display' => "{$row['codigo_iata']} / {$row['codigo_oaci']} - {$row['nombre']} ({$row['pais']}, {$row['estado']})"
         ];
     }
 
