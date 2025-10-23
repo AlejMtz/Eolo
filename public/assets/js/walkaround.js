@@ -109,8 +109,9 @@ document.addEventListener('DOMContentLoaded', () => {
     if (document.getElementById('walkaroundForm')) {
         // ⭐⭐ PRIMERO: Cargar aeronaves para el selector (SIEMPRE, en ambos modos)
         cargarAeronavesParaSelector();
+        configurarEventosEliminacion();
 
-         // ⭐⭐ NUEVO: Configurar búsqueda de aeropuertos
+        // ⭐⭐ NUEVO: Configurar búsqueda de aeropuertos
         configurarBusquedaAeropuertos();
         
         // Comprobar si hay un ID en la URL para modo edición
@@ -121,10 +122,22 @@ document.addEventListener('DOMContentLoaded', () => {
             // Modo edición
             configurarModoEdicion(id);
         } else {
-            // Modo creación - establecer fecha/hora actual
+            // ⭐⭐ CORRECCIÓN: Establecer fecha/hora actual LOCAL del dispositivo
             const now = new Date();
-            const formatted = now.toISOString().slice(0,16);
+            
+            // Obtener la fecha y hora local en formato correcto para datetime-local
+            const year = now.getFullYear();
+            const month = String(now.getMonth() + 1).padStart(2, '0');
+            const day = String(now.getDate()).padStart(2, '0');
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            
+            // Formato: YYYY-MM-DDThh:mm (hora local)
+            const formatted = `${year}-${month}-${day}T${hours}:${minutes}`;
+            
             document.getElementById('fechaHora').value = formatted;
+            
+            console.log('🕐 Hora local establecida:', formatted);
             
             // Asegurar que la acción sea para creación
             document.getElementById('walkaroundForm').action = '../../app/controllers/procesar_walkaround.php';
@@ -213,9 +226,6 @@ function configurarBusquedaAeronaves() {
 
 /**
  * Busca aeronaves por matrícula
- */
-/**
- * Busca aeronaves por matrícula - VERSIÓN CORREGIDA
  */
 function buscarAeronaves(termino) {
     const listaAeronaves = document.getElementById('listaAeronaves');
@@ -523,7 +533,7 @@ function configurarModoEdicion(id) {
 }
 
 /**
- * Carga evidencias existentes en modo edición
+ * Carga evidencias existentes en modo edición - VERSIÓN CORREGIDA SIN DUPLICADOS
  */
 function cargarEvidenciasExistentes(evidencias) {
     console.log('📸 Cargando evidencias existentes:', evidencias);
@@ -539,50 +549,61 @@ function cargarEvidenciasExistentes(evidencias) {
         return;
     }
     
-    // ⭐⭐ CORRECCIÓN: Limpiar solo si no hay evidencias existentes ya mostradas
+    // ⭐⭐ LIMPIAR SOLO LAS EVIDENCIAS EXISTENTES, NO LAS NUEVAS
     const existingEvidences = previewContainer.querySelectorAll('.existing-evidence');
-    if (existingEvidences.length === 0) {
-        previewContainer.innerHTML = ''; // Solo limpiar si no hay existentes
-    }
+    existingEvidences.forEach(el => el.remove());
     
     evidencias.forEach(evidencia => {
-        // Verificar si ya existe esta evidencia en el DOM
-        const existingElement = document.getElementById('evidence-existente-' + evidencia.Id_Evidencia);
-        if (existingElement) {
-            console.log('ℹ️ Evidencia ya existe en el DOM:', evidencia.Id_Evidencia);
-            return; // Saltar si ya existe
-        }
+        const idEvidencia = evidencia.Id_Evidencia;
+        const ruta = evidencia.Ruta;
+        const fileName = evidencia.FileName;
+        const extension = fileName ? fileName.split('.').pop().toLowerCase() : '';
+        const esImagen = ['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(extension);
         
+        console.log('🖼️ Evidencia existente:', { id: idEvidencia, ruta: ruta, fileName: fileName });
+
         const itemDiv = document.createElement('div');
         itemDiv.className = 'evidence-item existing-evidence';
-        itemDiv.id = 'evidence-existente-' + evidencia.Id_Evidencia;
+        itemDiv.id = 'evidence-existente-' + idEvidencia;
+        itemDiv.setAttribute('data-id-evidencia', idEvidencia);
         
-        // Determinar si es imagen o video
-        const fileName = evidencia.FileName || evidencia.Ruta || '';
-        const isImage = fileName.toLowerCase().match(/\.(jpg|jpeg|png|gif|bmp|webp)$/);
-        
-        if (isImage && evidencia.Ruta) {
+        if (esImagen) {
             const img = document.createElement('img');
-            img.src = evidencia.Ruta;
+            img.src = ruta;
             img.className = 'evidence-preview';
+            img.style.height = '80px';
+            img.style.width = '80px';
+            img.style.objectFit = 'cover';
+            img.style.borderRadius = '4px';
             img.onerror = function() {
-                // Si falla la carga, mostrar un icono
+                console.error('❌ Error cargando imagen existente:', ruta);
                 this.style.display = 'none';
                 const icon = document.createElement('i');
                 icon.className = 'fas fa-file-image evidence-preview';
+                icon.style.fontSize = '2rem';
+                icon.style.color = '#6c757d';
                 itemDiv.appendChild(icon);
             };
+            
+            img.onload = function() {
+                console.log('✅ Imagen existente cargada correctamente:', ruta);
+            };
+            
             itemDiv.appendChild(img);
         } else {
             const icon = document.createElement('i');
             icon.className = 'fas fa-file-video evidence-preview';
+            icon.style.fontSize = '2rem';
+            icon.style.color = '#6c757d';
             itemDiv.appendChild(icon);
         }
         
         const nameSpan = document.createElement('span');
         nameSpan.textContent = fileName;
         nameSpan.className = 'file-name';
-        nameSpan.title = `ID: ${evidencia.Id_Evidencia}`;
+        nameSpan.style.marginLeft = '10px';
+        nameSpan.style.flex = '1';
+        nameSpan.title = fileName;
         
         itemDiv.appendChild(nameSpan);
         
@@ -592,34 +613,51 @@ function cargarEvidenciasExistentes(evidencias) {
         existenteBadge.textContent = 'Existente';
         itemDiv.appendChild(existenteBadge);
         
-        previewContainer.appendChild(itemDiv);
+        // ⭐⭐ AGREGAR BOTÓN PARA ELIMINAR EVIDENCIA EXISTENTE
+        const removeBtn = document.createElement('button');
+        removeBtn.type = 'button';
+        removeBtn.className = 'btn btn-sm btn-danger remove-existing-evidence ms-2';
+        removeBtn.innerHTML = '<i class="fas fa-times"></i>';
+        removeBtn.title = 'Eliminar esta evidencia';
+        removeBtn.onclick = function() {
+            if (confirm('¿Estás seguro de que quieres eliminar esta evidencia?')) {
+                eliminarEvidenciaExistente(idEvidencia, itemDiv);
+            }
+        };
+        itemDiv.appendChild(removeBtn);
+        
+        // Insertar al principio para separar existentes de nuevas
+        previewContainer.insertBefore(itemDiv, previewContainer.firstChild);
     });
     
     console.log('✅ Evidencias existentes cargadas:', evidencias.length);
 }
 
-function debugFormData(formData) {
-    console.log('🔍 DEBUG FormData:');
-    for (let [key, value] of formData.entries()) {
-        if (key.startsWith('dano_')) {
-            console.log(`  ${key} = ${value}`);
+/**
+ * Elimina una evidencia existente
+ */
+async function eliminarEvidenciaExistente(idEvidencia, elemento) {
+    try {
+        const formData = new FormData();
+        formData.append('id_evidencia', idEvidencia);
+
+        const response = await fetch('/Eolo/app/controllers/eliminar_evidencia.php', {
+            method: 'POST',
+            body: formData
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            elemento.remove();
+            console.log('✅ Evidencia eliminada:', idEvidencia);
+        } else {
+            alert('Error al eliminar evidencia: ' + (data.error || 'Error desconocido'));
         }
+    } catch (error) {
+        console.error('Error eliminando evidencia:', error);
+        alert('Error al conectar con el servidor');
     }
-    
-    // Contar por componente
-    const componentes = {};
-    for (let [key, value] of formData.entries()) {
-        if (key.startsWith('dano_')) {
-            const parts = key.split('_');
-            if (parts.length >= 3) {
-                const compId = parts[1];
-                if (!componentes[compId]) componentes[compId] = 0;
-                componentes[compId]++;
-            }
-        }
-    }
-    
-    console.log('📊 Campos por componente:', componentes);
 }
 
 /**
@@ -1199,80 +1237,304 @@ function removeEvidence(fileId) {
 }
 
 /**
- * Maneja la selección de evidencias generales - VERSIÓN CORREGIDA
+ * Maneja la selección de evidencias generales - VERSIÓN COMPLETA
  */
 function handleGeneralEvidenceSelect(files) {
     console.log('📁 Archivos seleccionados:', files);
     
-    if (!files || files.length === 0) {
-        console.log('⚠️ No se seleccionaron archivos');
-        return;
-    }
+    if (!files || files.length === 0) return;
     
     const previewContainer = document.getElementById('evidencePreview');
-    if (!previewContainer) {
-        console.error('❌ No se encontró el contenedor de preview');
-        return;
-    }
+    if (!previewContainer) return;
     
-    // Convertir FileList a Array
-    const nuevosArchivos = Array.from(files);
+    // Remover el mensaje "no hay evidencias" si existe
+    const noEvidenceMsg = previewContainer.querySelector('.text-muted.text-center');
+    if (noEvidenceMsg) noEvidenceMsg.remove();
     
-    nuevosArchivos.forEach(file => {
-        // Verificar si el archivo ya existe
+    Array.from(files).forEach(file => {
+        // Verificar duplicados
         const existe = generalEvidenceFiles.some(f => 
             f.file.name === file.name && f.file.size === file.size
         );
         
         if (!existe) {
-            const fileId = Date.now() + Math.random();
-            const fileObj = {
-                id: fileId,
-                file: file
-            };
-            
+            const fileId = 'new-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9);
+            const fileObj = { id: fileId, file: file };
             generalEvidenceFiles.push(fileObj);
             
-            // Crear elemento de preview
-            const itemDiv = document.createElement('div');
-            itemDiv.className = 'evidence-item';
-            itemDiv.id = 'evidence-item-' + fileId;
-            
-            if (file.type.startsWith('image/')) {
-                const img = document.createElement('img');
-                img.src = URL.createObjectURL(file);
-                img.className = 'evidence-preview';
-                itemDiv.appendChild(img);
-            } else if (file.type.startsWith('video/')) {
-                const icon = document.createElement('i');
-                icon.className = 'fas fa-file-video evidence-preview';
-                itemDiv.appendChild(icon);
-            } else {
-                const icon = document.createElement('i');
-                icon.className = 'fas fa-file evidence-preview';
-                itemDiv.appendChild(icon);
-            }
-            
-            const nameSpan = document.createElement('span');
-            nameSpan.textContent = file.name;
-            nameSpan.className = 'file-name';
-            
-            const removeBtn = document.createElement('button');
-            removeBtn.type = 'button';
-            removeBtn.className = 'btn btn-sm btn-danger remove-evidence';
-            removeBtn.innerHTML = '<i class="fas fa-times"></i>';
-            removeBtn.onclick = () => removeEvidence(fileId);
-            
-            itemDiv.appendChild(nameSpan);
-            itemDiv.appendChild(removeBtn);
-            previewContainer.appendChild(itemDiv);
+            crearElementoEvidencia(fileObj, previewContainer);
         }
     });
     
-    // Actualizar el input
+    updateEvidenceInput();
+}
+
+/**
+ * Crea un elemento de evidencia en el DOM - VERSIÓN CON MODAL
+ */
+function crearElementoEvidencia(fileObj, container) {
+    const { id, file } = fileObj;
+    
+    const itemDiv = document.createElement('div');
+    itemDiv.className = 'evidence-item new-evidence';
+    itemDiv.id = 'evidence-item-' + id;
+    
+    // Contenedor para la miniatura (hacerla clickeable)
+    const thumbnailContainer = document.createElement('div');
+    thumbnailContainer.className = 'evidence-thumbnail-container';
+    thumbnailContainer.style.cursor = 'pointer';
+    thumbnailContainer.title = 'Haz clic para ver en pantalla completa';
+    
+    // ⭐⭐ HACER LA MINIATURA CLICKEABLE PARA EL MODAL
+    thumbnailContainer.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        abrirEvidenciaNuevaEnModal(file, id);
+    });
+    
+    // Miniaturas según tipo de archivo
+    if (file.type.startsWith('image/')) {
+        const img = document.createElement('img');
+        img.src = URL.createObjectURL(file);
+        img.className = 'evidence-preview';
+        img.style.cssText = 'height: 80px; width: 80px; object-fit: cover; border-radius: 4px;';
+        thumbnailContainer.appendChild(img);
+    } else if (file.type.startsWith('video/')) {
+        const icon = document.createElement('i');
+        icon.className = 'fas fa-file-video evidence-preview';
+        icon.style.cssText = 'font-size: 2rem; color: #6c757d;';
+        thumbnailContainer.appendChild(icon);
+        
+        // Icono de play para indicar que es clickeable
+        const playIcon = document.createElement('i');
+        playIcon.className = 'fas fa-play-circle play-overlay';
+        playIcon.style.cssText = 'position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: white; font-size: 1.5rem; text-shadow: 2px 2px 4px rgba(0,0,0,0.7);';
+        thumbnailContainer.appendChild(playIcon);
+    } else {
+        const icon = document.createElement('i');
+        icon.className = 'fas fa-file evidence-preview';
+        icon.style.cssText = 'font-size: 2rem; color: #6c757d;';
+        thumbnailContainer.appendChild(icon);
+    }
+    
+    itemDiv.appendChild(thumbnailContainer);
+    
+    // Nombre del archivo
+    const nameSpan = document.createElement('span');
+    nameSpan.textContent = file.name;
+    nameSpan.className = 'file-name';
+    nameSpan.style.marginLeft = '10px';
+    nameSpan.style.flex = '1';
+    
+    // Badge "Nueva"
+    const newBadge = document.createElement('span');
+    newBadge.className = 'badge bg-success ms-2';
+    newBadge.textContent = 'Nueva';
+    
+    // Botón eliminar
+    const removeBtn = document.createElement('button');
+    removeBtn.type = 'button';
+    removeBtn.className = 'btn btn-sm btn-danger remove-evidence-btn';
+    removeBtn.innerHTML = '<i class="fas fa-times"></i>';
+    removeBtn.title = 'Quitar esta evidencia';
+    
+    // Event listener para eliminar
+    removeBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        console.log('🎯 Click en botón eliminar para ID:', id);
+        removeEvidence(id);
+    });
+    
+    itemDiv.appendChild(nameSpan);
+    itemDiv.appendChild(newBadge);
+    itemDiv.appendChild(removeBtn);
+    container.appendChild(itemDiv);
+}
+
+/**
+ * Abre una evidencia NUEVA en el modal de pantalla completa
+ */
+function abrirEvidenciaNuevaEnModal(file, fileId) {
+    console.log('🔄 Abriendo evidencia NUEVA en modal:', file.name);
+    
+    const modalContent = document.getElementById('evidenceModalContent');
+    const modalTitle = document.getElementById('evidenceModalLabel');
+    const fileNameSpan = document.getElementById('evidenceFileName');
+    const downloadBtn = document.getElementById('downloadEvidenceBtn');
+    
+    // Limpiar contenido anterior
+    modalContent.innerHTML = '';
+    
+    // Configurar nombre del archivo
+    fileNameSpan.textContent = file.name;
+    
+    // Configurar botón de descarga (para nuevas evidencias)
+    downloadBtn.style.display = 'block';
+    downloadBtn.onclick = function() {
+        descargarArchivoNuevo(file);
+    };
+    
+    if (file.type.startsWith('image/')) {
+        // Para imágenes: mostrar en tamaño completo
+        const img = document.createElement('img');
+        img.src = URL.createObjectURL(file);
+        img.alt = file.name;
+        img.style.maxWidth = '100%';
+        img.style.maxHeight = '80vh';
+        img.style.objectFit = 'contain';
+        img.className = 'img-fluid';
+        
+        img.onerror = function() {
+            modalContent.innerHTML = `
+                <div class="alert alert-danger">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    No se pudo cargar la imagen: ${file.name}
+                </div>
+            `;
+        };
+        
+        modalContent.appendChild(img);
+        
+    } else if (file.type.startsWith('video/')) {
+        // Para videos: mostrar reproductor completo
+        const video = document.createElement('video');
+        video.src = URL.createObjectURL(file);
+        video.controls = true;
+        video.autoplay = true;
+        video.style.maxWidth = '100%';
+        video.style.maxHeight = '80vh';
+        video.className = 'img-fluid';
+        
+        video.onerror = function() {
+            modalContent.innerHTML = `
+                <div class="alert alert-danger">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    No se pudo cargar el video: ${file.name}
+                </div>
+            `;
+        };
+        
+        modalContent.appendChild(video);
+        
+    } else {
+        // Para otros tipos de archivo
+        modalContent.innerHTML = `
+            <div class="text-center text-white">
+                <i class="fas fa-file fa-5x mb-3"></i>
+                <h4>${file.name}</h4>
+                <p class="mb-3">Este tipo de archivo no se puede previsualizar</p>
+                <button class="btn btn-primary" onclick="descargarArchivoNuevo(${JSON.stringify(file).replace(/"/g, '&quot;')})">
+                    <i class="fas fa-download me-2"></i>Descargar Archivo
+                </button>
+            </div>
+        `;
+    }
+    
+    // Mostrar el modal
+    if (window.evidenceModal) {
+        window.evidenceModal.show();
+    }
+}
+
+/**
+ * Descarga un archivo nuevo (antes de guardar)
+ */
+function descargarArchivoNuevo(file) {
+    console.log('📥 Descargando archivo nuevo:', file.name);
+    
+    // Crear un enlace temporal para la descarga
+    const url = URL.createObjectURL(file);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = file.name;
+    link.target = '_blank';
+    
+    // Simular clic en el enlace
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    
+    // Liberar el objeto URL después de un tiempo
+    setTimeout(() => URL.revokeObjectURL(url), 100);
+    
+    // Mostrar mensaje de descarga
+    mostrarMensajeDescarga(file.name);
+}
+
+/**
+ * Elimina una evidencia - VERSIÓN CORREGIDA
+ */
+function removeEvidence(fileId) {
+    console.log('🗑️ Eliminando evidencia con ID:', fileId);
+    
+    // Eliminar del array
+    generalEvidenceFiles = generalEvidenceFiles.filter(f => f.id !== fileId);
+    
+    // Eliminar del DOM
+    const item = document.getElementById('evidence-item-' + fileId);
+    if (item) {
+        item.remove();
+        console.log('✅ Evidencia eliminada del DOM');
+    }
+    
+    // Actualizar el input de archivos
     updateEvidenceInput();
     
-    console.log('📦 Estado actual de evidencias:', generalEvidenceFiles.length, 'archivos');
+    // Mostrar mensaje si no hay archivos
+    const previewContainer = document.getElementById('evidencePreview');
+    const existingEvidences = previewContainer.querySelectorAll('.existing-evidence');
+    const newEvidences = previewContainer.querySelectorAll('.new-evidence');
+    
+    if (existingEvidences.length === 0 && newEvidences.length === 0) {
+        previewContainer.innerHTML = '<div class="text-muted text-center py-3"><i class="fas fa-images me-2"></i>No hay evidencias seleccionadas</div>';
+    }
+}
+
+
+/**
+ * Actualiza el input de evidencias - VERSIÓN MEJORADA
+ */
+function updateEvidenceInput() {
+    const input = document.getElementById('generalEvidence');
+    if (!input) {
+        console.error('❌ No se encontró el input generalEvidence');
+        return;
+    }
+    
+    // Crear un nuevo DataTransfer para los archivos
+    const dataTransfer = new DataTransfer();
+    
+    // Agregar los archivos que quedan
+    generalEvidenceFiles.forEach(f => {
+        dataTransfer.items.add(f.file);
+        console.log('📋 Archivo agregado a DataTransfer:', f.file.name);
+    });
+    
+    // Actualizar el input de archivos
+    input.files = dataTransfer.files;
+    
+    console.log('🔄 Input actualizado:', dataTransfer.files.length + ' archivos');
+}
+
+/**
+ * Configurar event delegation para los botones de eliminar
+ */
+function configurarEventosEliminacion() {
+    const previewContainer = document.getElementById('evidencePreview');
+    if (!previewContainer) return;
+    
+    // Event delegation para botones de eliminar
+    previewContainer.addEventListener('click', function(e) {
+        if (e.target.closest('.remove-evidence-btn')) {
+            e.preventDefault();
+            e.stopPropagation();
+            const button = e.target.closest('.remove-evidence-btn');
+            const fileId = button.getAttribute('data-file-id');
+            console.log('🎯 Event delegation - Eliminando archivo:', fileId);
+            removeEvidence(fileId);
+        }
+    });
 }
 
 /**

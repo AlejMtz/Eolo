@@ -1900,3 +1900,125 @@ body {
         font-size: 0.75rem;
     }
 }
+
+/* Estilos para el modal de evidencias en pantalla completa */
+.modal-fullscreen .modal-content {
+    border: none;
+    border-radius: 0;
+}
+
+.evidence-thumbnail {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    cursor: pointer;
+}
+
+.evidence-thumbnail:hover {
+    transform: scale(1.05);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+}
+
+.evidence-item.card {
+    transition: all 0.3s ease;
+    overflow: hidden;
+}
+
+.evidence-item.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+}
+
+/* Estilos para el modal de evidencias */
+#evidenceModalContent img,
+#evidenceModalContent video {
+    border-radius: 8px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+}
+
+/* Indicador de video */
+.video-indicator {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: rgba(0,0,0,0.7);
+    color: white;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 0.8rem;
+}
+
+/* Efectos de hover para miniaturas */
+.evidence-item {
+    position: relative;
+}
+
+.evidence-item::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0,0,0,0);
+    transition: background 0.3s ease;
+    border-radius: 8px;
+}
+
+.evidence-item:hover::after {
+    background: rgba(0,0,0,0.1);
+}
+
+/* Responsive para el modal */
+@media (max-width: 768px) {
+    .modal-fullscreen .modal-body {
+        padding: 10px;
+    }
+    
+    #evidenceModalContent img,
+    #evidenceModalContent video {
+        max-width: 95vw;
+        max-height: 70vh;
+    }
+}
+
+/* Asegurar que los botones sean clickeables */
+.remove-evidence-btn {
+    cursor: pointer;
+    opacity: 0.8;
+    transition: all 0.2s ease;
+    z-index: 10;
+    position: relative;
+}
+
+.remove-evidence-btn:hover {
+    opacity: 1;
+    transform: scale(1.1);
+}
+
+.evidence-item {
+    display: flex;
+    align-items: center;
+    background: #f8f9fa;
+    padding: 10px;
+    border-radius: 6px;
+    margin-bottom: 8px;
+    border: 1px solid #e9ecef;
+    transition: all 0.2s ease;
+    position: relative;
+}
+
+.evidence-item:hover {
+    background: #e9ecef;
+}
+
+/* Evitar que otros elementos interfieran con los clicks */
+.evidence-preview {
+    pointer-events: none;
+}
+
+.file-name {
+    pointer-events: none;
+}
+
+.badge {
+    pointer-events: none;
+}

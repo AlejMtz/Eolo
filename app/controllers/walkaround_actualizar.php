@@ -80,18 +80,17 @@ try {
     }
     $stmt_delete->close();
 
-    // TERCERO: Procesar TODOS los componentes - MÉTODO ACTUALIZADO
+    // TERCERO: Procesar TODOS los componentes
     $component_count = 0;
     $componentes_data = [];
 
-    // Procesar directamente desde $_POST - MÉTODO CORREGIDO
+    // Procesar directamente desde $_POST
     foreach ($_POST as $key => $value) {
         if (strpos($key, 'dano_') === 0) {
-            // Método robusto para extraer componente_id y tipo_dano
             $key_parts = explode('_', $key);
-            $tipo_dano = array_pop($key_parts); // último elemento = tipo de daño
-            array_shift($key_parts); // quitar "dano"
-            $componente_id = implode('_', $key_parts); // resto = componente_id
+            $tipo_dano = array_pop($key_parts);
+            array_shift($key_parts);
+            $componente_id = implode('_', $key_parts);
             
             if (!isset($componentes_data[$componente_id])) {
                 $componentes_data[$componente_id] = [
@@ -141,26 +140,55 @@ try {
         $component_count++;
     }
 
-    // CUARTO: Procesar evidencias generales (se mantiene igual que antes)
+    // ⭐⭐ CUARTO: OBTENER EVIDENCIAS EXISTENTES PARA VERIFICAR DUPLICADOS
+    $evidencias_existentes = [];
+    $stmt_get_evidencias = $conn->prepare("SELECT FileName FROM evidencias WHERE Id_Wk = ?");
+    if ($stmt_get_evidencias) {
+        $stmt_get_evidencias->bind_param("i", $id_walk);
+        $stmt_get_evidencias->execute();
+        $result = $stmt_get_evidencias->get_result();
+        
+        while ($row = $result->fetch_assoc()) {
+            $evidencias_existentes[] = $row['FileName'];
+        }
+        $stmt_get_evidencias->close();
+    }
+    
+    error_log("📋 Evidencias existentes para walkaround $id_walk: " . implode(', ', $evidencias_existentes));
+
+    // ⭐⭐ QUINTO: Procesar NUEVAS evidencias generales (evitando duplicados)
+    $evidencias_procesadas = 0;
+    $evidencias_duplicadas = 0;
+    
     if (isset($_FILES['generalEvidence']) && count($_FILES['generalEvidence']['name']) > 0) {
         $evidencias = $_FILES['generalEvidence'];
-        $archivosProcesados = 0;
         
         for ($i = 0; $i < count($evidencias['name']); $i++) {
             if ($evidencias['error'][$i] == UPLOAD_ERR_OK && 
                 $evidencias['size'][$i] > 0 && 
                 !empty($evidencias['name'][$i])) {
                 
+                $nombre_archivo = $evidencias['name'][$i];
+                
+                // ⭐⭐ VERIFICAR SI EL ARCHIVO YA EXISTE
+                if (in_array($nombre_archivo, $evidencias_existentes)) {
+                    error_log("⚠️ Evidencia duplicada omitida: " . $nombre_archivo . " para walkaround " . $id_walk);
+                    $evidencias_duplicadas++;
+                    continue; // Saltar este archivo
+                }
+                
                 $evidencia = [
-                    'name' => $evidencias['name'][$i],
+                    'name' => $nombre_archivo,
                     'type' => $evidencias['type'][$i],
                     'tmp_name' => $evidencias['tmp_name'][$i],
                     'error' => $evidencias['error'][$i],
                     'size' => $evidencias['size'][$i]
                 ];
                 
-                guardarEvidencia($conn, $evidencia, $id_walk, $id_aeronave, true);
-                $archivosProcesados++;
+                if (guardarEvidencia($conn, $evidencia, $id_walk, $id_aeronave, true)) {
+                    $evidencias_procesadas++;
+                    error_log("✅ Nueva evidencia guardada: " . $nombre_archivo);
+                }
             }
         }
     }
@@ -172,7 +200,9 @@ try {
         'success' => true,
         'message' => 'Walkaround actualizado correctamente',
         'id_walkaround' => $id_walk,
-        'componentes_procesados' => $component_count
+        'componentes_procesados' => $component_count,
+        'evidencias_procesadas' => $evidencias_procesadas,
+        'evidencias_duplicadas_omitidas' => $evidencias_duplicadas
     ];
     
 } catch (Exception $e) {
@@ -194,107 +224,97 @@ if (isset($conn) && $conn) {
 echo json_encode($response);
 exit;
 
-// Función para guardar evidencias - VERSIÓN MEJORADA (se mantiene igual)
+// ⭐⭐ FUNCIÓN MEJORADA: Guardar evidencias (con verificación de duplicados)
 function guardarEvidencia($conn, $evidencia, $id_walkaround, $id_aeronave, $modoEdicion = false) {
-    // ⭐⭐ VALIDACIONES INICIALES
+    // Validaciones iniciales
     if (!is_uploaded_file($evidencia['tmp_name'])) {
         error_log("❌ Archivo no subido via HTTP: " . $evidencia['name']);
-        return null;
+        return false;
     }
     
     if ($evidencia['size'] == 0) {
         error_log("❌ Archivo vacío: " . $evidencia['name']);
-        return null;
+        return false;
     }
     
     if ($evidencia['error'] !== UPLOAD_ERR_OK) {
         error_log("❌ Error en subida de archivo: " . $evidencia['name'] . " - Código error: " . $evidencia['error']);
-        return null;
+        return false;
     }
     
     if (empty($evidencia['name'])) {
         error_log("❌ Archivo sin nombre");
-        return null;
+        return false;
     }
 
-    // ⭐⭐ VERIFICAR SI EL ARCHIVO YA EXISTE PARA ESTE WALKAROUND (solo en modo creación)
-    if (!$modoEdicion) {
-        $sql_verificar = "SELECT COUNT(*) as count FROM evidencias WHERE Id_Wk = ? AND FileName = ?";
-        $stmt_verificar = $conn->prepare($sql_verificar);
-        
-        if (!$stmt_verificar) {
-            error_log("❌ Error al preparar consulta de verificación: " . $conn->error);
-            return null;
-        }
-        
-        $stmt_verificar->bind_param("is", $id_walkaround, $evidencia['name']);
-        
-        if (!$stmt_verificar->execute()) {
-            error_log("❌ Error al ejecutar consulta de verificación: " . $stmt_verificar->error);
-            $stmt_verificar->close();
-            return null;
-        }
-        
-        $resultado = $stmt_verificar->get_result();
-        $existe = $resultado->fetch_assoc()['count'] > 0;
+    // ⭐⭐ VERIFICACIÓN ADICIONAL EN LA BD (doble verificación)
+    $sql_verificar = "SELECT COUNT(*) as count FROM evidencias WHERE Id_Wk = ? AND FileName = ?";
+    $stmt_verificar = $conn->prepare($sql_verificar);
+    
+    if (!$stmt_verificar) {
+        error_log("❌ Error al preparar consulta de verificación: " . $conn->error);
+        return false;
+    }
+    
+    $stmt_verificar->bind_param("is", $id_walkaround, $evidencia['name']);
+    
+    if (!$stmt_verificar->execute()) {
+        error_log("❌ Error al ejecutar consulta de verificación: " . $stmt_verificar->error);
         $stmt_verificar->close();
-        
-        if ($existe) {
-            error_log("⚠️ Evidencia duplicada ignorada: " . $evidencia['name'] . " para walkaround " . $id_walkaround);
-            return null;
-        }
+        return false;
+    }
+    
+    $resultado = $stmt_verificar->get_result();
+    $existe = $resultado->fetch_assoc()['count'] > 0;
+    $stmt_verificar->close();
+    
+    if ($existe) {
+        error_log("🚫 Evidencia duplicada detectada en BD: " . $evidencia['name'] . " para walkaround " . $id_walkaround);
+        return false;
     }
 
-    // ⭐⭐ CREAR DIRECTORIO SI NO EXISTE
+    // Crear directorio si no existe
     $uploadDir = 'evidencias/';
     if (!file_exists($uploadDir)) {
         if (!mkdir($uploadDir, 0777, true)) {
             error_log("❌ No se pudo crear el directorio de evidencias: " . $uploadDir);
-            throw new Exception("No se pudo crear el directorio de evidencias");
+            return false;
         }
-        error_log("✅ Directorio creado: " . $uploadDir);
     }
 
-    // ⭐⭐ GENERAR NOMBRE ÚNICO PARA EL ARCHIVO
+    // Generar nombre único para el archivo
     $fileExtension = pathinfo($evidencia['name'], PATHINFO_EXTENSION);
-    
-    // Limpiar el nombre del archivo
     $fileNameClean = preg_replace('/[^a-zA-Z0-9\._-]/', '_', $evidencia['name']);
-    $fileNameClean = substr($fileNameClean, 0, 100); // Limitar longitud
+    $fileNameClean = substr($fileNameClean, 0, 100);
     
-    // Generar nombre único
     $uniqueId = uniqid();
     $fileName = $uniqueId . '_' . $id_walkaround . '_' . $fileNameClean;
     $filePath = $uploadDir . $fileName;
     
-    error_log("📁 Intentando guardar archivo: " . $fileName . " en: " . $filePath);
+    error_log("📁 Guardando nueva evidencia: " . $fileName);
 
-    // ⭐⭐ MOVER ARCHIVO
+    // Mover archivo
     if (move_uploaded_file($evidencia['tmp_name'], $filePath)) {
         error_log("✅ Archivo movido exitosamente: " . $filePath);
         
         // Verificar que el archivo existe y tiene contenido
-        if (!file_exists($filePath)) {
-            error_log("❌ Archivo no existe después de move_uploaded_file: " . $filePath);
-            return null;
-        }
-        
-        if (filesize($filePath) == 0) {
-            error_log("❌ Archivo vacío después de mover: " . $filePath);
-            unlink($filePath); // Eliminar archivo vacío
-            return null;
+        if (!file_exists($filePath) || filesize($filePath) == 0) {
+            error_log("❌ Archivo no válido después de mover: " . $filePath);
+            if (file_exists($filePath)) {
+                unlink($filePath);
+            }
+            return false;
         }
 
-        // INSERTAR EN LA BASE DE DATOS
+        // Insertar en la base de datos
         $stmt_evidencia = $conn->prepare("INSERT INTO evidencias (Id_Wk, Id_Aeronave, Ruta, FileName) VALUES (?, ?, ?, ?)");
         
         if (!$stmt_evidencia) {
             error_log("❌ Error al preparar consulta de inserción: " . $conn->error);
-            // Intentar eliminar el archivo si falla la inserción
             if (file_exists($filePath)) {
                 unlink($filePath);
             }
-            return null;
+            return false;
         }
         
         $stmt_evidencia->bind_param("iiss", $id_walkaround, $id_aeronave, $filePath, $evidencia['name']);
@@ -303,79 +323,24 @@ function guardarEvidencia($conn, $evidencia, $id_walkaround, $id_aeronave, $modo
             $id_evidencia = $stmt_evidencia->insert_id;
             $stmt_evidencia->close();
             
-            error_log("🎉 Evidencia guardada exitosamente - ID: " . $id_evidencia . 
-                     " - Archivo: " . $evidencia['name'] . 
-                     " - Ruta: " . $filePath . 
-                     " - Tamaño: " . filesize($filePath) . " bytes");
-            
-            return $id_evidencia;
+            error_log("🎉 Nueva evidencia guardada exitosamente - ID: " . $id_evidencia . " - Archivo: " . $evidencia['name']);
+            return true;
         } else {
             error_log("❌ Error al insertar evidencia en BD: " . $stmt_evidencia->error);
             $stmt_evidencia->close();
             
-            // Eliminar archivo si falla la inserción en BD
             if (file_exists($filePath)) {
                 unlink($filePath);
-                error_log("🗑️ Archivo eliminado por fallo en BD: " . $filePath);
             }
             
-            return null;
+            return false;
         }
         
     } else {
-        error_log("❌ Error al mover el archivo subido: " . $evidencia['name'] . 
-                 " - tmp_name: " . $evidencia['tmp_name'] . 
-                 " - destino: " . $filePath . 
-                 " - error: " . error_get_last()['message']);
-        return null;
+        error_log("❌ Error al mover el archivo subido: " . $evidencia['name']);
+        return false;
     }
     
-    return null;
-}
-
-// Función para eliminar evidencias (se mantiene igual)
-function eliminarEvidencia($conn, $id_evidencia) {
-    // Obtener información del archivo
-    $stmt = $conn->prepare("SELECT Ruta FROM evidencias WHERE Id_Evidencia = ?");
-    if (!$stmt) {
-        error_log("❌ Error al preparar consulta de eliminación de evidencia: " . $conn->error);
-        return;
-    }
-    
-    $stmt->bind_param("i", $id_evidencia);
-    if (!$stmt->execute()) {
-        error_log("❌ Error al ejecutar consulta de eliminación de evidencia: " . $stmt->error);
-        $stmt->close();
-        return;
-    }
-    
-    $result = $stmt->get_result();
-    
-    if ($row = $result->fetch_assoc()) {
-        // Eliminar archivo físico
-        if (file_exists($row['Ruta'])) {
-            if (unlink($row['Ruta'])) {
-                error_log("✅ Archivo físico eliminado: " . $row['Ruta']);
-            } else {
-                error_log("⚠️ No se pudo eliminar archivo físico: " . $row['Ruta']);
-            }
-        } else {
-            error_log("ℹ️ Archivo no encontrado: " . $row['Ruta']);
-        }
-        
-        // Eliminar registro de la base de datos
-        $stmt_delete = $conn->prepare("DELETE FROM evidencias WHERE Id_Evidencia = ?");
-        if ($stmt_delete) {
-            $stmt_delete->bind_param("i", $id_evidencia);
-            if ($stmt_delete->execute()) {
-                error_log("✅ Registro de evidencia eliminado de BD - ID: " . $id_evidencia);
-            } else {
-                error_log("❌ Error al eliminar registro de evidencia: " . $stmt_delete->error);
-            }
-            $stmt_delete->close();
-        }
-    }
-    
-    $stmt->close();
+    return false;
 }
 ?>

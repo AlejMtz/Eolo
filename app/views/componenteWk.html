@@ -330,31 +330,26 @@
     <script src="../../public/assets/js/permisos.js"></script>
 
     <script>
-        // Verificar permisos al cargar la página
-        document.addEventListener('DOMContentLoaded', function() {
-            if (!verificarSesion()) return;
-            
-            // Verificar acceso al módulo y permisos de creación
-            if (!permisosSistema.verificarAccesoPagina('walkarounds') || 
-                !permisosSistema.puedeCrear('walkarounds')) {
-                return;
-            }
-            
-            permisosSistema.aplicarPermisosUI();
-            
-            // Configuración inicial de fecha/hora
-            const now = new Date();
-            const formatted = now.toISOString().slice(0,16);
-            document.getElementById("fechaHora").value = formatted;
-            
-            const urlParams = new URLSearchParams(window.location.search);
-            const idWalk = urlParams.get('id');
-            
-            if (idWalk && typeof configurarModoEdicion === 'function') {
-                // En modo edición, verificar permisos de edición
-                configurarModoEdicion(idWalk);
-            }
-        });
+         // Verificar permisos al cargar la página
+    document.addEventListener('DOMContentLoaded', function() {
+        if (!verificarSesion()) return;
+        
+        // Verificar acceso al módulo y permisos de creación
+        if (!permisosSistema.verificarAccesoPagina('walkarounds') || 
+            !permisosSistema.puedeCrear('walkarounds')) {
+            return;
+        }
+        
+        permisosSistema.aplicarPermisosUI();
+        
+        const urlParams = new URLSearchParams(window.location.search);
+        const idWalk = urlParams.get('id');
+        
+        if (idWalk && typeof configurarModoEdicion === 'function') {
+            // En modo edición, verificar permisos de edición
+            configurarModoEdicion(idWalk);
+        }
+    });
     </script>
 
     <!-- Loading overlay -->

@@ -132,12 +132,6 @@ public function generarWalkaround($id) {
         
     }
     
-    /**
-     * CABECERA WALKAROUND CON LOGO
-     */
-    /**
- * CABECERA WALKAROUND CON LOGO - VERSIÓN ACTUALIZADA CON PROCEDENCIA
- */
 /**
  * CABECERA WALKAROUND CON LOGO - VERSIÓN OPTIMIZADA Y CENTRADA
  */
@@ -637,16 +631,16 @@ private function generarCabeceraWalkaround($walkaround) {
         
         if ($imagenEncontrada) {
             // Centrar la imagen con tamaño ajustado
-            $anchoDisponible = 160;
-            $altoDisponible = 100;
+            $anchoDisponible = 140;
+            $altoDisponible = 80;
             $x = (210 - $anchoDisponible) / 2;
             
             $this->pdf->Image($rutaDiagrama, $x, $this->pdf->GetY(), $anchoDisponible, $altoDisponible, 'JPG', '', 'T', false, 300, '', false, false, 0, false, false, false);
-            $this->pdf->Ln(130);
+            $this->pdf->Ln(75);
         } else {
             $this->pdf->SetFont('helvetica', 'I', 12);
-            $this->pdf->Cell(0, 10, 'Diagrama no disponible: ' . basename($rutaDiagrama), 0, 1, 'C');
-            $this->pdf->Cell(0, 10, 'Buscado en: ' . $basePath, 0, 1, 'C');
+            $this->pdf->Cell(0, 8, 'Diagrama no disponible: ' . basename($rutaDiagrama), 0, 1, 'C');
+            $this->pdf->Cell(0, 8, 'Buscado en: ' . $basePath, 0, 1, 'C');
         }
     }
 
@@ -654,7 +648,7 @@ private function generarCabeceraWalkaround($walkaround) {
      * OBSERVACIONES WALKAROUND
      */
     private function generarObservacionesWalkaroundPDF($walkaround) {
-        $this->pdf->SetFont('helvetica', 'B', 12);
+        $this->pdf->SetFont('helvetica', 'B', 10);
         $this->pdf->Cell(0, 10, 'OBSERVACIONES/OTRO (ESPECIFICAR)', 0, 1);
         
         $this->pdf->SetFont('helvetica', '', 10);
@@ -668,9 +662,9 @@ private function generarCabeceraWalkaround($walkaround) {
         
         // Crear un cuadro para las observaciones
         $this->pdf->SetFillColor(245, 245, 245);
-        $this->pdf->MultiCell(0, 8, $observaciones, 1, 'L', true);
+        $this->pdf->MultiCell(0, 6, $observaciones, 1, 'L', true);
         
-        $this->pdf->Ln(10);
+        $this->pdf->Ln(6);
     }
     
     /**
@@ -683,7 +677,7 @@ private function generarCabeceraWalkaround($walkaround) {
         
         // CORRECCIÓN: Verificar que la clave existe
         $responsable = isset($walkaround['Responsable']) ? $walkaround['Responsable'] : '_________________________';
-        $this->pdf->Cell(0, 20, $responsable, 'B', 1);
+        $this->pdf->Cell(0, 8, $responsable, 'B', 1);
         $this->pdf->Ln(8);
         
         // Tabla de firmas
@@ -698,9 +692,9 @@ private function generarCabeceraWalkaround($walkaround) {
         $jefeArea = isset($walkaround['JefeArea']) ? $walkaround['JefeArea'] : '_________________________';
         $voBo = isset($walkaround['VoBo']) ? $walkaround['VoBo'] : '_________________________';
         
-        $this->pdf->Cell(60, 20, $elaboro, 'B', 0);
-        $this->pdf->Cell(60, 20, $jefeArea, 'B', 0);
-        $this->pdf->Cell(60, 20, $voBo, 'B', 1);
+        $this->pdf->Cell(60, 10, $elaboro, 'B', 0);
+        $this->pdf->Cell(60, 10, $jefeArea, 'B', 0);
+        $this->pdf->Cell(60, 10, $voBo, 'B', 1);
     }
 
     /**

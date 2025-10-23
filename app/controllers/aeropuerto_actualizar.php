@@ -1,5 +1,4 @@
 <?php
-// app/controllers/aeropuerto_actualizar.php
 session_start();
 require '../../app/models/conexion.php';
 

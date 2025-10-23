@@ -151,16 +151,6 @@
             <a href="../../app/views/ver_walkaround.html" class="btn btn-secondary">
                 <i class="fas fa-arrow-left"></i> Volver a la lista
             </a>
-            
-            <!-- Botón Editar (condicional) -->
-            <button id="btnEditar" class="btn btn-warning btn-editar" data-modulo="walkarounds">
-                <i class="fas fa-edit"></i> Editar
-            </button>
-            
-            <!-- Botón Eliminar (condicional) -->
-            <button id="btnEliminar" class="btn btn-danger btn-eliminar" data-modulo="walkarounds">
-                <i class="fas fa-trash"></i> Eliminar
-            </button>
         </div>
     </div>
 
@@ -177,6 +167,36 @@
                 <div class="modal-body" id="errorModalBody"></div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Aceptar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+        <!-- Modal para visualización en pantalla completa -->
+    <div class="modal fade" id="evidenceModal" tabindex="-1" aria-labelledby="evidenceModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-fullscreen">
+            <div class="modal-content">
+                <div class="modal-header bg-dark text-white">
+                    <h5 class="modal-title" id="evidenceModalLabel">
+                        <i class="fas fa-expand-alt me-2"></i>Vista Previa
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body d-flex justify-content-center align-items-center bg-dark">
+                    <div id="evidenceModalContent" class="text-center">
+                        <!-- El contenido se cargará dinámicamente aquí -->
+                    </div>
+                </div>
+                <div class="modal-footer bg-dark text-white">
+                    <div class="me-auto">
+                        <span id="evidenceFileName" class="fw-bold"></span>
+                    </div>
+                    <button type="button" class="btn btn-outline-light" data-bs-dismiss="modal">
+                        <i class="fas fa-times me-1"></i>Cerrar (ESC)
+                    </button>
+                    <button type="button" class="btn btn-primary" id="downloadEvidenceBtn" style="display: none;">
+                        <i class="fas fa-download me-1"></i>Descargar
+                    </button>
                 </div>
             </div>
         </div>

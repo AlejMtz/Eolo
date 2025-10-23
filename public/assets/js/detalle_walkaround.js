@@ -1,5 +1,7 @@
 let walkaroundId = null;
 let walkaroundData = null;
+let evidenceModal = null;
+
 
 // Tipos de daño según el formato - CORREGIDO CON NOMBRES ACTUALES
 const tiposDano = [
@@ -88,6 +90,18 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('btnEliminar').addEventListener('click', function() {
         if (confirm('¿Estás seguro de que quieres eliminar este walkaround? Esta acción no se puede deshacer.')) {
             eliminarWalkaround(walkaroundId);
+        }
+    });
+
+    // Inicializar el modal de evidencias
+    if (typeof bootstrap !== 'undefined') {
+        evidenceModal = new bootstrap.Modal(document.getElementById('evidenceModal'));
+    }
+    
+    // Configurar evento para cerrar con ESC
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && evidenceModal && document.getElementById('evidenceModal').classList.contains('show')) {
+            evidenceModal.hide();
         }
     });
 });
@@ -332,7 +346,7 @@ function cargarComponentesDetalle(componentesGuardados, tipoAeronave) {
 }
 
 /**
- * Carga las evidencias
+ * Carga las evidencias - VERSIÓN CON MODAL DE PANTALLA COMPLETA
  */
 function cargarEvidencias(evidencias) {
     const container = document.getElementById('evidenciasContainer');
@@ -341,6 +355,8 @@ function cargarEvidencias(evidencias) {
         container.innerHTML = '<div class="alert alert-info">No hay evidencias registradas para este walkaround.</div>';
         return;
     }
+    
+    console.log('📸 Evidencias a cargar:', evidencias);
     
     let html = '<div class="evidence-gallery">';
     
@@ -351,31 +367,58 @@ function cargarEvidencias(evidencias) {
         const esImagen = ['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(extension);
         const esVideo = ['mp4', 'webm', 'ogg'].includes(extension);
         
+        console.log('🖼️ Procesando evidencia:', {
+            ruta: ruta,
+            fileName: fileName,
+            esImagen: esImagen,
+            esVideo: esVideo
+        });
+        
         html += `
-            <div class="evidence-item">
+            <div class="evidence-item card" style="width: 200px; cursor: pointer;" 
+                 onclick="abrirEvidenciaEnModal('${ruta}', '${fileName.replace(/'/g, "\\'")}', ${esImagen}, ${esVideo})">
+                <div class="card-body p-2 text-center">
         `;
         
         if (esImagen) {
-            html += `<img src="${ruta}" alt="${fileName}" class="img-fluid" style="height: 150px; object-fit: cover;">`;
+            html += `
+                <img src="${ruta}" 
+                     alt="${fileName}" 
+                     class="img-fluid rounded evidence-thumbnail" 
+                     style="height: 150px; width: 100%; object-fit: cover;"
+                     onerror="console.error('❌ Error cargando imagen:', this.src); this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjE1MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZjRmNGY0Ii8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCwgc2Fucy1zZXJpZiIgZm9udC1zaXplPSIxNCIgZmlsbD0iIzk5OSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPkltYWdlbiBubyBkaXNwb25pYmxlPC90ZXh0Pjwvc3ZnPg=='">
+                <div class="mt-2">
+                    <small class="text-muted d-block text-truncate" style="max-width: 180px;" title="${fileName}">${fileName}</small>
+                </div>
+            `;
         } else if (esVideo) {
             html += `
-                <video controls style="height: 150px; width: 100%; object-fit: cover;">
-                    <source src="${ruta}" type="video/${extension}">
-                    Tu navegador no soporta el elemento de video.
-                </video>
+                <div class="position-relative">
+                    <video class="rounded evidence-thumbnail" 
+                           style="height: 150px; width: 100%; object-fit: cover;"
+                           onerror="console.error('❌ Error cargando video:', this.src);">
+                        <source src="${ruta}" type="video/${extension}">
+                    </video>
+                    <div class="position-absolute top-50 start-50 translate-middle">
+                        <i class="fas fa-play-circle fa-2x text-white" style="text-shadow: 2px 2px 4px rgba(0,0,0,0.5);"></i>
+                    </div>
+                </div>
+                <div class="mt-2">
+                    <small class="text-muted d-block text-truncate" style="max-width: 180px;" title="${fileName}">${fileName}</small>
+                </div>
             `;
         } else {
             html += `
-                <div class="text-center py-4" style="height: 150px;">
-                    <i class="fas fa-file fa-3x text-muted"></i>
-                    <div class="mt-2">${fileName}</div>
+                <div class="py-4" style="height: 150px; background: #f8f9fa; border-radius: 4px; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+                    <i class="fas fa-file fa-3x text-muted mb-2"></i>
+                    <div>
+                        <small class="text-muted d-block text-truncate" style="max-width: 180px;" title="${fileName}">${fileName}</small>
+                    </div>
                 </div>
             `;
         }
         
         html += `
-                <div class="evidence-info p-2">
-                    <small class="d-block">${fileName}</small>
                 </div>
             </div>
         `;
@@ -383,6 +426,130 @@ function cargarEvidencias(evidencias) {
     
     html += '</div>';
     container.innerHTML = html;
+}
+
+/**
+ * Abre una evidencia en el modal de pantalla completa
+ */
+function abrirEvidenciaEnModal(ruta, fileName, esImagen, esVideo) {
+    console.log('🔄 Abriendo evidencia en modal:', { ruta, fileName, esImagen, esVideo });
+    
+    const modalContent = document.getElementById('evidenceModalContent');
+    const modalTitle = document.getElementById('evidenceModalLabel');
+    const fileNameSpan = document.getElementById('evidenceFileName');
+    const downloadBtn = document.getElementById('downloadEvidenceBtn');
+    
+    // Limpiar contenido anterior
+    modalContent.innerHTML = '';
+    
+    // Configurar nombre del archivo
+    fileNameSpan.textContent = fileName;
+    
+    // Configurar botón de descarga
+    downloadBtn.style.display = 'block';
+    downloadBtn.onclick = function() {
+        descargarEvidencia(ruta, fileName);
+    };
+    
+    if (esImagen) {
+        const img = document.createElement('img');
+        img.src = ruta;
+        img.alt = fileName;
+        img.style.maxWidth = '100%';
+        img.style.maxHeight = '80vh';
+        img.style.objectFit = 'contain';
+        img.className = 'img-fluid';
+        
+        img.onerror = function() {
+            modalContent.innerHTML = `
+                <div class="alert alert-danger">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    No se pudo cargar la imagen: ${fileName}
+                </div>
+            `;
+        };
+        
+        modalContent.appendChild(img);
+        
+    } else if (esVideo) {
+        const video = document.createElement('video');
+        video.src = ruta;
+        video.controls = true;
+        video.autoplay = true;
+        video.style.maxWidth = '100%';
+        video.style.maxHeight = '80vh';
+        video.className = 'img-fluid';
+        
+        video.onerror = function() {
+            modalContent.innerHTML = `
+                <div class="alert alert-danger">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    No se pudo cargar el video: ${fileName}
+                </div>
+            `;
+        };
+        
+        modalContent.appendChild(video);
+        
+    } else {
+        modalContent.innerHTML = `
+            <div class="text-center text-white">
+                <i class="fas fa-file fa-5x mb-3"></i>
+                <h4>${fileName}</h4>
+                <p class="mb-3">Este tipo de archivo no se puede previsualizar</p>
+                <button class="btn btn-primary" onclick="descargarEvidencia('${ruta}', '${fileName}')">
+                    <i class="fas fa-download me-2"></i>Descargar Archivo
+                </button>
+            </div>
+        `;
+    }
+    
+    // SOLUCIÓN: Usar el modal de Bootstrap correctamente
+    if (typeof bootstrap !== 'undefined') {
+        const modalElement = document.getElementById('evidenceModal');
+        const modal = new bootstrap.Modal(modalElement);
+        modal.show();
+    } else {
+        // Fallback si Bootstrap no está disponible
+        document.getElementById('evidenceModal').style.display = 'block';
+        document.getElementById('evidenceModal').classList.add('show');
+    }
+}
+
+/**
+ * Descarga una evidencia
+ */
+function descargarEvidencia(ruta, fileName) {
+    console.log('📥 Descargando evidencia:', { ruta, fileName });
+    
+    // Crear un enlace temporal para la descarga
+    const link = document.createElement('a');
+    link.href = ruta;
+    link.download = fileName;
+    link.target = '_blank';
+    
+    // Simular clic en el enlace
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    
+    // Opcional: mostrar mensaje de descarga
+    const Toast = Swal.mixin({
+        toast: true,
+        position: 'top-end',
+        showConfirmButton: false,
+        timer: 3000,
+        timerProgressBar: true,
+    });
+    
+    Toast.fire({
+        icon: 'success',
+        title: `Descargando: ${fileName}`
+    });
+}
+
+function mostrarMensajeDescarga(fileName) {
+    alert(`Iniciando descarga de: ${fileName}`);
 }
 
 /**

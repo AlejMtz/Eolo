@@ -231,59 +231,71 @@ function guardarEvidencia($conn, $evidencia, $id_walkaround, $id_aeronave) {
     }
 
     // Crear directorio si no existe
-    $uploadDir = '../../public/assets/evidencias/';
-    if (!file_exists($uploadDir)) {
-        if (!mkdir($uploadDir, 0777, true)) {
-            throw new Exception("No se pudo crear el directorio de evidencias");
+$uploadDir = $_SERVER['DOCUMENT_ROOT'] . '/Eolo/public/assets/evidencias/';
+if (!file_exists($uploadDir)) {
+    if (!mkdir($uploadDir, 0777, true)) {
+        throw new Exception("No se pudo crear el directorio de evidencias: " . $uploadDir);
+    }
+}
+
+// Generar nombre único para el archivo
+$fileExtension = pathinfo($evidencia['name'], PATHINFO_EXTENSION);
+$fileNameClean = preg_replace('/[^a-zA-Z0-9\._-]/', '_', $evidencia['name']);
+$fileNameClean = substr($fileNameClean, 0, 100);
+$uniqueId = uniqid();
+$fileName = $uniqueId . '_' . $id_walkaround . '_' . $fileNameClean;
+$filePath = $uploadDir . $fileName;
+
+// Ruta que se guardará en la BD (accesible desde el frontend)
+$rutaParaBD = '/Eolo/public/assets/evidencias/' . $fileName;
+
+error_log("📁 Guardando evidencia:");
+error_log("  - Ruta física: " . $filePath);
+error_log("  - Ruta BD: " . $rutaParaBD);
+error_log("  - Nombre archivo: " . $evidencia['name']);
+
+// Mover archivo
+if (move_uploaded_file($evidencia['tmp_name'], $filePath)) {
+    error_log("✅ Archivo movido exitosamente");
+    
+    // Verificar que el archivo existe y tiene contenido
+    if (!file_exists($filePath) || filesize($filePath) == 0) {
+        error_log("❌ Archivo no válido después de mover");
+        if (file_exists($filePath)) {
+            unlink($filePath);
         }
+        return null;
     }
 
-    // Generar nombre único para el archivo
-    $fileExtension = pathinfo($evidencia['name'], PATHINFO_EXTENSION);
-    $fileNameClean = preg_replace('/[^a-zA-Z0-9\._-]/', '_', $evidencia['name']);
-    $fileNameClean = substr($fileNameClean, 0, 100);
-    $uniqueId = uniqid();
-    $fileName = $uniqueId . '_' . $id_walkaround . '_' . $fileNameClean;
-    $filePath = $uploadDir . $fileName;
-
-    // Mover archivo
-    if (move_uploaded_file($evidencia['tmp_name'], $filePath)) {
-        // Verificar que el archivo existe y tiene contenido
-        if (!file_exists($filePath) || filesize($filePath) == 0) {
-            if (file_exists($filePath)) {
-                unlink($filePath);
-            }
-            return null;
+    // Insertar en la base de datos - USAR $rutaParaBD en lugar de $filePath
+    $stmt_evidencia = $conn->prepare("INSERT INTO evidencias (Id_Wk, Id_Aeronave, Ruta, FileName) VALUES (?, ?, ?, ?)");
+    
+    if (!$stmt_evidencia) {
+        error_log("❌ Error al preparar consulta de inserción: " . $conn->error);
+        if (file_exists($filePath)) {
+            unlink($filePath);
         }
-
-        // Insertar en la base de datos
-        $stmt_evidencia = $conn->prepare("INSERT INTO evidencias (Id_Wk, Id_Aeronave, Ruta, FileName) VALUES (?, ?, ?, ?)");
-        
-        if (!$stmt_evidencia) {
-            if (file_exists($filePath)) {
-                unlink($filePath);
-            }
-            return null;
-        }
-        
-        $stmt_evidencia->bind_param("iiss", $id_walkaround, $id_aeronave, $filePath, $evidencia['name']);
-        
-        if ($stmt_evidencia->execute()) {
-            $id_evidencia = $stmt_evidencia->insert_id;
-            $stmt_evidencia->close();
-            return $id_evidencia;
-        } else {
-            $stmt_evidencia->close();
-            if (file_exists($filePath)) {
-                unlink($filePath);
-            }
-            return null;
-        }
-        
-    } else {
         return null;
     }
     
+    $stmt_evidencia->bind_param("iiss", $id_walkaround, $id_aeronave, $rutaParaBD, $evidencia['name']);
+    
+    if ($stmt_evidencia->execute()) {
+        $id_evidencia = $stmt_evidencia->insert_id;
+        $stmt_evidencia->close();
+        error_log("🎉 Evidencia guardada en BD con ID: " . $id_evidencia);
+        return $id_evidencia;
+    } else {
+        error_log("❌ Error al insertar evidencia en BD: " . $stmt_evidencia->error);
+        $stmt_evidencia->close();
+        if (file_exists($filePath)) {
+            unlink($filePath);
+        }
+        return null;
+    }
+} else {
+    error_log("❌ Error al mover el archivo subido");
     return null;
+}
 }
 ?>
