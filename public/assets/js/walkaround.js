@@ -511,6 +511,13 @@ function configurarModoEdicion(id) {
         submitButton.classList.add('btn-warning');
     }
     
+    // ⭐⭐ CORRECCIÓN: ELIMINAR COMPLETAMENTE EL CAMPO DE FECHA/HORA EN EDICIÓN
+    const fechaHoraGroup = document.querySelector('.form-group:has(#fechaHora)');
+    if (fechaHoraGroup) {
+        console.log('🗑️ Eliminando campo de fecha/hora en modo edición');
+        fechaHoraGroup.remove();
+    }
+    
     // Cambiar acción del formulario
     document.getElementById('walkaroundForm').action = '/Eolo/app/controllers/walkaround_actualizar.php';
     
@@ -986,7 +993,7 @@ async function cargarDatosWalkaround(id) {
 }
 
 /**
- * Llena el formulario con los datos del walkaround - VERSIÓN MEJORADA
+ * Llena el formulario con los datos del walkaround - VERSIÓN MEJORADA SIN FECHA
  */
 function llenarFormularioConDatos(data) {
     console.log('📝 Llenando formulario con datos:', data);
@@ -1012,13 +1019,8 @@ function llenarFormularioConDatos(data) {
         }, 100);
     }
     
-    // ⭐⭐ SEGUNDO: Llenar los campos básicos del formulario
-    if (data.Fechahora) {
-        // Formatear la fecha para el input datetime-local
-        const fecha = new Date(data.Fechahora);
-        const fechaFormateada = fecha.toISOString().slice(0, 16);
-        document.getElementById('fechaHora').value = fechaFormateada;
-    }
+    // ⭐⭐ SEGUNDO: Llenar los campos básicos del formulario (EXCLUYENDO FECHA)
+    // NOTA: El campo fechaHora ya fue eliminado en modo edición
     
     // Campos de texto
     if (data.Elaboro) document.getElementById('elaboro').value = data.Elaboro;
@@ -1038,7 +1040,7 @@ function llenarFormularioConDatos(data) {
         cargarEvidenciasExistentes(data.evidencias);
     }
     
-    console.log('✅ Formulario llenado correctamente');
+    console.log('✅ Formulario llenado correctamente (sin campo fecha)');
 }
 
 /**
