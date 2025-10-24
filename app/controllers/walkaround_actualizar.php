@@ -350,4 +350,5 @@ function guardarEvidencia($conn, $evidencia, $id_walkaround, $id_aeronave, $modo
     
     return false;
 }
+
 ?>
