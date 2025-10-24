@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Servidor: 127.0.0.1
--- Tiempo de generación: 14-10-2025 a las 19:03:10
+-- Tiempo de generación: 23-10-2025 a las 21:19:35
 -- Versión del servidor: 10.4.32-MariaDB
 -- Versión de PHP: 8.2.12
 
@@ -62,7 +62,7 @@ CREATE TABLE `aeropuertos` (
   `Codigo_OACI` varchar(4) NOT NULL,
   `Nombre` varchar(100) NOT NULL,
   `Estado` varchar(50) NOT NULL,
-  `Municipio` varchar(50) NOT NULL,
+  `Pais` varchar(50) NOT NULL,
   `Activo` tinyint(1) DEFAULT 1,
   `Fecha_Creacion` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -71,84 +71,86 @@ CREATE TABLE `aeropuertos` (
 -- Volcado de datos para la tabla `aeropuertos`
 --
 
-INSERT INTO `aeropuertos` (`Id_Aeropuerto`, `Codigo_IATA`, `Codigo_OACI`, `Nombre`, `Estado`, `Municipio`, `Activo`, `Fecha_Creacion`) VALUES
-(1, 'ACA', 'MMAA', 'ACAPULCO', 'GUERRERO', 'ACAPULCO', 1, '2025-10-14 06:49:38'),
-(2, 'AGU', 'MMAS', 'AGUASCALIENTES', 'AGUASCALIENTES', 'AGUASCALIENTES', 1, '2025-10-14 06:49:38'),
-(3, 'AZP', 'MMJC', 'ATIZAPÁN', 'ESTADO DE MÉXICO', 'ATIZAPAN DE ZARAGOZA', 1, '2025-10-14 06:49:38'),
-(4, 'CSL', 'MMSL', 'CABO SAN LUCAS', 'BAJA CALIFORNIA SUR', 'CABO SAN LUCAS', 1, '2025-10-14 06:49:38'),
-(5, 'CPE', 'MMCP', 'CAMPECHE', 'CAMPECHE', 'CAMPECHE', 1, '2025-10-14 06:49:38'),
-(6, 'CUN', 'MMUN', 'CANCÚN', 'QUINTANA ROO', 'CANCÚN', 1, '2025-10-14 06:49:38'),
-(7, 'CYW', 'MMCY', 'CELAYA', 'GUANAJUATO', 'CELAYA', 1, '2025-10-14 06:49:38'),
-(8, 'CTM', 'MMCM', 'CHETUMAL', 'QUINTANA ROO', 'CHETUMAL', 1, '2025-10-14 06:49:38'),
-(9, 'CZA', 'MMCT', 'CHICHEN ITZA', 'YUCATÁN', 'KAUA', 1, '2025-10-14 06:49:38'),
-(10, 'CUU', 'MMCU', 'CHIHUAHUA', 'CHIHUAHUA', 'CHIHUAHUA', 1, '2025-10-14 06:49:38'),
-(11, 'ACN', 'MMCC', 'CIUDAD ACUÑA', 'COAHUILA', 'CD. ACUÑA', 1, '2025-10-14 06:49:38'),
-(12, 'CME', 'MMCE', 'CIUDAD DEL CARMEN', 'CAMPECHE', 'CD. DEL CARMEN', 1, '2025-10-14 06:49:38'),
-(13, 'CJS', 'MMCS', 'CIUDAD JUÁREZ', 'CHIHUAHUA', 'CD. JUÁREZ', 1, '2025-10-14 06:49:38'),
-(14, 'CEN', 'MMCN', 'CIUDAD OBREGÓN', 'SONORA', 'CD. OBREGÓN', 1, '2025-10-14 06:49:38'),
-(15, 'CVM', 'MMCV', 'CIUDAD VICTORIA', 'TAMAULIPAS', 'CD. VICTORIA', 1, '2025-10-14 06:49:38'),
-(16, 'CLQ', 'MMIA', 'COLIMA', 'COLIMA', 'CUAUHTEMOC', 1, '2025-10-14 06:49:38'),
-(17, 'CZM', 'MMCZ', 'COZUMEL', 'QUINTANA ROO', 'COZUMEL', 1, '2025-10-14 06:49:38'),
-(18, 'CVJ', 'MMCB', 'CUERNAVACA', 'MORELOS', 'TEMIXCO', 1, '2025-10-14 06:49:38'),
-(19, 'CUL', 'MMCL', 'CULIACÁN', 'SINALOA', 'CULIACAN', 1, '2025-10-14 06:49:38'),
-(20, 'NTR', 'MMAN', 'DEL NORTE', 'NUEVO LEÓN', 'APODACA', 1, '2025-10-14 06:49:38'),
-(21, 'DGO', 'MMDO', 'DURANGO', 'DURANGO', 'DURANGO', 1, '2025-10-14 06:49:38'),
-(22, 'ESE', 'MMES', 'ENSENADA', 'BAJA CALIFORNIA', 'ENSENADA', 1, '2025-10-14 06:49:38'),
-(23, 'GDL', 'MMGL', 'GUADALAJARA', 'JALISCO', 'TLAJOMULCO DE ZUÑIGA', 1, '2025-10-14 06:49:38'),
-(24, 'BJX', 'MMLO', 'GUANAJUATO', 'GUANAJUATO', 'SILAO', 1, '2025-10-14 06:49:38'),
-(25, 'GYM', 'MMGM', 'GUAYMAS', 'SONORA', 'GUAYMAS', 1, '2025-10-14 06:49:38'),
-(26, 'HMO', 'MMHO', 'HERMOSILLO', 'SONORA', 'HERMOSILLO', 1, '2025-10-14 06:49:38'),
-(27, 'HUX', 'MMBT', 'HUATULCO', 'OAXACA', 'SANTA MARIA HUATULCO, OAX.', 1, '2025-10-14 06:49:38'),
-(28, 'ZIH', 'MMZH', 'IXTAPA - ZIHUATANEJO', 'GUERRERO', 'ZIHUATANEJO', 1, '2025-10-14 06:49:38'),
-(29, 'IZT', 'MMIT', 'IXTEPEC', 'OAXACA', 'IXTEPEC', 1, '2025-10-14 06:49:38'),
-(30, 'JAL', 'MMJA', 'JALAPA', 'VERACRUZ', 'XALAPA', 1, '2025-10-14 06:49:38'),
-(31, 'LAP', 'MMLP', 'LA PAZ', 'BAJA CALIFORNIA SUR', 'LA PAZ', 1, '2025-10-14 06:49:38'),
-(32, 'LZC', 'MMLC', 'LÁZARO CÁRDENAS', 'MICHOACAN', 'LAZARO CARDENAS', 1, '2025-10-14 06:49:38'),
-(33, 'LTO', 'MMLT', 'LORETO', 'BAJA CALIFORNIA SUR', 'LORETO', 1, '2025-10-14 06:49:38'),
-(34, 'LMM', 'MMLM', 'LOS MOCHIS', 'SINALOA', 'LOS MOCHIS', 1, '2025-10-14 06:49:38'),
-(35, 'ZLO', 'MMZO', 'MANZANILLO', 'COLIMA', 'MANZANILLO', 1, '2025-10-14 06:49:38'),
-(36, 'MAM', 'MMMA', 'MATAMOROS', 'TAMAULIPAS', 'MATAMOROS', 1, '2025-10-14 06:49:38'),
-(37, 'MZT', 'MMMZ', 'MAZATLÁN', 'SINALOA', 'MAZATLAN', 1, '2025-10-14 06:49:38'),
-(38, 'MID', 'MMMD', 'MÉRIDA', 'YUCATÁN', 'MERIDA', 1, '2025-10-14 06:49:38'),
-(39, 'MXL', 'MMML', 'MEXICALI', 'BAJA CALIFORNIA', 'MEXICALI', 1, '2025-10-14 06:49:38'),
-(40, 'MEX', 'MMMX', 'MÉXICO', 'CIUDAD DE MEXICO', 'CIUDAD DE MÉXICO', 1, '2025-10-14 06:49:38'),
-(41, 'MTT', 'MMMT', 'MINATITLÁN', 'VERACRUZ', 'MINATITLAN', 1, '2025-10-14 06:49:38'),
-(42, 'LOV', 'MMMV', 'MONCLOVA', 'COAHUILA', 'CD. FRONTERA', 1, '2025-10-14 06:49:38'),
-(43, 'MTY', 'MMMY', 'MONTERREY', 'NUEVO LEÓN', 'APODACA', 1, '2025-10-14 06:49:38'),
-(44, 'MLM', 'MMMM', 'MORELIA', 'MICHOACAN', 'ALVARO OBREGON', 1, '2025-10-14 06:49:38'),
-(45, 'NOG', 'MMNG', 'NOGALES', 'SONORA', 'NOGALES', 1, '2025-10-14 06:49:38'),
-(46, 'NLD', 'MMNL', 'NUEVO LAREDO', 'TAMAULIPAS', 'NUEVO LAREDO', 1, '2025-10-14 06:49:38'),
-(47, 'OAX', 'MMOX', 'OAXACA', 'OAXACA', 'XOXOCOTLAN', 1, '2025-10-14 06:49:38'),
-(48, 'PCA', 'MMPC', 'PACHUCA', 'HIDALGO', 'PACHUCA DE SOTO', 1, '2025-10-14 06:49:38'),
-(49, 'PQM', 'MMPQ', 'PALENQUE', 'CHIAPAS', 'PALENQUE', 1, '2025-10-14 06:49:38'),
-(50, 'PDS', 'MMPG', 'PIEDRAS NEGRAS', 'COAHUILA', 'APODACA', 1, '2025-10-14 06:49:38'),
-(51, 'PAZ', 'MMPA', 'POZA RICA', 'VERACRUZ', 'TIHUATLAN', 1, '2025-10-14 06:49:38'),
-(52, 'PBC', 'MMPB', 'PUEBLA', 'PUEBLA', 'HUEJOTZINGO', 1, '2025-10-14 06:49:38'),
-(53, 'PXM', 'MMPS', 'PUERTO ESCONDIDO', 'OAXACA', 'PUERTO ESCONDIDO', 1, '2025-10-14 06:49:38'),
-(54, 'PPE', 'MMPE', 'PUERTO PEÑASCO', 'SONORA', 'PUERTO PEÑASCO', 1, '2025-10-14 06:49:38'),
-(55, 'PVR', 'MMPR', 'PUERTO VALLARTA', 'JALISCO', 'PUERTO VALLARTA', 1, '2025-10-14 06:49:38'),
-(56, 'QET', 'MMQT', 'QUERÉTARO', 'QUERÉTARO', 'COLON QUERETARO', 1, '2025-10-14 06:49:38'),
-(57, 'REX', 'MMRX', 'REYNOSA', 'TAMAULIPAS', 'REYNOSA', 1, '2025-10-14 06:49:38'),
-(58, 'SLW', 'MMIO', 'SALTILLO', 'COAHUILA', 'APODACA', 1, '2025-10-14 06:49:38'),
-(59, 'SFH', 'MMSF', 'SAN FELIPE', 'BAJA CALIFORNIA', 'SAN FELIPE', 1, '2025-10-14 06:49:38'),
-(60, 'SJD', 'MMSD', 'SAN JOSÉ DEL CABO', 'BAJA CALIFORNIA SUR', 'SAN JOSE DEL CABO', 1, '2025-10-14 06:49:38'),
-(61, 'SLP', 'MMSP', 'SAN LUIS POTOSÍ', 'SAN LUIS POTOSÍ', 'SAN LUIS POTOSI', 1, '2025-10-14 06:49:38'),
-(62, 'TAM', 'MMTM', 'TAMPICO', 'TAMAULIPAS', 'TAMPICO', 1, '2025-10-14 06:49:38'),
-(63, 'TSL', 'MMTN', 'TAMUÍN', 'SAN LUIS POTOSÍ', 'TAMUIN', 1, '2025-10-14 06:49:38'),
-(64, 'TAP', 'MMTP', 'TAPACHULA', 'CHIAPAS', 'TAPACHULA', 1, '2025-10-14 06:49:38'),
-(65, 'TCN', 'MMHC', 'TEHUACÁN', 'PUEBLA', 'TEHUACAN', 1, '2025-10-14 06:49:38'),
-(66, 'TPQ', 'MMEP', 'TEPIC', 'NAYARIT', 'XALISCO', 1, '2025-10-14 06:49:38'),
-(67, 'TIJ', 'MMTJ', 'TIJUANA', 'BAJA CALIFORNIA', 'TIJUANA', 1, '2025-10-14 06:49:38'),
-(68, 'TLC', 'MMTO', 'TOLUCA', 'ESTADO DE MÉXICO', 'TOLUCA', 1, '2025-10-14 06:49:38'),
-(69, 'TRC', 'MMTC', 'TORREÓN', 'COAHUILA', 'TORREON', 1, '2025-10-14 06:49:38'),
-(70, 'TGZ', 'MMTG', 'TUXTLA GUTIÉRREZ', 'CHIAPAS', 'CHIAPA DE CORZO', 1, '2025-10-14 06:49:38'),
-(71, 'UPN', 'MMPN', 'URUAPAN', 'MICHOACAN', 'URUAPAN', 1, '2025-10-14 06:49:38'),
-(72, 'VER', 'MMVR', 'VERACRUZ', 'VERACRUZ', 'VERACRUZ', 1, '2025-10-14 06:49:38'),
-(73, 'VSA', 'MMVA', 'VILLAHERMOSA', 'TABASCO', 'DOS MONTES VILLAHERMOSA', 1, '2025-10-14 06:49:38'),
-(74, 'ZCL', 'MMZC', 'ZACATECAS', 'ZACATECAS', 'VICTOR ROSALES CALERA', 1, '2025-10-14 06:49:38'),
-(75, 'ZMM', 'MMZM', 'ZAMORA', 'MICHOACAN', 'ZAMORA', 1, '2025-10-14 06:49:38'),
-(76, 'SLM', 'MMSM', 'SANTA LUCÍA', 'ESTADO DE MÉXICO', 'ZUMPANGO', 1, '2025-10-14 06:49:38'),
-(77, 'N/D', 'N/D', 'CORDOBA', 'VERACRUZ', 'CORDOBA', 1, '2025-10-14 15:28:19');
+INSERT INTO `aeropuertos` (`Id_Aeropuerto`, `Codigo_IATA`, `Codigo_OACI`, `Nombre`, `Estado`, `Pais`, `Activo`, `Fecha_Creacion`) VALUES
+(1, 'ACA', 'MMAA', 'ACAPULCO', 'GUERRERO', 'Mexico', 1, '2025-10-14 06:49:38'),
+(2, 'AGU', 'MMAS', 'AGUASCALIENTES', 'AGUASCALIENTES', 'Mexico', 1, '2025-10-14 06:49:38'),
+(3, 'AZP', 'MMJC', 'ATIZAPÁN', 'ESTADO DE MÉXICO', 'Mexico', 1, '2025-10-14 06:49:38'),
+(4, 'CSL', 'MMSL', 'CABO SAN LUCAS', 'BAJA CALIFORNIA SUR', 'Mexico', 1, '2025-10-14 06:49:38'),
+(5, 'CPE', 'MMCP', 'CAMPECHE', 'CAMPECHE', 'Mexico', 1, '2025-10-14 06:49:38'),
+(6, 'CUN', 'MMUN', 'CANCÚN', 'QUINTANA ROO', 'Mexico', 1, '2025-10-14 06:49:38'),
+(7, 'CYW', 'MMCY', 'CELAYA', 'GUANAJUATO', 'Mexico', 1, '2025-10-14 06:49:38'),
+(8, 'CTM', 'MMCM', 'CHETUMAL', 'QUINTANA ROO', 'Mexico', 1, '2025-10-14 06:49:38'),
+(9, 'CZA', 'MMCT', 'CHICHEN ITZA', 'YUCATÁN', 'Mexico', 1, '2025-10-14 06:49:38'),
+(10, 'CUU', 'MMCU', 'CHIHUAHUA', 'CHIHUAHUA', 'Mexico', 1, '2025-10-14 06:49:38'),
+(11, 'ACN', 'MMCC', 'CIUDAD ACUÑA', 'COAHUILA', 'Mexico', 1, '2025-10-14 06:49:38'),
+(12, 'CME', 'MMCE', 'CIUDAD DEL CARMEN', 'CAMPECHE', 'Mexico', 1, '2025-10-14 06:49:38'),
+(13, 'CJS', 'MMCS', 'CIUDAD JUÁREZ', 'CHIHUAHUA', 'Mexico', 1, '2025-10-14 06:49:38'),
+(14, 'CEN', 'MMCN', 'CIUDAD OBREGÓN', 'SONORA', 'Mexico', 1, '2025-10-14 06:49:38'),
+(15, 'CVM', 'MMCV', 'CIUDAD VICTORIA', 'TAMAULIPAS', 'Mexico', 1, '2025-10-14 06:49:38'),
+(16, 'CLQ', 'MMIA', 'COLIMA', 'COLIMA', 'Mexico', 1, '2025-10-14 06:49:38'),
+(17, 'CZM', 'MMCZ', 'COZUMEL', 'QUINTANA ROO', 'Mexico', 1, '2025-10-14 06:49:38'),
+(18, 'CVJ', 'MMCB', 'CUERNAVACA', 'MORELOS', 'Mexico', 1, '2025-10-14 06:49:38'),
+(19, 'CUL', 'MMCL', 'CULIACÁN', 'SINALOA', 'Mexico', 1, '2025-10-14 06:49:38'),
+(20, 'NTR', 'MMAN', 'DEL NORTE', 'NUEVO LEÓN', 'Mexico', 1, '2025-10-14 06:49:38'),
+(21, 'DGO', 'MMDO', 'DURANGO', 'DURANGO', 'Mexico', 1, '2025-10-14 06:49:38'),
+(22, 'ESE', 'MMES', 'ENSENADA', 'BAJA CALIFORNIA', 'Mexico', 1, '2025-10-14 06:49:38'),
+(23, 'GDL', 'MMGL', 'GUADALAJARA', 'JALISCO', 'Mexico', 1, '2025-10-14 06:49:38'),
+(24, 'BJX', 'MMLO', 'GUANAJUATO', 'GUANAJUATO', 'Mexico', 1, '2025-10-14 06:49:38'),
+(25, 'GYM', 'MMGM', 'GUAYMAS', 'SONORA', 'Mexico', 1, '2025-10-14 06:49:38'),
+(26, 'HMO', 'MMHO', 'HERMOSILLO', 'SONORA', 'Mexico', 1, '2025-10-14 06:49:38'),
+(27, 'HUX', 'MMBT', 'HUATULCO', 'OAXACA', 'Mexico', 1, '2025-10-14 06:49:38'),
+(28, 'ZIH', 'MMZH', 'IXTAPA - ZIHUATANEJO', 'GUERRERO', 'Mexico', 1, '2025-10-14 06:49:38'),
+(29, 'IZT', 'MMIT', 'IXTEPEC', 'OAXACA', 'Mexico', 1, '2025-10-14 06:49:38'),
+(30, 'JAL', 'MMJA', 'JALAPA', 'VERACRUZ', 'Mexico', 1, '2025-10-14 06:49:38'),
+(31, 'LAP', 'MMLP', 'LA PAZ', 'BAJA CALIFORNIA SUR', 'Mexico', 1, '2025-10-14 06:49:38'),
+(32, 'LZC', 'MMLC', 'LÁZARO CÁRDENAS', 'MICHOACAN', 'Mexico', 1, '2025-10-14 06:49:38'),
+(33, 'LTO', 'MMLT', 'LORETO', 'BAJA CALIFORNIA SUR', 'Mexico', 1, '2025-10-14 06:49:38'),
+(34, 'LMM', 'MMLM', 'LOS MOCHIS', 'SINALOA', 'Mexico', 1, '2025-10-14 06:49:38'),
+(35, 'ZLO', 'MMZO', 'MANZANILLO', 'COLIMA', 'Mexico', 1, '2025-10-14 06:49:38'),
+(36, 'MAM', 'MMMA', 'MATAMOROS', 'TAMAULIPAS', 'Mexico', 1, '2025-10-14 06:49:38'),
+(37, 'MZT', 'MMMZ', 'MAZATLÁN', 'SINALOA', 'Mexico', 1, '2025-10-14 06:49:38'),
+(38, 'MID', 'MMMD', 'MÉRIDA', 'YUCATÁN', 'Mexico', 1, '2025-10-14 06:49:38'),
+(39, 'MXL', 'MMML', 'MEXICALI', 'BAJA CALIFORNIA', 'Mexico', 1, '2025-10-14 06:49:38'),
+(40, 'MEX', 'MMMX', 'MÉXICO', 'CIUDAD DE MEXICO', 'Mexico', 1, '2025-10-14 06:49:38'),
+(41, 'MTT', 'MMMT', 'MINATITLÁN', 'VERACRUZ', 'Mexico', 1, '2025-10-14 06:49:38'),
+(42, 'LOV', 'MMMV', 'MONCLOVA', 'COAHUILA', 'Mexico', 1, '2025-10-14 06:49:38'),
+(43, 'MTY', 'MMMY', 'MONTERREY', 'NUEVO LEÓN', 'Mexico', 1, '2025-10-14 06:49:38'),
+(44, 'MLM', 'MMMM', 'MORELIA', 'MICHOACAN', 'Mexico', 1, '2025-10-14 06:49:38'),
+(45, 'NOG', 'MMNG', 'NOGALES', 'SONORA', 'Mexico', 1, '2025-10-14 06:49:38'),
+(46, 'NLD', 'MMNL', 'NUEVO LAREDO', 'TAMAULIPAS', 'Mexico', 1, '2025-10-14 06:49:38'),
+(47, 'OAX', 'MMOX', 'OAXACA', 'OAXACA', 'Mexico', 1, '2025-10-14 06:49:38'),
+(48, 'PCA', 'MMPC', 'PACHUCA', 'HIDALGO', 'Mexico', 1, '2025-10-14 06:49:38'),
+(49, 'PQM', 'MMPQ', 'PALENQUE', 'CHIAPAS', 'Mexico', 1, '2025-10-14 06:49:38'),
+(50, 'PDS', 'MMPG', 'PIEDRAS NEGRAS', 'COAHUILA', 'Mexico', 1, '2025-10-14 06:49:38'),
+(51, 'PAZ', 'MMPA', 'POZA RICA', 'VERACRUZ', 'Mexico', 1, '2025-10-14 06:49:38'),
+(52, 'PBC', 'MMPB', 'PUEBLA', 'PUEBLA', 'Mexico', 1, '2025-10-14 06:49:38'),
+(53, 'PXM', 'MMPS', 'PUERTO ESCONDIDO', 'OAXACA', 'Mexico', 1, '2025-10-14 06:49:38'),
+(54, 'PPE', 'MMPE', 'PUERTO PEÑASCO', 'SONORA', 'Mexico', 1, '2025-10-14 06:49:38'),
+(55, 'PVR', 'MMPR', 'PUERTO VALLARTA', 'JALISCO', 'Mexico', 1, '2025-10-14 06:49:38'),
+(56, 'QET', 'MMQT', 'QUERÉTARO', 'QUERÉTARO', 'Mexico', 1, '2025-10-14 06:49:38'),
+(57, 'REX', 'MMRX', 'REYNOSA', 'TAMAULIPAS', 'Mexico', 1, '2025-10-14 06:49:38'),
+(58, 'SLW', 'MMIO', 'SALTILLO', 'COAHUILA', 'Mexico', 1, '2025-10-14 06:49:38'),
+(59, 'SFH', 'MMSF', 'SAN FELIPE', 'BAJA CALIFORNIA', 'Mexico', 1, '2025-10-14 06:49:38'),
+(60, 'SJD', 'MMSD', 'SAN JOSÉ DEL CABO', 'BAJA CALIFORNIA SUR', 'Mexico', 1, '2025-10-14 06:49:38'),
+(61, 'SLP', 'MMSP', 'SAN LUIS POTOSÍ', 'SAN LUIS POTOSÍ', 'Mexico', 1, '2025-10-14 06:49:38'),
+(62, 'TAM', 'MMTM', 'TAMPICO', 'TAMAULIPAS', 'Mexico', 1, '2025-10-14 06:49:38'),
+(63, 'TSL', 'MMTN', 'TAMUÍN', 'SAN LUIS POTOSÍ', 'Mexico', 1, '2025-10-14 06:49:38'),
+(64, 'TAP', 'MMTP', 'TAPACHULA', 'CHIAPAS', 'Mexico', 1, '2025-10-14 06:49:38'),
+(65, 'TCN', 'MMHC', 'TEHUACÁN', 'PUEBLA', 'Mexico', 1, '2025-10-14 06:49:38'),
+(66, 'TPQ', 'MMEP', 'TEPIC', 'NAYARIT', 'Mexico', 1, '2025-10-14 06:49:38'),
+(67, 'TIJ', 'MMTJ', 'TIJUANA', 'BAJA CALIFORNIA', 'Mexico', 1, '2025-10-14 06:49:38'),
+(68, 'TLC', 'MMTO', 'TOLUCA', 'ESTADO DE MÉXICO', 'Mexico', 1, '2025-10-14 06:49:38'),
+(69, 'TRC', 'MMTC', 'TORREÓN', 'COAHUILA', 'Mexico', 1, '2025-10-14 06:49:38'),
+(70, 'TGZ', 'MMTG', 'TUXTLA GUTIÉRREZ', 'CHIAPAS', 'Mexico', 1, '2025-10-14 06:49:38'),
+(71, 'UPN', 'MMPN', 'URUAPAN', 'MICHOACAN', 'Mexico', 1, '2025-10-14 06:49:38'),
+(72, 'VER', 'MMVR', 'VERACRUZ', 'VERACRUZ', 'Mexico', 1, '2025-10-14 06:49:38'),
+(73, 'VSA', 'MMVA', 'VILLAHERMOSA', 'TABASCO', 'Mexico', 1, '2025-10-14 06:49:38'),
+(74, 'ZCL', 'MMZC', 'ZACATECAS', 'ZACATECAS', 'Mexico', 1, '2025-10-14 06:49:38'),
+(75, 'ZMM', 'MMZM', 'ZAMORA', 'MICHOACAN', 'Mexico', 1, '2025-10-14 06:49:38'),
+(76, 'SLM', 'MMSM', 'SANTA LUCÍA', 'ESTADO DE MÉXICO', 'Mexico', 1, '2025-10-14 06:49:38'),
+(79, 'NDA', 'NDAA', 'CORDOBA', 'VERACRUZ', 'Mexico', 1, '2025-10-16 17:21:24'),
+(80, 'PPP', 'PPPP', '', 'pppp', 'Mexico', 1, '2025-10-16 19:07:16'),
+(81, 'MSM', 'MSMS', '', 'LUSIANA', 'USA', 1, '2025-10-23 19:16:24');
 
 -- --------------------------------------------------------
 
@@ -356,40 +358,90 @@ INSERT INTO `componentewk` (`Id_Componete_Wk`, `Identificador_Componente`, `Id_W
 (264, 'timon_profundidad', 8, 8, 0, 0, 0, 0, 0, 0, 0, 0),
 (265, 'compensador_timon_profundidad', 8, 8, 0, 0, 0, 0, 0, 0, 0, 0),
 (266, 'alas_delta', 8, 8, 0, 0, 0, 0, 0, 0, 0, 0),
-(267, 'tren_nariz', 10, 10, 0, 0, 0, 1, 0, 0, 0, 0),
-(268, 'parabrisas_limpiadores', 10, 10, 1, 1, 0, 1, 0, 0, 0, 0),
-(269, 'radomo', 10, 10, 1, 1, 0, 1, 1, 1, 1, 0),
-(270, 'fuselaje', 10, 10, 1, 1, 1, 1, 1, 1, 1, 1),
-(271, 'borde_empenaje', 10, 10, 1, 1, 1, 1, 1, 1, 1, 1),
-(272, 'alas_delta', 10, 10, 1, 1, 1, 1, 1, 1, 1, 1),
-(273, 'compuertas_tren', 10, 10, 0, 0, 0, 0, 0, 0, 0, 0),
-(274, 'tubo_pitot', 10, 10, 0, 0, 0, 0, 0, 0, 0, 0),
-(275, 'antena', 10, 10, 0, 0, 0, 0, 0, 0, 0, 0),
-(276, 'aleta', 10, 10, 0, 0, 0, 0, 0, 0, 0, 0),
-(277, 'aleron', 10, 10, 0, 0, 0, 0, 0, 0, 0, 0),
-(278, 'compensador_aleron', 10, 10, 0, 0, 0, 0, 0, 0, 0, 0),
-(279, 'mechas_descarga', 10, 10, 0, 0, 0, 0, 0, 0, 0, 0),
-(280, 'punta_ala', 10, 10, 0, 0, 0, 0, 0, 0, 0, 0),
-(281, 'luces_carretero', 10, 10, 0, 0, 0, 0, 0, 0, 0, 0),
-(282, 'luces_navegacion', 10, 10, 0, 0, 0, 0, 0, 0, 0, 0),
-(283, 'borde_ataque', 10, 10, 0, 0, 0, 0, 0, 0, 0, 0),
-(284, 'tren_principal', 10, 10, 0, 0, 0, 0, 0, 0, 0, 0),
-(285, 'valvulas_servicio', 10, 10, 0, 0, 0, 0, 0, 0, 0, 0),
-(286, 'motor', 10, 10, 0, 0, 0, 0, 0, 0, 0, 0),
-(287, 'estabilizador_vertical', 10, 10, 0, 0, 0, 0, 0, 0, 0, 0),
-(288, 'timon_direccion', 10, 10, 0, 0, 0, 0, 0, 0, 0, 0),
-(289, 'compensador_timon_direccion', 10, 10, 0, 0, 0, 0, 0, 0, 0, 0),
-(290, 'estabilizador_horizontal', 10, 10, 0, 0, 0, 0, 0, 0, 0, 0),
-(291, 'timon_profundidad', 10, 10, 0, 0, 0, 0, 0, 0, 0, 0),
-(292, 'compensador_timon_profundidad', 10, 10, 0, 0, 0, 0, 0, 0, 0, 0),
-(309, 'fuselaje', 12, 2, 1, 0, 0, 0, 0, 0, 0, 0),
-(310, 'puertas', 12, 2, 0, 1, 0, 0, 0, 0, 0, 0),
-(311, 'boom', 12, 2, 0, 0, 0, 0, 0, 1, 0, 0),
-(312, 'estabilizadores', 12, 2, 0, 0, 0, 0, 0, 1, 0, 0),
-(313, 'rotor', 12, 2, 1, 0, 1, 0, 0, 0, 0, 0),
-(314, 'esqui', 12, 2, 0, 0, 0, 0, 0, 0, 0, 0),
-(315, 'palas', 12, 2, 0, 0, 0, 0, 0, 0, 0, 0),
-(316, 'parabrisas', 12, 2, 0, 0, 0, 0, 0, 0, 0, 0);
+(317, 'fuselaje', 12, 2, 1, 0, 0, 0, 0, 0, 0, 0),
+(318, 'puertas', 12, 2, 0, 1, 0, 0, 0, 0, 0, 0),
+(319, 'boom', 12, 2, 0, 0, 0, 0, 0, 1, 0, 0),
+(320, 'estabilizadores', 12, 2, 0, 0, 0, 0, 0, 1, 0, 0),
+(321, 'rotor', 12, 2, 1, 0, 1, 0, 0, 0, 0, 0),
+(322, 'esqui', 12, 2, 0, 0, 0, 0, 0, 0, 0, 0),
+(323, 'palas', 12, 2, 0, 0, 0, 0, 0, 0, 0, 0),
+(324, 'parabrisas', 12, 2, 0, 0, 0, 0, 0, 0, 0, 0),
+(325, 'tren_nariz', 10, 10, 0, 0, 0, 1, 0, 0, 0, 0),
+(326, 'parabrisas_limpiadores', 10, 10, 1, 1, 0, 1, 0, 0, 0, 0),
+(327, 'radomo', 10, 10, 1, 1, 0, 1, 1, 1, 1, 0),
+(328, 'fuselaje', 10, 10, 1, 1, 1, 1, 1, 1, 1, 1),
+(329, 'borde_empenaje', 10, 10, 1, 1, 1, 1, 1, 1, 1, 1),
+(330, 'alas_delta', 10, 10, 1, 1, 1, 1, 1, 1, 1, 1),
+(331, 'compuertas_tren', 10, 10, 0, 0, 0, 0, 0, 0, 0, 0),
+(332, 'tubo_pitot', 10, 10, 0, 0, 0, 0, 0, 0, 0, 0),
+(333, 'antena', 10, 10, 0, 0, 0, 0, 0, 0, 0, 0),
+(334, 'aleta', 10, 10, 0, 0, 0, 0, 0, 0, 0, 0),
+(335, 'aleron', 10, 10, 0, 0, 0, 0, 0, 0, 0, 0),
+(336, 'compensador_aleron', 10, 10, 0, 0, 0, 0, 0, 0, 0, 0),
+(337, 'mechas_descarga', 10, 10, 0, 0, 0, 0, 0, 0, 0, 0),
+(338, 'punta_ala', 10, 10, 0, 0, 0, 0, 0, 0, 0, 0),
+(339, 'luces_carretero', 10, 10, 0, 0, 0, 0, 0, 0, 0, 0),
+(340, 'luces_navegacion', 10, 10, 0, 0, 0, 0, 0, 0, 0, 0),
+(341, 'borde_ataque', 10, 10, 0, 0, 0, 0, 0, 0, 0, 0),
+(342, 'tren_principal', 10, 10, 0, 0, 0, 0, 0, 0, 0, 0),
+(343, 'valvulas_servicio', 10, 10, 0, 0, 0, 0, 0, 0, 0, 0),
+(344, 'motor', 10, 10, 0, 0, 0, 0, 0, 0, 0, 0),
+(345, 'estabilizador_vertical', 10, 10, 0, 0, 0, 0, 0, 0, 0, 0),
+(346, 'timon_direccion', 10, 10, 0, 0, 0, 0, 0, 0, 0, 0),
+(347, 'compensador_timon_direccion', 10, 10, 0, 0, 0, 0, 0, 0, 0, 0),
+(348, 'estabilizador_horizontal', 10, 10, 0, 0, 0, 0, 0, 0, 0, 0),
+(349, 'timon_profundidad', 10, 10, 0, 0, 0, 0, 0, 0, 0, 0),
+(350, 'compensador_timon_profundidad', 10, 10, 0, 0, 0, 0, 0, 0, 0, 0),
+(351, 'fuselaje', 13, 2, 1, 0, 0, 0, 0, 0, 0, 0),
+(352, 'esqui', 13, 2, 0, 0, 0, 1, 0, 0, 0, 0),
+(353, 'boom', 13, 2, 0, 1, 0, 0, 0, 0, 0, 0),
+(354, 'parabrisas', 13, 2, 0, 0, 0, 1, 0, 0, 0, 0),
+(355, 'puertas', 13, 2, 0, 0, 0, 0, 0, 0, 0, 0),
+(356, 'palas', 13, 2, 0, 0, 0, 0, 0, 0, 0, 0),
+(357, 'estabilizadores', 13, 2, 0, 0, 0, 0, 0, 0, 0, 0),
+(358, 'rotor', 13, 2, 0, 0, 0, 0, 0, 0, 0, 0),
+(359, 'fuselaje', 14, 4, 0, 0, 0, 0, 0, 0, 0, 0),
+(360, 'puertas', 14, 4, 0, 0, 0, 0, 0, 0, 0, 0),
+(361, 'esqui', 14, 4, 0, 0, 0, 0, 0, 0, 0, 0),
+(362, 'palas', 14, 4, 0, 0, 0, 0, 0, 0, 0, 0),
+(363, 'boom', 14, 4, 0, 0, 0, 0, 0, 0, 0, 0),
+(364, 'estabilizadores', 14, 4, 0, 0, 0, 0, 0, 0, 0, 0),
+(365, 'rotor', 14, 4, 0, 0, 0, 0, 0, 0, 0, 0),
+(366, 'parabrisas', 14, 4, 0, 0, 0, 0, 0, 0, 0, 0),
+(367, 'tren_nariz', 15, 6, 0, 0, 0, 0, 0, 0, 0, 0),
+(368, 'compuertas_tren', 15, 6, 0, 0, 0, 0, 0, 0, 0, 0),
+(369, 'parabrisas_limpiadores', 15, 6, 0, 0, 0, 0, 0, 0, 0, 0),
+(370, 'radomo', 15, 6, 0, 0, 0, 0, 0, 0, 0, 0),
+(371, 'tubo_pitot', 15, 6, 0, 0, 0, 0, 0, 0, 0, 0),
+(372, 'fuselaje', 15, 6, 0, 0, 0, 0, 0, 0, 0, 0),
+(373, 'antena', 15, 6, 0, 0, 0, 0, 0, 0, 0, 0),
+(374, 'aleta', 15, 6, 0, 0, 0, 0, 0, 0, 0, 0),
+(375, 'aleron', 15, 6, 0, 0, 0, 0, 0, 0, 0, 0),
+(376, 'compensador_aleron', 15, 6, 0, 0, 0, 0, 0, 0, 0, 0),
+(377, 'mechas_descarga', 15, 6, 0, 0, 0, 0, 0, 0, 0, 0),
+(378, 'punta_ala', 15, 6, 0, 0, 0, 0, 0, 0, 0, 0),
+(379, 'luces_carretero', 15, 6, 0, 0, 0, 0, 0, 0, 0, 0),
+(380, 'luces_navegacion', 15, 6, 0, 0, 0, 0, 0, 0, 0, 0),
+(381, 'borde_ataque', 15, 6, 0, 0, 0, 0, 0, 0, 0, 0),
+(382, 'tren_principal', 15, 6, 0, 0, 0, 0, 0, 0, 0, 0),
+(383, 'valvulas_servicio', 15, 6, 0, 0, 0, 0, 0, 0, 0, 0),
+(384, 'motor', 15, 6, 0, 0, 0, 0, 0, 0, 0, 0),
+(385, 'estabilizador_vertical', 15, 6, 0, 0, 0, 0, 0, 0, 0, 0),
+(386, 'timon_direccion', 15, 6, 0, 0, 0, 0, 0, 0, 0, 0),
+(387, 'compensador_timon_direccion', 15, 6, 0, 0, 0, 0, 0, 0, 0, 0),
+(388, 'estabilizador_horizontal', 15, 6, 0, 0, 0, 0, 0, 0, 0, 0),
+(389, 'timon_profundidad', 15, 6, 0, 0, 0, 0, 0, 0, 0, 0),
+(390, 'compensador_timon_profundidad', 15, 6, 0, 0, 0, 0, 0, 0, 0, 0),
+(391, 'borde_empenaje', 15, 6, 0, 0, 0, 0, 0, 0, 0, 0),
+(392, 'alas_delta', 15, 6, 0, 0, 0, 0, 0, 0, 0, 0),
+(393, 'fuselaje', 16, 2, 1, 0, 0, 0, 0, 0, 0, 0),
+(394, 'palas', 16, 2, 0, 1, 0, 1, 0, 0, 0, 0),
+(395, 'rotor', 16, 2, 0, 1, 0, 0, 0, 0, 0, 0),
+(396, 'puertas', 16, 2, 0, 0, 0, 0, 0, 0, 0, 0),
+(397, 'esqui', 16, 2, 0, 0, 0, 0, 0, 0, 0, 0),
+(398, 'boom', 16, 2, 0, 0, 0, 0, 0, 0, 0, 0),
+(399, 'estabilizadores', 16, 2, 0, 0, 0, 0, 0, 0, 0, 0),
+(400, 'parabrisas', 16, 2, 0, 0, 0, 0, 0, 0, 0, 0);
 
 -- --------------------------------------------------------
 
@@ -498,7 +550,12 @@ CREATE TABLE `evidencias` (
 INSERT INTO `evidencias` (`Id_Evidencia`, `Id_Wk`, `Id_Aeronave`, `Ruta`, `FileName`) VALUES
 (1, 2, 2, 'evidencias/68e928e3d99c2_2_Sin_t__tulo.jpeg', 'Sin título.jpeg'),
 (2, 1, 1, 'evidencias/68e9376208b05_1_Sin_t__tulo.jpeg', 'Sin título.jpeg'),
-(3, 10, 10, 'evidencias/68e95d3af07d2_10_Sin_t__tulo.jpeg', 'Sin título.jpeg');
+(3, 10, 10, 'evidencias/68e95d3af07d2_10_Sin_t__tulo.jpeg', 'Sin título.jpeg'),
+(5, 10, 10, 'evidencias/68f935dd1c975_10_avion.jpg', 'avion.jpg'),
+(6, 13, 2, '../public/assets/evidencias/68fa46ec7275f_13_avion.jpg', 'avion.jpg'),
+(7, 14, 4, '/Eolo/public/assets/evidencias/68fa5377f199a_14_avion.jpg', 'avion.jpg'),
+(8, 15, 6, '/Eolo/public/assets/evidencias/68fa5afb07340_15_c12.jpg', 'c12.jpg'),
+(9, 16, 2, '/Eolo/public/assets/evidencias/68fa715119ec3_16_2025-10-2312.17.234687013077887380006.jpg', '2025-10-2312.17.234687013077887380006.jpg');
 
 -- --------------------------------------------------------
 
@@ -522,8 +579,9 @@ CREATE TABLE `usuarios` (
 --
 
 INSERT INTO `usuarios` (`Id_Usuario`, `Username`, `Password`, `Nombre_Completo`, `Tipo_Usuario`, `Activo`, `Fecha_Creacion`, `Ultimo_Acceso`) VALUES
-(1, 'admin', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'Administrador Principal', 'admin', 1, '2025-10-02 15:53:30', '2025-10-14 06:09:58'),
-(2, 'usuario', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'Usuario Regular', 'usuario', 1, '2025-10-02 15:53:30', '2025-10-14 06:09:23');
+(1, 'admin', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'Administrador Principal', 'admin', 1, '2025-10-02 15:53:30', '2025-10-23 16:16:21'),
+(2, 'usuario', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'Usuario Regular', 'usuario', 1, '2025-10-02 15:53:30', '2025-10-23 18:16:21'),
+(4, 'usuarioP', '$2y$10$hReg3PcLmcMFbmvEjoZ1MenUF.Qxt1FPVndX8vmWBLWJcz61mUlgi', 'Usuario Nuevo', 'usuario', 1, '2025-10-17 16:56:47', '2025-10-20 18:15:53');
 
 -- --------------------------------------------------------
 
@@ -560,8 +618,12 @@ INSERT INTO `walkaround` (`Id_Walk`, `FechaHora`, `Id_Aeronave`, `Elaboro`, `Res
 (7, '2025-10-10 18:08:00', 7, 'JUAN LOPEZ', 'MARTHA GARCÍA', 'PACO PEREZ', 'JULIO JARRAMILLO', '', '', 'MGGT', 0, 1),
 (8, '2025-10-10 18:24:00', 8, 'JUAN LOPEZ', 'MARTHA GARCÍA', 'PACO PEREZ', 'JULIO JARRAMILLO', '', '', 'SLW', 0, 1),
 (9, '2025-10-10 18:53:00', 9, 'JUAN LOPEZ', 'MARTHA GARCÍA', 'PACO PEREZ', 'JULIO JARRAMILLO', '', '', 'ACA', 0, 1),
-(10, '2025-10-10 19:19:00', 10, 'JUAN LOPEZ', 'MARTHA GARCÍA', 'PACO PEREZ', 'JULIO JARRAMILLO', 'Daños en ala derecha y estetica de lado derecho dañado', 'MTY', '', 1, 0),
-(12, '2025-10-14 15:28:00', 2, 'JUAN LOPEZ', 'MARTHA GARCÍA', 'PACO PEREZ', 'JULIO JARRAMILLO', 'aaa', 'CUN', '', 1, 0);
+(10, '2025-10-11 01:19:00', 10, 'JUAN LOPEZ', 'MARTHA GARCÍA', 'PACO PEREZ', 'JULIO JARRAMILLO', 'Daños en ala derecha y estetica de lado derecho dañado', 'MTY', '', 1, 0),
+(12, '2025-10-14 21:28:00', 2, 'JUAN LOPEZ', 'MARTHA GARCÍA', 'PACO PEREZ', 'JULIO JARRAMILLO', 'No hay observaciones ', 'CUN', '', 1, 0),
+(13, '2025-10-23 15:16:00', 2, 'JUAN', 'PEDRO', 'SOFIA', 'RAMON', 'daño en rotor derecho', 'MTT', '', 1, 0),
+(14, '2025-10-23 16:10:00', 4, 'aaa', 'aaa', 'aaa', 'aaa', '', 'SLW', '', 1, 0),
+(15, '2025-10-23 16:42:00', 6, 'ss', 'ss', 'ss', 'ss', 'sss', 'GDL', '', 1, 0),
+(16, '2025-10-23 12:16:00', 2, 'Juan', 'Alma ', 'Pedro', 'Jesus', 'Golpes es la parte derecha ', 'NDA', '', 1, 0);
 
 --
 -- Índices para tablas volcadas
@@ -649,13 +711,13 @@ ALTER TABLE `aeronave`
 -- AUTO_INCREMENT de la tabla `aeropuertos`
 --
 ALTER TABLE `aeropuertos`
-  MODIFY `Id_Aeropuerto` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=78;
+  MODIFY `Id_Aeropuerto` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=82;
 
 --
 -- AUTO_INCREMENT de la tabla `componentewk`
 --
 ALTER TABLE `componentewk`
-  MODIFY `Id_Componete_Wk` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=317;
+  MODIFY `Id_Componete_Wk` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=401;
 
 --
 -- AUTO_INCREMENT de la tabla `entregaturno`
@@ -679,19 +741,19 @@ ALTER TABLE `equipooficina`
 -- AUTO_INCREMENT de la tabla `evidencias`
 --
 ALTER TABLE `evidencias`
-  MODIFY `Id_Evidencia` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+  MODIFY `Id_Evidencia` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
 
 --
 -- AUTO_INCREMENT de la tabla `usuarios`
 --
 ALTER TABLE `usuarios`
-  MODIFY `Id_Usuario` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `Id_Usuario` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
 -- AUTO_INCREMENT de la tabla `walkaround`
 --
 ALTER TABLE `walkaround`
-  MODIFY `Id_Walk` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
+  MODIFY `Id_Walk` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=17;
 
 --
 -- Restricciones para tablas volcadas

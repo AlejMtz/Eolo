@@ -224,9 +224,9 @@ if (isset($conn) && $conn) {
 echo json_encode($response);
 exit;
 
-// ⭐⭐ FUNCIÓN MEJORADA: Guardar evidencias (con verificación de duplicados)
+// ⭐⭐ FUNCIÓN CORREGIDA: Guardar evidencias (con rutas consistentes)
 function guardarEvidencia($conn, $evidencia, $id_walkaround, $id_aeronave, $modoEdicion = false) {
-    // Validaciones iniciales
+    // Validaciones iniciales (mantener igual)
     if (!is_uploaded_file($evidencia['tmp_name'])) {
         error_log("❌ Archivo no subido via HTTP: " . $evidencia['name']);
         return false;
@@ -273,8 +273,8 @@ function guardarEvidencia($conn, $evidencia, $id_walkaround, $id_aeronave, $modo
         return false;
     }
 
-    // Crear directorio si no existe
-    $uploadDir = 'evidencias/';
+    // ⭐⭐ CORRECCIÓN: Usar la misma ruta que en procesar_walkaround.php
+    $uploadDir = $_SERVER['DOCUMENT_ROOT'] . '/Eolo/public/assets/evidencias/';
     if (!file_exists($uploadDir)) {
         if (!mkdir($uploadDir, 0777, true)) {
             error_log("❌ No se pudo crear el directorio de evidencias: " . $uploadDir);
@@ -291,22 +291,28 @@ function guardarEvidencia($conn, $evidencia, $id_walkaround, $id_aeronave, $modo
     $fileName = $uniqueId . '_' . $id_walkaround . '_' . $fileNameClean;
     $filePath = $uploadDir . $fileName;
     
-    error_log("📁 Guardando nueva evidencia: " . $fileName);
+    // ⭐⭐ CORRECCIÓN: Ruta que se guardará en la BD (igual que en procesar_walkaround.php)
+    $rutaParaBD = '/Eolo/public/assets/evidencias/' . $fileName;
+    
+    error_log("📁 Guardando nueva evidencia:");
+    error_log("  - Ruta física: " . $filePath);
+    error_log("  - Ruta BD: " . $rutaParaBD);
+    error_log("  - Nombre archivo: " . $evidencia['name']);
 
     // Mover archivo
     if (move_uploaded_file($evidencia['tmp_name'], $filePath)) {
-        error_log("✅ Archivo movido exitosamente: " . $filePath);
+        error_log("✅ Archivo movido exitosamente");
         
         // Verificar que el archivo existe y tiene contenido
         if (!file_exists($filePath) || filesize($filePath) == 0) {
-            error_log("❌ Archivo no válido después de mover: " . $filePath);
+            error_log("❌ Archivo no válido después de mover");
             if (file_exists($filePath)) {
                 unlink($filePath);
             }
             return false;
         }
 
-        // Insertar en la base de datos
+        // ⭐⭐ CORRECCIÓN: Insertar en la base de datos usando $rutaParaBD
         $stmt_evidencia = $conn->prepare("INSERT INTO evidencias (Id_Wk, Id_Aeronave, Ruta, FileName) VALUES (?, ?, ?, ?)");
         
         if (!$stmt_evidencia) {
@@ -317,7 +323,8 @@ function guardarEvidencia($conn, $evidencia, $id_walkaround, $id_aeronave, $modo
             return false;
         }
         
-        $stmt_evidencia->bind_param("iiss", $id_walkaround, $id_aeronave, $filePath, $evidencia['name']);
+        // ⭐⭐ CORRECCIÓN: Usar $rutaParaBD en lugar de $filePath
+        $stmt_evidencia->bind_param("iiss", $id_walkaround, $id_aeronave, $rutaParaBD, $evidencia['name']);
         
         if ($stmt_evidencia->execute()) {
             $id_evidencia = $stmt_evidencia->insert_id;
