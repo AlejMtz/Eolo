@@ -18,6 +18,12 @@ let totalRegistros = 0;
 // Variables globales para el filtro de búsqueda
 let timeoutBusqueda = null;
 
+let filtrosActivosWalkaround = {
+    fecha: '',
+    matricula: '',
+    movimiento: ''
+};
+
 // Componentes predefinidos organizados por sección según el formato físico
 const componentesPorTipo = {
     avion: {
@@ -103,6 +109,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Si estamos en la página de lista, cargar walkarounds
     if (document.getElementById('tablaWalkarounds')) {
         cargarWalkarounds();
+        configurarFiltrosWalkaround();
     }
 
     // Si estamos en el formulario de walkaround
@@ -169,6 +176,147 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 });
+
+/**
+ * Aplica los filtros y recarga la tabla de walkarounds - VERSIÓN MEJORADA
+ */
+function aplicarFiltrosWalkaround() {
+    console.log('🔍 Aplicando filtros walkaround...');
+    console.log('📊 Filtros activos:', filtrosActivosWalkaround);
+    
+    // Obtener valores actuales de los inputs por si hay cambios no capturados
+    const filtroFecha = document.getElementById('filtroFecha');
+    const filtroMatricula = document.getElementById('filtroMatricula');
+    const filtroMovimiento = document.getElementById('filtroMovimiento');
+    
+    // Sincronizar valores actuales con filtrosActivosWalkaround
+    if (filtroFecha && filtroFecha.value !== filtrosActivosWalkaround.fecha) {
+        filtrosActivosWalkaround.fecha = filtroFecha.value;
+    }
+    
+    if (filtroMatricula && filtroMatricula.value.trim() !== filtrosActivosWalkaround.matricula) {
+        filtrosActivosWalkaround.matricula = filtroMatricula.value.trim();
+    }
+    
+    if (filtroMovimiento && filtroMovimiento.value !== filtrosActivosWalkaround.movimiento) {
+        filtrosActivosWalkaround.movimiento = filtroMovimiento.value;
+    }
+    
+    console.log('🎯 Filtros sincronizados:', filtrosActivosWalkaround);
+    
+    // Mostrar loading en la tabla
+    const tablaBody = document.querySelector('#tablaWalkarounds tbody');
+    if (tablaBody) {
+        tablaBody.innerHTML = '<tr><td colspan="10" class="text-center">Aplicando filtros...</td></tr>';
+    }
+    
+    paginaActual = 1; // Resetear a primera página
+    cargarWalkarounds();
+}
+
+/**
+ * Limpia los filtros y recarga la tabla de walkarounds - VERSIÓN MEJORADA
+ */
+function limpiarFiltrosWalkaround() {
+    console.log('🧹 Limpiando filtros walkaround...');
+    
+    const filtroFecha = document.getElementById('filtroFecha');
+    const filtroMatricula = document.getElementById('filtroMatricula');
+    const filtroMovimiento = document.getElementById('filtroMovimiento');
+    
+    if (filtroFecha) filtroFecha.value = '';
+    if (filtroMatricula) filtroMatricula.value = '';
+    if (filtroMovimiento) filtroMovimiento.value = '';
+    
+    filtrosActivosWalkaround = {
+        fecha: '',
+        matricula: '',
+        movimiento: ''
+    };
+    
+    // Mostrar loading en la tabla
+    const tablaBody = document.querySelector('#tablaWalkarounds tbody');
+    if (tablaBody) {
+        tablaBody.innerHTML = '<tr><td colspan="10" class="text-center">Limpiando filtros...</td></tr>';
+    }
+    
+    paginaActual = 1;
+    cargarWalkarounds();
+}
+
+/**
+ * Configura los eventos para los filtros de walkaround - VERSIÓN CORREGIDA
+ */
+function configurarFiltrosWalkaround() {
+    console.log('⚙️ Configurando eventos de filtros walkaround...');
+    
+    const filtroFecha = document.getElementById('filtroFecha');
+    const filtroMatricula = document.getElementById('filtroMatricula');
+    const filtroMovimiento = document.getElementById('filtroMovimiento');
+    
+    // Configurar filtro de fecha - APLICAR AL CAMBIAR
+    if (filtroFecha) {
+        filtroFecha.addEventListener('change', function() {
+            console.log('📅 Cambio en filtro fecha:', this.value);
+            filtrosActivosWalkaround.fecha = this.value;
+            aplicarFiltrosWalkaround(); // ⭐⭐ CORRECCIÓN: Aplicar filtros inmediatamente
+        });
+    }
+    
+    // Configurar filtro de matrícula con debounce - APLICAR AL TERMINAR DE ESCRIBIR
+    if (filtroMatricula) {
+        let timeoutMatricula = null;
+        filtroMatricula.addEventListener('input', function() {
+            const valor = this.value.trim();
+            console.log('🛩️ Input en filtro matrícula:', valor);
+            
+            // Limpiar timeout anterior
+            if (timeoutMatricula) {
+                clearTimeout(timeoutMatricula);
+            }
+            
+            // Esperar 500ms después de que el usuario deje de escribir y APLICAR FILTROS
+            timeoutMatricula = setTimeout(() => {
+                filtrosActivosWalkaround.matricula = valor;
+                console.log('🛩️ Matrícula actualizada, aplicando filtros:', filtrosActivosWalkaround.matricula);
+                aplicarFiltrosWalkaround(); // ⭐⭐ CORRECCIÓN: Aplicar filtros automáticamente
+            }, 500);
+        });
+        
+        // También aplicar filtro al presionar Enter
+        filtroMatricula.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                filtrosActivosWalkaround.matricula = this.value.trim();
+                aplicarFiltrosWalkaround();
+            }
+        });
+    }
+    
+    // Configurar filtro de movimiento - APLICAR AL CAMBIAR
+    if (filtroMovimiento) {
+        filtroMovimiento.addEventListener('change', function() {
+            console.log('🔄 Cambio en filtro movimiento:', this.value);
+            filtrosActivosWalkaround.movimiento = this.value;
+            aplicarFiltrosWalkaround(); // ⭐⭐ CORRECCIÓN: Aplicar filtros inmediatamente
+        });
+    }
+    
+    // ⭐⭐ NUEVO: Configurar el botón de búsqueda si existe
+    const btnBuscar = document.querySelector('button[onclick="aplicarFiltrosWalkaround()"]');
+    if (btnBuscar) {
+        console.log('✅ Botón de búsqueda encontrado y configurado');
+        // El onclick ya está configurado en el HTML
+    }
+    
+    // ⭐⭐ NUEVO: Configurar el botón de limpiar si existe
+    const btnLimpiar = document.querySelector('button[onclick="limpiarFiltrosWalkaround()"]');
+    if (btnLimpiar) {
+        console.log('✅ Botón de limpiar encontrado y configurado');
+        // El onclick ya está configurado en el HTML
+    }
+    
+    console.log('✅ Filtros walkaround configurados correctamente');
+}
 
 /**
  * Configura el filtro de búsqueda de aeronaves - VERSIÓN MEJORADA
@@ -668,15 +816,38 @@ async function eliminarEvidenciaExistente(idEvidencia, elemento) {
 }
 
 /**
- * Carga la lista de walkarounds con paginación y permisos
+ * Carga la lista de walkarounds con paginación, permisos y filtros - VERSIÓN MEJORADA
  */
 async function cargarWalkarounds(pagina = 1) {
     const tablaBody = document.querySelector('#tablaWalkarounds tbody');
+    if (!tablaBody) {
+        console.error('❌ No se encontró la tabla de walkarounds');
+        return;
+    }
+    
     tablaBody.innerHTML = '<tr><td colspan="10" class="text-center">Cargando...</td></tr>';
 
     try {
         console.log(`🔄 Cargando walkarounds página ${pagina}...`);
-        const response = await fetch(`/Eolo/app/models/leer_walkaround.php?pagina=${pagina}&registros_por_pagina=${registrosPorPagina}`);
+        console.log('🎯 Filtros activos:', filtrosActivosWalkaround);
+        
+        // Construir URL con filtros
+        let url = `/Eolo/app/models/leer_walkaround.php?pagina=${pagina}&registros_por_pagina=${registrosPorPagina}`;
+        
+        // Agregar filtros si están activos
+        if (filtrosActivosWalkaround.fecha) {
+            url += `&fecha=${filtrosActivosWalkaround.fecha}`;
+        }
+        if (filtrosActivosWalkaround.matricula) {
+            url += `&matricula=${encodeURIComponent(filtrosActivosWalkaround.matricula)}`;
+        }
+        if (filtrosActivosWalkaround.movimiento) {
+            url += `&movimiento=${filtrosActivosWalkaround.movimiento}`;
+        }
+
+        console.log(`🌐 URL de consulta: ${url}`);
+        
+        const response = await fetch(url);
         
         if (!response.ok) {
             throw new Error(`Error HTTP: ${response.status}`);
@@ -685,8 +856,8 @@ async function cargarWalkarounds(pagina = 1) {
         const data = await response.json();
         console.log('📊 Datos recibidos:', data);
         
-        if (data.error) {
-            throw new Error(data.error);
+        if (!data.success) {
+            throw new Error(data.error || 'Error desconocido del servidor');
         }
 
         const walkarounds = data.walkarounds;
@@ -697,19 +868,22 @@ async function cargarWalkarounds(pagina = 1) {
         tablaBody.innerHTML = '';
         
         if (walkarounds.length === 0) {
-            tablaBody.innerHTML = '<tr><td colspan="10" class="text-center">No hay walkarounds registrados.</td></tr>';
+            let mensaje = 'No hay walkarounds registrados.';
+            if (filtrosActivosWalkaround.fecha || filtrosActivosWalkaround.matricula || filtrosActivosWalkaround.movimiento) {
+                mensaje = 'No se encontraron walkarounds con los filtros aplicados.';
+            }
+            tablaBody.innerHTML = `<tr><td colspan="10" class="text-center">${mensaje}</td></tr>`;
         } else {
-            // ⭐⭐ AQUÍ ESTÁ EL CAMBIO - Sacar esta línea fuera del forEach
             const usuarioActual = permisosSistema.usuario.nombre;
+            const usuarioId = permisosSistema.usuario.id;
             
             walkarounds.forEach((walkaround) => {
                 console.log(`📝 Procesando walkaround ID ${walkaround.Id_Walk}:`, walkaround);
                 
-                // ⭐⭐ AQUÍ VA EL CÓDIGO NUEVO - Dentro del forEach
-                // Mismo enfoque que entregas_turno
-                const esPropietario = walkaround.Elaboro === usuarioActual;
+                // Determinar permisos para este registro específico
                 const puedeEditar = permisosSistema.puedeEditar('walkarounds', walkaround);
                 const puedeEliminar = permisosSistema.puedeEliminar('walkarounds');
+                const esPropietario = walkaround.creado_por === usuarioId || walkaround.Elaboro === usuarioActual;
                 
                 const fila = document.createElement('tr');
                 
@@ -721,11 +895,22 @@ async function cargarWalkarounds(pagina = 1) {
                 const elaboro = walkaround.Elaboro || 'No especificado';
                 const responsable = walkaround.Responsable || 'No especificado';
                 
+                // ⭐⭐ CORRECCIÓN: Determinar badge de movimiento según los campos entrada/salida
+                let movimientoBadge = '';
+                if (walkaround.entrada == 1) {
+                    movimientoBadge = '<span class="badge bg-success">Entrada</span>';
+                } 
+                if (walkaround.salida == 1) {
+                    movimientoBadge = '<span class="badge bg-primary">Salida</span>';
+                }
+                // ⭐⭐ NOTA: En tu estructura, una aeronave podría tener ambos valores en 1
+                // Si quieres evitar esto, deberías hacerlos mutuamente excluyentes
+                
                 // Formatear fecha
                 let fechaFormateada = 'Fecha no válida';
                 try {
-                    if (walkaround.Fechahora) {
-                        fechaFormateada = new Date(walkaround.Fechahora).toLocaleString();
+                    if (walkaround.FechaHora) {
+                        fechaFormateada = new Date(walkaround.FechaHora).toLocaleString();
                     }
                 } catch (e) {
                     console.warn('Error al formatear fecha:', e);
@@ -736,30 +921,28 @@ async function cargarWalkarounds(pagina = 1) {
                     <td>${fechaFormateada}</td>
                     <td>${matricula}</td>
                     <td>${equipo}</td>
+                    <td>${movimientoBadge}</td>
                     <td>${procedencia}</td>
                     <td>${destino}</td>
-                    <td>
-                        ${elaboro}
-                        ${esPropietario ? '<span class="badge bg-primary ms-1">Tuyo</span>' : ''}
-                    </td>
+                    <td>${elaboro}</td>
                     <td>${responsable}</td>
                     
                     <td>
                         <div class="btn-group btn-group-sm" role="group">
                             <!-- Botón Ver Detalles -->
-                            <a href="/eolo/app/views/detalle_walkaround.html?id=${walkaround.Id_Walk}" 
+                            <a href="detalle_walkaround.html?id=${walkaround.Id_Walk}" 
                                class="btn btn-info" title="Ver detalles">
                                 <i class="fas fa-eye"></i>
                             </a>
                             
                             <!-- Botón Generar PDF -->
-                            <a href="../app/helpers/pdf_generator.php?tipo=walkaround&id=${walkaround.Id_Walk}" 
+                            <a href="/Eolo/app/helpers/pdf_generator.php?tipo=walkaround&id=${walkaround.Id_Walk}" 
                                class="btn btn-danger" title="Generar PDF" target="_blank">
                                 <i class="fas fa-file-pdf"></i>
                             </a>
                             
                             <!-- Botón Editar (con permisos) -->
-                            <a href="../app/views/componenteWk.html?id=${walkaround.Id_Walk}" 
+                            <a href="componenteWk.html?id=${walkaround.Id_Walk}" 
                                class="btn btn-warning btn-editar" 
                                data-modulo="walkarounds"
                                title="${puedeEditar ? 'Editar walkaround' : (esPropietario ? 'Solo puedes editar tus propios walkarounds' : 'No puedes editar walkarounds de otros usuarios')}"
@@ -1806,134 +1989,6 @@ function mostrarError(mensaje) {
         errorModal.show();
     } else {
         alert('¡Error! ⚠️\n' + mensaje);
-    }
-}
-/**
- * Carga la lista de walkarounds con paginación y permisos
- */
-async function cargarWalkarounds(pagina = 1) {
-    const tablaBody = document.querySelector('#tablaWalkarounds tbody');
-    tablaBody.innerHTML = '<tr><td colspan="10" class="text-center">Cargando...</td></tr>';
-
-    try {
-        console.log(`🔄 Cargando walkarounds página ${pagina}...`);
-        const response = await fetch(`/Eolo/app/models/leer_walkaround.php?pagina=${pagina}&registros_por_pagina=${registrosPorPagina}`);
-        
-        if (!response.ok) {
-            throw new Error(`Error HTTP: ${response.status}`);
-        }
-        
-        const data = await response.json();
-        console.log('📊 Datos recibidos:', data);
-        
-        if (data.error) {
-            throw new Error(data.error);
-        }
-
-        const walkarounds = data.walkarounds;
-        paginaActual = data.paginacion.pagina_actual;
-        totalPaginas = data.paginacion.total_paginas;
-        totalRegistros = data.paginacion.total_registros;
-
-        tablaBody.innerHTML = '';
-        
-        if (walkarounds.length === 0) {
-            tablaBody.innerHTML = '<tr><td colspan="10" class="text-center">No hay walkarounds registrados.</td></tr>';
-        } else {
-            const usuarioActual = permisosSistema.usuario.nombre;
-            const usuarioId = permisosSistema.usuario.id;
-            
-            walkarounds.forEach((walkaround) => {
-                console.log(`📝 Procesando walkaround ID ${walkaround.Id_Walk}:`, walkaround);
-                
-                // Determinar permisos para este registro específico
-                const puedeEditar = permisosSistema.puedeEditar('walkarounds', walkaround);
-                const puedeEliminar = permisosSistema.puedeEliminar('walkarounds');
-                const esPropietario = walkaround.creado_por === usuarioId || walkaround.Elaboro === usuarioActual;
-                
-                const fila = document.createElement('tr');
-                
-                // Manejo seguro de campos
-                const matricula = walkaround.Matricula || 'No especificada';
-                const equipo = walkaround.Equipo || 'No especificado';
-                const procedencia = walkaround.Procedencia || 'No especificada';
-                const destino = walkaround.Destino || 'No especificada';
-                const elaboro = walkaround.Elaboro || 'No especificado';
-                const responsable = walkaround.Responsable || 'No especificado';
-                
-                // Formatear fecha
-                let fechaFormateada = 'Fecha no válida';
-                try {
-                    if (walkaround.Fechahora) {
-                        fechaFormateada = new Date(walkaround.Fechahora).toLocaleString();
-                    }
-                } catch (e) {
-                    console.warn('Error al formatear fecha:', e);
-                }
-                
-                fila.innerHTML = `
-                    <td>${walkaround.Id_Walk}</td>
-                    <td>${fechaFormateada}</td>
-                    <td>${matricula}</td>
-                    <td>${equipo}</td>
-                    <td>${procedencia}</td>
-                    <td>${destino}</td>
-                    <td>
-                        ${elaboro}
-                        ${esPropietario ? '<span class="badge bg-primary ms-1">Tuyo</span>' : ''}
-                    </td>
-                    <td>${responsable}</td>
-                    
-                    <td>
-                        <div class="btn-group btn-group-sm" role="group">
-                            <!-- Botón Ver Detalles -->
-                            <a href="detalle_walkaround.html?id=${walkaround.Id_Walk}" 
-                               class="btn btn-info" title="Ver detalles">
-                                <i class="fas fa-eye"></i>
-                            </a>
-                            
-                            <!-- Botón Generar PDF -->
-                            <a href="/Eolo/app/helpers/pdf_generator.php?tipo=walkaround&id=${walkaround.Id_Walk}" 
-                               class="btn btn-danger" title="Generar PDF" target="_blank">
-                                <i class="fas fa-file-pdf"></i>
-                            </a>
-                            
-                            <!-- Botón Editar (con permisos) -->
-                            <a href="componenteWk.html?id=${walkaround.Id_Walk}" 
-                               class="btn btn-warning btn-editar" 
-                               data-modulo="walkarounds"
-                               title="${puedeEditar ? 'Editar walkaround' : (esPropietario ? 'Solo puedes editar tus propios walkarounds' : 'No puedes editar walkarounds de otros usuarios')}"
-                               style="${!puedeEditar ? 'opacity: 0.6; pointer-events: none;' : ''}">
-                                <i class="fas fa-edit"></i>
-                            </a>
-                            
-                            <!-- Botón Eliminar (con permisos) -->
-                            <button class="btn btn-danger btn-eliminar" 
-                                    data-modulo="walkarounds"
-                                    onclick="${puedeEliminar ? `eliminarWalkaround(${walkaround.Id_Walk})` : 'mostrarErrorPermisosEliminar()'}" 
-                                    title="${puedeEliminar ? 'Eliminar walkaround' : 'Se requieren permisos de administrador'}"
-                                    style="${!puedeEliminar ? 'opacity: 0.6; pointer-events: none;' : ''}">
-                                <i class="fas fa-trash-alt"></i>
-                            </button>
-                        </div>
-                        
-                        <!-- Indicador visual de permisos -->
-                        ${!puedeEditar && !esPropietario ? 
-                            '<span class="badge bg-secondary ms-1" title="Solo el creador o administrador puede editar">🔒</span>' : 
-                            ''}
-                    </td>
-                `;
-                
-                tablaBody.appendChild(fila);
-            });
-        }
-        
-        // Actualizar el paginador
-        actualizarPaginador();
-        
-    } catch (error) {
-        console.error('❌ Error al cargar walkarounds:', error);
-        tablaBody.innerHTML = `<tr><td colspan="10" class="text-center text-danger">Error al cargar los datos: ${error.message}</td></tr>`;
     }
 }
 

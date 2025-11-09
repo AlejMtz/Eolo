@@ -21,10 +21,10 @@ class SistemaPermisos {
         return {
             // Módulo de Despacho
             despacho: {
-                ver: true, // Todos pueden ver
-                crear: true, // Todos pueden crear
-                editar: esAdmin, // Solo admin puede editar de otros
-                eliminar: esAdmin, // Solo admin puede eliminar
+                ver: true,
+                crear: true,
+                editar: esAdmin,
+                eliminar: esAdmin,
                 exportar: true,
                 imprimir: true
             },
@@ -53,7 +53,6 @@ class SistemaPermisos {
                 crear: true,
                 editar: function(registro) {
                     if (esAdmin) return true;
-                    // Mismo que entregas_turno - usar nombre del elaborador
                     return registro.Elaboro === this.usuario.nombre;
                 }.bind(this),
                 eliminar: esAdmin,
@@ -66,29 +65,79 @@ class SistemaPermisos {
                 crear: true,
                 editar: function(registro) {
                     if (esAdmin) return true;
-                    // Usuarios solo pueden editar sus propias entregas
                     return registro.Nombre === this.usuario.nombre;
                 }.bind(this),
                 eliminar: esAdmin,
                 firmar: true
             },
 
-            // Módulos futuros (solo admin por ahora)
-            rampa: {
+            // Módulo de Pernoctas
+            pernoctas: {
                 ver: true,
                 crear: true,
+                editar: function(registro) {
+                    if (esAdmin) return true;
+                    return registro.Persona_Registro === this.usuario.nombre;
+                }.bind(this),
+                eliminar: esAdmin,
+                exportar: true,
+                imprimir: true
+            },
+
+            // Módulo de Control de Pernoctas
+            control_pernoctas: {
+                ver: true,
+                crear: true,
+                editar: function(registro) {
+                    if (esAdmin) return true;
+                    return registro.Persona_Registro === this.usuario.nombre;
+                }.bind(this),
+                eliminar: esAdmin,
+                exportar: true,
+                imprimir: true,
+                procesar: true
+            },
+
+            // ✅ NUEVO MÓDULO: Relación de Pernoctas Mensuales
+            relacion_pernoctas: {
+                ver: true,
+                crear: true,
+                editar: true,
+                eliminar: esAdmin,
+                exportar: true,
+                imprimir: true,
+                generar: true,
+                consultar: true
+            },
+
+            // Módulos de Seguridad
+            seguridad: {
+                ver: true,
+                crear: true,
+                editar: function(registro) {
+                    if (esAdmin) return true;
+                    // Si el registro tiene campo de persona que registra
+                    return registro.Persona_Registro === this.usuario.nombre;
+                }.bind(this),
+                eliminar: esAdmin,
+                exportar: true,
+                imprimir: true,
+                // Permisos específicos para seguridad
+                bitacora: true,
+                vehiculos: true,
+                visitantes: true
+            },
+
+            // Módulos futuros (solo admin por ahora)
+            rampa: {
+                ver: esAdmin, // Cambiado a solo admin por ahora
+                crear: esAdmin,
                 editar: esAdmin,
                 eliminar: esAdmin
             },
             trafico: {
-                ver: true,
-                crear: true,
-                editar: esAdmin,
-                eliminar: esAdmin
-            },
-            seguridad: {
-                ver: true,
-                crear: true,
+                ver: esAdmin, // Cambiado a solo admin por ahora
+                crear: esAdmin,
                 editar: esAdmin,
                 eliminar: esAdmin
             },
@@ -125,6 +174,24 @@ class SistemaPermisos {
         return this.permisos[modulo]?.eliminar || false;
     }
 
+    // ✅ NUEVO: Método específico para relación de pernoctas
+    puedeGenerarRelacion() {
+        return this.permisos.relacion_pernoctas?.generar || false;
+    }
+
+    // Método específico para control de pernoctas
+    puedeProcesarControl() {
+        return this.permisos.control_pernoctas?.procesar || false;
+    }
+
+    // Método específico para seguridad
+    puedeAccederSeguridad(submodulo = null) {
+        if (submodulo) {
+            return this.permisos.seguridad?.[submodulo] || false;
+        }
+        return this.puedeVer('seguridad');
+    }
+
     // Métodos para UI
     aplicarPermisosUI() {
         this.aplicarPermisosMenu();
@@ -134,7 +201,7 @@ class SistemaPermisos {
 
     aplicarPermisosMenu() {
         // Ocultar módulos no accesibles
-        const modulosNoAccesibles = ['rampa', 'trafico', 'seguridad', 'administracion'];
+        const modulosNoAccesibles = ['rampa', 'trafico', 'administracion'];
         
         modulosNoAccesibles.forEach(modulo => {
             if (!this.puedeVer(modulo)) {
@@ -146,6 +213,40 @@ class SistemaPermisos {
                 });
             }
         });
+
+        // ✅ Asegurar que relacion_pernoctas sea accesible
+        const elementosRelacionPernoctas = document.querySelectorAll('[data-modulo="relacion_pernoctas"]');
+        elementosRelacionPernoctas.forEach(el => {
+            if (this.puedeVer('relacion_pernoctas')) {
+                el.style.opacity = '1';
+                el.style.pointerEvents = 'auto';
+                el.title = 'Acceder al módulo de relación de pernoctas';
+            } else {
+                el.style.opacity = '0.5';
+                el.style.pointerEvents = 'none';
+                el.title = 'No tienes permisos para acceder a esta sección';
+            }
+        });
+
+        // Asegurar que seguridad sea accesible
+        const elementosSeguridad = document.querySelectorAll('[data-modulo="seguridad"]');
+        elementosSeguridad.forEach(el => {
+            if (this.puedeVer('seguridad')) {
+                el.style.opacity = '1';
+                el.style.pointerEvents = 'auto';
+                el.title = 'Acceder al módulo de seguridad';
+            }
+        });
+
+        // Asegurar que control_pernoctas sea accesible
+        const elementosControlPernoctas = document.querySelectorAll('[data-modulo="control_pernoctas"]');
+        elementosControlPernoctas.forEach(el => {
+            if (this.puedeVer('control_pernoctas')) {
+                el.style.opacity = '1';
+                el.style.pointerEvents = 'auto';
+                el.title = 'Acceder al módulo de control de pernoctas';
+            }
+        });
     }
 
     aplicarPermisosBotones() {
@@ -153,6 +254,8 @@ class SistemaPermisos {
         const botonesCrear = document.querySelectorAll('.btn-crear');
         const botonesEditar = document.querySelectorAll('.btn-editar');
         const botonesEliminar = document.querySelectorAll('.btn-eliminar');
+        const botonesControl = document.querySelectorAll('.btn-control');
+        const botonesRelacion = document.querySelectorAll('.btn-relacion'); // ✅ NUEVO
         
         botonesCrear.forEach(btn => {
             const modulo = btn.dataset.modulo;
@@ -174,6 +277,21 @@ class SistemaPermisos {
                 this.deshabilitarElemento(btn, 'No tienes permisos para eliminar');
             }
         });
+
+        botonesControl.forEach(btn => {
+            const modulo = btn.dataset.modulo;
+            if (modulo && !this.puedeVer(modulo)) {
+                this.deshabilitarElemento(btn, 'No tienes permisos para acceder al control');
+            }
+        });
+
+        // ✅ NUEVO: Aplicar permisos a botones de relación
+        botonesRelacion.forEach(btn => {
+            const modulo = btn.dataset.modulo;
+            if (modulo && !this.puedeVer(modulo)) {
+                this.deshabilitarElemento(btn, 'No tienes permisos para generar relación');
+            }
+        });
     }
 
     deshabilitarElemento(elemento, mensaje) {
@@ -187,6 +305,7 @@ class SistemaPermisos {
         const infoElement = document.getElementById('infoPermisos');
         if (infoElement) {
             const esAdmin = this.usuario.tipo === 'admin';
+            
             infoElement.innerHTML = `
                 <div class="alert alert-info mt-3">
                     <small>
@@ -196,6 +315,7 @@ class SistemaPermisos {
                             'Tienes permisos completos de administrador' : 
                             'Puedes crear y ver registros'
                         }
+                        ${this.puedeVer('relacion_pernoctas') ? ' | Puedes generar relaciones de pernoctas' : ''}
                     </small>
                 </div>
             `;
@@ -240,7 +360,6 @@ class SistemaPermisos {
             </div>
         `;
 
-        // Agregar modal al DOM si no existe
         if (!document.getElementById('errorAccesoModal')) {
             document.body.insertAdjacentHTML('beforeend', modalHTML);
         }

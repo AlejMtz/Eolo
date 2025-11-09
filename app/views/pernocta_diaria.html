@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="../../public/assets/css/style.css">
+    <script src="../../public/assets/js/auth_check.js"></script>
+    <title>Pernoctas Diarias</title>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark navbar-custom">
+        <div class="container-fluid container-responsive">
+            <a href="../../app/views/Index.html" class="navbar-brand">
+                <i class="fas fa-plane"></i> 
+                <span class="desktop-only">EOLO - Sistema de Pernoctas</span>
+                <span class="mobile-only">EOLO</span>
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    
+                    <li class="nav-item">
+                        <a class="nav-link active" href="../../app/views/ver_pernocta_diaria.html">
+                            <i class="fas fa-bed"></i> 
+                            <span class="desktop-only">Pernoctas</span>
+                        </a>
+                    </li>
+                    
+                </ul>
+            </div>
+
+            <div class="navbar-nav ms-auto">
+                <span class="navbar-text text-light me-3 desktop-only" id="userInfo"></span>
+                <button class="btn btn-outline-light btn-sm" onclick="cerrarSesion()">
+                    <i class="fas fa-sign-out-alt"></i>
+                    <span class="desktop-only">Cerrar Sesión</span>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Formulario de Pernocta Diaria -->
+<div class="card mt-4">
+    <div class="card-header bg-primary text-white">
+        <h5 class="mb-0"><i class="fas fa-plus-circle"></i> Registrar Movimiento</h5>
+    </div>
+    <div class="card-body">
+        <form id="pernoctaForm">
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label for="fecha" class="form-label">Fecha:</label>
+                        <input type="date" id="fecha" name="fecha" class="form-control" required>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label for="hora" class="form-label">Hora:</label>
+                        <input type="time" id="hora" name="hora" class="form-control" required>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Búsqueda de Aeronave -->
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label for="buscarAeronave" class="form-label">Matrícula de la Aeronave:</label>
+                        <input type="text" class="form-control" id="buscarAeronave" 
+                            placeholder="Escribe la matrícula de la aeronave..." 
+                            autocomplete="off">
+                        <div class="form-text">Escribe al menos 2 caracteres para buscar</div>
+                        
+                        <!-- Lista de resultados de búsqueda -->
+                        <div id="resultadosBusqueda" class="mt-2" style="display: none;">
+                            <div class="card">
+                                <div class="card-body p-2">
+                                    <div id="listaAeronaves" class="list-group list-group-flush">
+                                        <!-- Los resultados se cargarán aquí dinámicamente -->
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Campo oculto para almacenar la aeronave seleccionada -->
+                        <input type="hidden" id="aeronaveSeleccionada" name="id_aeronave">
+                    </div>
+                </div>
+                
+                <!-- Información de la aeronave seleccionada -->
+                <div class="col-md-6">
+                    <div id="infoAeronaveContainer" style="display: none;">
+                        <div class="form-group">
+                            <label class="form-label">Información de la Aeronave:</label>
+                            <div class="card">
+                                <div class="card-body">
+                                    <strong id="infoMatricula" class="d-block"></strong>
+                                    <small id="infoEquipo" class="text-muted"></small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tipo de Movimiento -->
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label class="form-label fw-bold">Tipo de Movimiento:</label>
+                        <div class="d-flex gap-4">
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" id="entrada" name="tipo_movimiento" value="entrada" required>
+                                <label class="form-check-label fw-medium" for="entrada">
+                                    <i class="fas fa-sign-in-alt text-success me-2"></i>Entrada
+                                </label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" id="salida" name="tipo_movimiento" value="salida" required>
+                                <label class="form-check-label fw-medium" for="salida">
+                                    <i class="fas fa-sign-out-alt text-primary me-2"></i>Salida
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Procedencia y Destino -->
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <div class="form-group position-relative">
+                        <label for="procedencia" class="form-label">Procedencia:</label>
+                        <input type="text" class="form-control" id="procedencia" name="procedencia" 
+                               placeholder="Escriba IATA, OACI o nombre del aeropuerto" autocomplete="off">
+                        
+                        <!-- Contenedor para resultados de búsqueda -->
+                        <div id="resultadosProcedencia" class="search-results-container" style="display: none;">
+                            <div class="card">
+                                <div class="card-body p-2">
+                                    <div class="list-group list-group-flush" id="listaProcedencia">
+                                        <!-- Resultados se cargarán aquí -->
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-6">
+                    <div class="form-group position-relative">
+                        <label for="destino" class="form-label">Destino:</label>
+                        <input type="text" class="form-control" id="destino" name="destino" 
+                               placeholder="Escriba IATA, OACI o nombre del aeropuerto" autocomplete="off">
+                        
+                        <!-- Contenedor para resultados de búsqueda -->
+                        <div id="resultadosDestino" class="search-results-container" style="display: none;">
+                            <div class="card">
+                                <div class="card-body p-2">
+                                    <div class="list-group list-group-flush" id="listaDestino">
+                                        <!-- Resultados se cargarán aquí -->
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tripulación y Pasajeros -->
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label for="tripulacion" class="form-label">Tripulación:</label>
+                        <input type="text" class="form-control" id="tripulacion" name="tripulacion" 
+                               placeholder="Nombres de la tripulación">
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label for="pasajeros" class="form-label">Número de Pasajeros:</label>
+                        <input type="text" class="form-control" id="pasajeros" name="pasajeros" 
+                               placeholder="Ej: 150, 2VIP, 85+15" value="0">
+                        <div class="form-text">Puede ingresar números o texto descriptivo</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Persona que registra -->
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label for="persona_registro" class="form-label">Persona que Registra:</label>
+                        <input type="text" class="form-control" id="persona_registro" name="persona_registro" 
+                               required placeholder="Nombre de la persona que realiza el registro">
+                    </div>
+                </div>
+            </div>
+
+         <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+    <!-- Botón Cancelar Edición (oculto inicialmente) -->
+    <button type="button" class="btn btn-warning me-md-2" onclick="cancelarEdicion()" id="cancelarBtn" style="display: none;">
+        <i class="fas fa-times"></i> Cancelar Edición
+    </button>
+    
+    <button type="submit" class="btn btn-primary" id="submitButton">
+        <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true" style="display: none;"></span>
+        Guardar Registro
+    </button>
+</div>
+        </form>
+    </div>
+</div>
+
+    <!-- Modales -->
+    <div class="modal fade" id="successModal" tabindex="-1" aria-labelledby="successModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header bg-success text-white">
+                    <h5 class="modal-title" id="successModalLabel">
+                        <i class="fas fa-check-circle me-2"></i>¡Éxito! 🎉
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body" id="successModalBody"></div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-success" data-bs-dismiss="modal">Aceptar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="errorModal" tabindex="-1" aria-labelledby="errorModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header bg-danger text-white">
+                    <h5 class="modal-title" id="errorModalLabel">
+                        <i class="fas fa-exclamation-triangle me-2"></i>¡Error! ⚠️
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body" id="errorModalBody"></div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Aceptar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de confirmación -->
+    <div class="modal fade" id="confirmModal" tabindex="-1" aria-labelledby="confirmModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header bg-warning text-dark">
+                    <h5 class="modal-title" id="confirmModalLabel">
+                        <i class="fas fa-question-circle me-2"></i>Confirmar
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body" id="confirmModalBody"></div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-warning" id="confirmActionBtn">Confirmar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="../../public/assets/js/pernocta_diaria.js"></script>
+    <script src="../../public/assets/js/auth_check.js"></script>
+    <script src="../../public/assets/js/permisos.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            if (!verificarSesion()) return;
+            
+            // Verificar acceso al módulo
+            if (!permisosSistema.verificarAccesoPagina('pernoctas')) {
+                return;
+            }
+            
+            permisosSistema.aplicarPermisosUI();
+
+            
+        });
+    </script>
+</body>
+</html>

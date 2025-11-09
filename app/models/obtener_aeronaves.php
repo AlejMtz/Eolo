@@ -17,7 +17,6 @@ try {
         throw new Exception('Error de conexión: ' . $conn->connect_error);
     }
 
-    // ⭐⭐ PARA EL SELECTOR DE WALKAROUND, NO NECESITAMOS PAGINACIÓN
     // Consulta simple para obtener todas las aeronaves
     $sql = "SELECT Id_Aeronave, Matricula, Tipo, Equipo FROM aeronave ORDER BY Matricula";
     $result = $conn->query($sql);
@@ -32,8 +31,6 @@ try {
             $aeronaves[] = $row;
         }
     }
-
-    // ⭐⭐ SOLO UN json_encode - devolver array simple para el selector
     echo json_encode($aeronaves);
 
 } catch (Exception $e) {

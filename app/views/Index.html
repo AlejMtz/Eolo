@@ -59,7 +59,7 @@
                 <div class="permiso-badge" id="badge-trafico"></div>
             </a> -->
 
-            <a href="#" class="mosaic-card" data-modulo="seguridad" onclick="verificarAcceso('seguridad')">
+            <a href="../../app/views/sub_menu_seguridad.html" class="mosaic-card" data-modulo="seguridad">
                 <i class="fas fa-eye icon"></i>
                 <h4>Módulo de Seguridad</h4>
                 <p>Aquí encontraras procesos de bitacora de moviemtos de las aeronaves, entradas y salidas de vehiculos, registros de visitantes y demas procesos.</p>
@@ -105,17 +105,33 @@
         
         // Agregar badges de permisos
         agregarBadgesPermisos();
+        
+        // Mostrar información del usuario
+        mostrarInfoUsuario();
     });
+    
+    function mostrarInfoUsuario() {
+        const userName = document.getElementById('userName');
+        const userType = document.getElementById('userType');
+        
+        if (userName && userType) {
+            userName.textContent = permisosSistema.usuario.nombre || 'Usuario';
+            userType.textContent = permisosSistema.usuario.tipo === 'admin' ? 'Admin' : 'Usuario';
+        }
+    }
     
     function agregarBadgesPermisos() {
         const modulos = ['despacho', 'rampa', 'trafico', 'seguridad'];
         
         modulos.forEach(modulo => {
             const badgeElement = document.getElementById(`badge-${modulo}`);
-            if (badgeElement && permisosSistema.puedeVer(modulo)) {
-                badgeElement.innerHTML = '<span class="badge bg-success">Accesible</span>';
-            } else if (badgeElement) {
-                badgeElement.innerHTML = '<span class="badge bg-secondary">No disponible</span>';
+            if (badgeElement) {
+                // Solo mostrar badge si NO es accesible
+                if (!permisosSistema.puedeVer(modulo)) {
+                    badgeElement.innerHTML = '<span class="badge bg-secondary">No disponible</span>';
+                } else {
+                    badgeElement.innerHTML = ''; // Vacío si es accesible
+                }
             }
         });
     }

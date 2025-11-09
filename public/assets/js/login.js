@@ -1,5 +1,3 @@
-// login.js - Manejo del formulario de login
-
 document.addEventListener('DOMContentLoaded', function() {
     const loginForm = document.getElementById('loginForm');
     const errorModal = new bootstrap.Modal(document.getElementById('errorModal'));

@@ -79,17 +79,52 @@
                     <span class="mobile-only"></span>
                 </a>
             </div>
-            
-            <!-- Alerta informativa para usuarios no administradores -->
-            <div id="alertaPermisos" class="alert alert-warning d-none">
-                <i class="fas fa-info-circle me-2"></i>
-                <strong>Información:</strong> Solo los administradores pueden gestionar aeronaves. Puedes ver la información pero no modificarla.
+        
+    
+    <!-- FILTROS DE BÚSQUEDA - NUEVO -->
+    <div class="card mb-4">
+        <div class="card-header bg-light">
+            <h6 class="mb-0">
+                <i class="fas fa-search me-2"></i>Filtros de Búsqueda
+            </h6>
+        </div>
+        <div class="card-body">
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <label for="filtroMatricula" class="form-label">Matrícula</label>
+                    <input type="text" class="form-control" id="filtroMatricula" 
+                           placeholder="Ej: XA-ABC, N123..." autocomplete="off">
+                </div>
+                <div class="col-md-4">
+                    <label for="filtroEquipo" class="form-label">Tipo de Aeronave</label>
+                    <input type="text" class="form-control" id="filtroEquipo" 
+                           placeholder="Ej: Boeing, Airbus, Learjet..." autocomplete="off">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label d-block">&nbsp;</label>
+                    <div class="d-flex gap-2">
+                        <button type="button" class="btn btn-primary" onclick="aplicarFiltros()">
+                            <i class="fas fa-filter me-1"></i> Aplicar Filtros
+                        </button>
+                        <button type="button" class="btn btn-outline-secondary" onclick="limpiarFiltros()">
+                            <i class="fas fa-times me-1"></i> Limpiar
+                        </button>
+                    </div>
+                </div>
             </div>
-            
-            <!-- Indicador de scroll para móviles -->
-            <div class="scroll-hint mobile-only">
-                <i class="fas fa-arrows-left-right"></i> Desliza para ver más información
-            </div>
+        </div>
+    </div>
+    
+    <!-- Alerta informativa para usuarios no administradores -->
+    <div id="alertaPermisos" class="alert alert-warning d-none">
+        <i class="fas fa-info-circle me-2"></i>
+        <strong>Información:</strong> Solo los administradores pueden gestionar aeronaves. Puedes ver la información pero no modificarla.
+    </div>
+    
+    <!-- Indicador de scroll para móviles -->
+    <div class="scroll-hint mobile-only">
+        <i class="fas fa-arrows-left-right"></i> Desliza para ver más información
+    </div>
             
             <div class="table-responsive container-responsive">
                 <div class="table-responsive-custom">
