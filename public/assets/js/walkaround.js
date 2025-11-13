@@ -587,6 +587,9 @@ async function buscarAeropuertos(termino, resultadosDiv, inputElement) {
 /**
  * Muestra los resultados de búsqueda de aeropuertos
  */
+/**
+ * Muestra los resultados de búsqueda de aeropuertos - CORREGIDA
+ */
 function mostrarResultadosAeropuertos(aeropuertos, resultadosDiv, inputElement) {
     resultadosDiv.innerHTML = '';
     
@@ -594,12 +597,14 @@ function mostrarResultadosAeropuertos(aeropuertos, resultadosDiv, inputElement) 
         const item = document.createElement('button');
         item.type = 'button';
         item.className = 'list-group-item list-group-item-action text-start';
+        
+        // ✅ CORRECCIÓN: Usar los campos correctos que vienen del servidor
         item.innerHTML = `
             <div class="d-flex justify-content-between align-items-start">
                 <div>
                     <strong>${aeropuerto.codigo_iata} / ${aeropuerto.codigo_oaci}</strong>
                     <div class="small">${aeropuerto.nombre}</div>
-                    <div class="small text-muted">${aeropuerto.municipio}, ${aeropuerto.estado}</div>
+                    <div class="small text-muted">${aeropuerto.estado}, ${aeropuerto.pais}</div>
                 </div>
             </div>
         `;
@@ -615,11 +620,25 @@ function mostrarResultadosAeropuertos(aeropuertos, resultadosDiv, inputElement) 
 }
 
 /**
- * Selecciona un aeropuerto de los resultados
+ * Selecciona un aeropuerto de los resultados - MEJORADA
  */
 function seleccionarAeropuerto(aeropuerto, inputElement, resultadosDiv) {
-    // Mostrar el código IATA en el input (puedes cambiar a OACI si prefieres)
-    inputElement.value = aeropuerto.codigo_iata;
+    // ✅ MEJORA: Mostrar código IATA y nombre para mejor identificación
+    inputElement.value = `${aeropuerto.codigo_iata} - ${aeropuerto.nombre}`;
+    
+    // ✅ OPCIONAL: Si quieres guardar el ID del aeropuerto también
+    // Puedes agregar un campo oculto si necesitas el ID para la base de datos
+    const aeropuertoIdField = inputElement.id + '_id';
+    let idField = document.getElementById(aeropuertoIdField);
+    
+    if (!idField) {
+        idField = document.createElement('input');
+        idField.type = 'hidden';
+        idField.id = aeropuertoIdField;
+        idField.name = inputElement.name + '_id'; // Ej: procedencia_id
+        inputElement.parentNode.appendChild(idField);
+    }
+    idField.value = aeropuerto.id;
     
     // Ocultar resultados
     ocultarResultadosAeropuertos(resultadosDiv);
