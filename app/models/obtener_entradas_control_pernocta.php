@@ -2,30 +2,31 @@
 header('Content-Type: application/json');
 header('Access-Control-Allow-Origin: *');
 
-require '../models/conexion.php';
+require 'conexion.php';
 
 try {
-    // En la consulta SQL, agregar filtro para estado activo
-$sql = "
-    SELECT p1.*, a.Matricula, a.Equipo 
-    FROM pernocta_diaria p1 
-    INNER JOIN aeronave a ON p1.Id_Aeronave = a.Id_Aeronave 
-    INNER JOIN (
-        SELECT Id_Aeronave, MAX(CONCAT(Fecha, ' ', Hora)) as UltimaFechaHora
-        FROM pernocta_diaria 
-        WHERE Tipo_Movimiento = 'entrada' 
-        AND Activo = 1
-        GROUP BY Id_Aeronave
-    ) p2 ON p1.Id_Aeronave = p2.Id_Aeronave AND CONCAT(p1.Fecha, ' ', p1.Hora) = p2.UltimaFechaHora
-    WHERE p1.Tipo_Movimiento = 'entrada' 
-    AND p1.Activo = 1
-    AND p1.Id_Pernocta NOT IN (
-        SELECT Id_Ultimo_Registro 
-        FROM control_pernocta
-        WHERE Estado_Registro = 'activo' 
-    )
-    ORDER BY p1.Fecha DESC, p1.Hora DESC
-";
+    // CONSULTA PARA OBTENER ÚLTIMAS ENTRADAS DE CADA AERONAVE
+    // (igual que en control_pernoctas pero SIN excluir las que ya están en asignacion_mantenimiento)
+    $sql = "
+        SELECT p1.*, a.Matricula, a.Equipo 
+        FROM pernocta_diaria p1 
+        INNER JOIN aeronave a ON p1.Id_Aeronave = a.Id_Aeronave 
+        INNER JOIN (
+            SELECT Id_Aeronave, MAX(CONCAT(Fecha, ' ', Hora)) as UltimaFechaHora
+            FROM pernocta_diaria 
+            WHERE Tipo_Movimiento = 'entrada' 
+            AND Activo = 1
+            GROUP BY Id_Aeronave
+        ) p2 ON p1.Id_Aeronave = p2.Id_Aeronave AND CONCAT(p1.Fecha, ' ', p1.Hora) = p2.UltimaFechaHora
+        WHERE p1.Tipo_Movimiento = 'entrada' 
+        AND p1.Activo = 1
+        AND p1.Id_Pernocta NOT IN (
+            SELECT Id_Ultimo_Registro 
+            FROM control_pernocta 
+            WHERE Estado_Registro = 'activo'
+        )
+        ORDER BY p1.Fecha DESC, p1.Hora DESC
+    ";
     
     $stmt = $pdo->prepare($sql);
     $stmt->execute();
@@ -36,7 +37,8 @@ $sql = "
         'success' => true,
         'entradas' => $entradas,
         'total' => count($entradas),
-        'consulta' => 'últimas_entradas_todas_fechas'
+        'modulo' => 'asignacion_mantenimiento',
+        'consulta' => 'últimas_entradas_para_mantenimiento'
     ]);
     
 } catch (PDOException $e) {

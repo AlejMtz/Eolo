@@ -7,34 +7,29 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="../../public/assets/css/style.css">
     <script src="../../public/assets/js/auth_check.js"></script>
-    <title>Control de Pernoctas</title>
+    <title>Asignación de Mantenimiento</title>
 </head>
 <body>
     <nav class="navbar navbar-expand-lg navbar-dark navbar-custom">
         <div class="container-fluid container-responsive">
             <a href="../../app/views/Index.html" class="navbar-brand">
-                <i class="fas fa-plane"></i> 
-                <span class="desktop-only">EOLO - Control de Pernoctas</span>
+                <i class="fas fa-tools"></i> 
+                <span class="desktop-only">EOLO - Asignación de Mantenimiento</span>
                 <span class="mobile-only">EOLO</span>
             </a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>
             </button>
-            <div class="collapse navbar-collapse" id="navbarNav">
+           <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto">
+                    
                     <li class="nav-item">
                         <a class="nav-link" href="../../app/views/ver_pernocta_diaria.html">
                             <i class="fas fa-clipboard-check"></i> 
                             <span class="desktop-only">Pernoctas Diarias</span>
                         </a>
                     </li>
-                    <li class="nav-item">
-                        <a class="nav-link active" href="../../app/views/ver_control_pernoctas.html">
-                            <i class="fas fa-check-circle"></i> 
-                            <span class="desktop-only">Control Pernoctas</span>
-                        </a>
-                    </li>
-
+                    
                     <li class="nav-item">
                         <a class="nav-link" href="../../app/views/relacion_pernocta.html">
                             <i class="fas fa-clipboard-list	"></i> 
@@ -43,9 +38,9 @@
                     </li>
 
                     <li class="nav-item">
-                        <a class="nav-link" href="../../app/views/ver_asignacion_mantenimiento.html">
+                        <a class="nav-link active" href="../../app/views/ver_asignacion_mantenimiento.html">
                             <i class="fas fa-tools icon"></i> 
-                            <span class="desktop-only">Asigancion Manto</span>
+                            <span class="desktop-only">Asignacion Manto</span>
                         </a>
                     </li>
                 </ul>
@@ -64,7 +59,7 @@
     <div class="container-fluid container-responsive">
         <div class="container-form mt-3">
             <h2 class="form-title responsive-text">
-                <i class="fas fa-clipboard-list"></i> Control de Pernoctas
+                <i class="fas fa-tools"></i> Asignación de Mantenimiento
             </h2>
         </div>
 
@@ -75,54 +70,88 @@
             <div class="d-flex justify-content-between align-items-center mb-3 flex-responsive">
                 <h3 class="form-title mb-0 responsive-text">
                     <i class="fas fa-list-ul"></i> 
-                    <span class="d-none d-md-inline">Lista de Control</span>
-                    <span class="d-md-none">Control</span>
+                    <span class="d-none d-md-inline">Lista de Asignaciones</span>
+                    <span class="d-md-none">Asignaciones</span>
                 </h3>
 
-                <button class="btn btn-success" onclick="agregarControlManual()">
-            <i class="fas fa-plus-circle"></i> 
-            <span class="d-none d-md-inline">Agregar Aeronave en Hangar</span>
-            <span class="d-md-none">Agregar</span>
-        </button>
+                <!-- ✅ BOTÓN VERDE PARA RELACIÓN DE MANTENIMIENTO -->
+                <a href="../../app/views/relacion_mantenimiento.html" class="btn btn-success">
+                    <i class="fas fa-file-csv me-2"></i>
+                    <span class="d-none d-md-inline">Relación Mantenimiento</span>
+                    <span class="d-md-none">Relación Manto</span>
+                </a>
+            </div>
 
+            <!-- Botón para extraer últimas entradas -->
+            <div class="row mb-4">
+                <div class="col-12">
+                    <div class="card border-primary">
+                        <div class="card-header bg-primary text-white">
+                            <h6 class="mb-0">
+                                <i class="fas fa-download me-2"></i>Obtener Entradas
+                            </h6>
+                        </div>
+                        <div class="card-body">
+                            <p class="card-text small mb-3">
+                                Asigna el tipo de cliente y mantenimeinto de las aeronaves.
+                            </p>
+                            <button type="button" class="btn btn-primary btn-extraer" data-modulo="asignacion_mantenimiento" onclick="generarAsignacionMantenimiento()">
+                                <i class="fas fa-cogs me-2"></i>Obtener Entradas
+                            </button>
+                        </div>
+                    </div>
+                </div>
             </div>
 
             <!-- Filtros de búsqueda -->
             <div class="row mb-3">
                 <div class="col-12 col-sm-6 col-md-4 col-lg-3 mb-2">
                     <div class="form-group">
-                        <label for="filtroFechaControl" class="form-label">Filtrar por fecha:</label>
-                        <input type="date" id="filtroFechaControl" class="form-control">
+                        <label for="filtroFecha" class="form-label">Filtrar por fecha:</label>
+                        <input type="date" id="filtroFecha" class="form-control">
                     </div>
                 </div>
                 
                 <div class="col-12 col-sm-6 col-md-4 col-lg-3 mb-2">
                     <div class="form-group">
-                        <label for="filtroMatriculaControl" class="form-label">Filtrar por matrícula:</label>
-                        <input type="text" id="filtroMatriculaControl" class="form-control" placeholder="Matrícula...">
+                        <label for="filtroMatricula" class="form-label">Filtrar por matrícula:</label>
+                        <input type="text" id="filtroMatricula" class="form-control" placeholder="Matrícula...">
                     </div>
                 </div>
                 
                 <div class="col-12 col-sm-6 col-md-4 col-lg-3 mb-2">
                     <div class="form-group">
-                        <label for="filtroHangar" class="form-label">Filtrar por hangar:</label>
-                        <select id="filtroHangar" class="form-select">
+                        <label for="filtroCliente" class="form-label">Filtrar por cliente:</label>
+                        <select id="filtroCliente" class="form-select">
                             <option value="">Todos</option>
-                            <option value="H1">H1</option>
-                            <option value="H2">H2</option>
+                            <option value="Guarda">Guarda</option>
+                            <option value="Transito">Transito</option>
+                            <option value="Aerotaxi">Aerotaxi</option>
+                            <option value="Handling">Handling</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="col-12 col-sm-6 col-md-4 col-lg-3 mb-2">
+                    <div class="form-group">
+                        <label for="filtroMantenimiento" class="form-label">Filtrar por mantenimiento:</label>
+                        <select id="filtroMantenimiento" class="form-select">
+                            <option value="">Todos</option>
+                            <option value="0">Mantenimiento 0</option>
+                            <option value="1">Mantenimiento 1</option>
                         </select>
                     </div>
                 </div>
                 
                 <div class="col-12 col-sm-6 col-md-12 col-lg-3 mb-2 d-flex align-items-end">
                     <div class="d-grid d-md-flex gap-2 w-100">
-                        <button class="btn btn-primary flex-fill" onclick="aplicarFiltrosControl()">
+                        <button class="btn btn-primary flex-fill" onclick="aplicarFiltros()">
                             <i class="fas fa-search me-1"></i> 
-                            <span class="d-none d-sm-inline"></span>
+                            <span class="d-none d-sm-inline">Filtrar</span>
                         </button>
-                        <button class="btn btn-secondary flex-fill" onclick="limpiarFiltrosControl()">
+                        <button class="btn btn-secondary flex-fill" onclick="limpiarFiltros()">
                             <i class="fas fa-undo me-1"></i>
-                            <span class="d-none d-sm-inline"></span>
+                            <span class="d-none d-sm-inline">Limpiar</span>
                         </button>
                     </div>
                 </div>
@@ -135,47 +164,44 @@
 
             <div class="table-responsive container-responsive">
                 <div class="table-responsive-custom">
-                    <table class="table table-striped table-hover" id="tablaControlPernoctas">
+                    <table class="table table-striped table-hover" id="tablaAsignaciones">
                         <thead class="table-dark">
                             <tr>
                                 <th class="mobile-compact">No.</th>
                                 <th class="mobile-compact">Fecha</th>
-                                <th class="desktop-only">Hora Inicial</th>
-                                <th class="desktop-only">Hora Final</th>
+                                <th class="mobile-compact">Hora</th>
                                 <th>Matrícula</th>
                                 <th>Equipo</th>
-                                <th>Hangar</th>
-                                <th class="desktop-only">Empresa/Procedencia</th>
-                                <th class="desktop-only">Observaciones</th>
-                                <th class="mobile-compact">Registró</th>
+                                <th>Tipo Cliente</th>
+                                <th>Mantenimiento</th>
                                 <th>Acciones</th>
                             </tr>
                         </thead>
-                        <tbody id="cuerpoTablaControlPernoctas">
-                            
+                        <tbody id="cuerpoTablaAsignaciones">
+                            <!-- Los registros se cargarán aquí dinámicamente -->
                         </tbody>
                     </table>
                 </div>
             </div>
 
-            <div id="paginadorControl" class="mt-3 paginador-container"></div>
+            <div id="paginador" class="mt-3 paginador-container"></div>
         </div>
     </div>
 
-    <!-- Modal para agregar/editar control -->
-    <div class="modal fade" id="controlModal" tabindex="-1" aria-labelledby="controlModalLabel" aria-hidden="true">
+    <!-- Modal para agregar/editar asignación -->
+    <div class="modal fade" id="asignacionModal" tabindex="-1" aria-labelledby="asignacionModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
-                <div class="modal-header bg-primary text-white">
-                    <h5 class="modal-title" id="controlModalLabel">
-                        <i class="fas fa-clipboard-list"></i> 
-                        <span id="modalTitulo">Agregar Control de Pernocta</span>
+                <div class="modal-header bg-success text-white">
+                    <h5 class="modal-title" id="asignacionModalLabel">
+                        <i class="fas fa-tools"></i> 
+                        <span id="modalTitulo">Agregar Asignación de Mantenimiento</span>
                     </h5>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    <form id="controlForm">
-                        <input type="hidden" id="id_control" name="id_control">
+                    <form id="asignacionForm">
+                        <input type="hidden" id="id_asignacion" name="id_asignacion">
                         <div class="row mb-3">
                             <div class="col-md-6">
                                 <div class="form-group">
@@ -209,29 +235,24 @@
                         <div class="row mb-3">
                             <div class="col-md-6">
                                 <div class="form-group">
-                                    <label for="hangar" class="form-label">Hangar:</label>
-                                    <select class="form-select" id="hangar" name="hangar" required>
-                                        <option value="">Seleccione hangar</option>
-                                        <option value="H1">H1</option>
-                                        <option value="H2">H2</option>
+                                    <label for="tipo_cliente" class="form-label">Tipo de Cliente:</label>
+                                    <select class="form-select" id="tipo_cliente" name="tipo_cliente" required>
+                                        <option value="">Seleccione tipo de cliente</option>
+                                        <option value="Guarda">Guarda</option>
+                                        <option value="Transito">Transito</option>
+                                        <option value="Aerotaxi">Aerotaxi</option>
+                                        <option value="Handling">Handling</option>
                                     </select>
                                 </div>
                             </div>
                             <div class="col-md-6">
                                 <div class="form-group">
-                                    <label for="persona_registro" class="form-label">Persona que Registra:</label>
-                                    <input type="text" class="form-control" id="persona_registro" name="persona_registro" 
-                                           required placeholder="Nombre de la persona que realiza el registro">
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="row mb-3">
-                            <div class="col-12">
-                                <div class="form-group">
-                                    <label for="observaciones" class="form-label">Observaciones:</label>
-                                    <textarea class="form-control" id="observaciones" name="observaciones" 
-                                              rows="3" placeholder="Ingrese observaciones..." required></textarea>
+                                    <label for="tipo_mantenimiento" class="form-label">Tipo de Mantenimiento:</label>
+                                    <select class="form-select" id="tipo_mantenimiento" name="tipo_mantenimiento" required>
+                                        <option value="">Seleccione tipo de mantenimiento</option>
+                                        <option value="0">Mantenimiento 0 - Preventivo/Correctivo Básico</option>
+                                        <option value="1">Mantenimiento 1 - Especializado/Mayor</option>
+                                    </select>
                                 </div>
                             </div>
                         </div>
@@ -239,7 +260,7 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                    <button type="button" class="btn btn-primary" onclick="guardarControl()" id="btnGuardarControl">
+                    <button type="button" class="btn btn-success" onclick="guardarAsignacion()" id="btnGuardarAsignacion">
                         <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true" style="display: none;"></span>
                         Guardar
                     </button>
@@ -283,12 +304,12 @@
         </div>
     </div>
 
-     <div class="modal fade" id="confirmModal" tabindex="-1" aria-labelledby="confirmModalLabel" aria-hidden="true">
+    <div class="modal fade" id="confirmModal" tabindex="-1" aria-labelledby="confirmModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header bg-danger text-white">
                     <h5 class="modal-title" id="confirmModalLabel">
-                        <i class="fas fa-trash-alt me-2"></i>Eliminar Control
+                        <i class="fas fa-trash-alt me-2"></i>Eliminar Asignación
                     </h5>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
@@ -306,25 +327,25 @@
             </div>
         </div>
     </div>
-    
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="../../public/assets/js/control_pernocta.js"></script>
+        <script src="../../public/assets/js/permisos.js"></script>
     <script src="../../public/assets/js/auth_check.js"></script>
-    <script src="../../public/assets/js/permisos.js"></script>
+    <script src="../../public/assets/js/asignacion_mantenimiento.js"></script>
+
     <script>
     document.addEventListener('DOMContentLoaded', function() {
         if (!verificarSesion()) return;
         
         // Verificar acceso al módulo
-        if (!permisosSistema.verificarAccesoPagina('control_pernoctas')) {
+        if (!permisosSistema.verificarAccesoPagina('asignacion_mantenimiento')) {
             return;
         }
         
         permisosSistema.aplicarPermisosUI();
         
-        // Al cargar la página, procesar automáticamente las últimas entradas
-        procesarUltimasEntradas();
+        // Cargar asignaciones existentes
+        cargarAsignaciones();
     });
     </script>
 </body>

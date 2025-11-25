@@ -4,19 +4,29 @@ class SistemaPermisos {
     constructor() {
         this.usuario = this.obtenerUsuarioActual();
         this.permisos = this.definirPermisos();
+        console.log('🔐 Sistema de permisos inicializado:', {
+            usuario: this.usuario,
+            permisos: this.permisos
+        });
     }
 
     obtenerUsuarioActual() {
-        return {
+        const usuario = {
             id: localStorage.getItem('usuario_id'),
             nombre: localStorage.getItem('usuario_nombre'),
             tipo: localStorage.getItem('tipo_usuario'),
             logueado: localStorage.getItem('usuario_logueado') === 'true'
         };
+        
+        console.log('👤 Usuario actual obtenido:', usuario);
+        return usuario;
     }
 
     definirPermisos() {
         const esAdmin = this.usuario.tipo === 'admin';
+        const esUsuarioNormal = this.usuario.tipo === 'usuario';
+        
+        console.log('🎯 Definindo permisos - Es admin?:', esAdmin);
         
         return {
             // Módulo de Despacho
@@ -98,7 +108,7 @@ class SistemaPermisos {
                 procesar: true
             },
 
-            // ✅ NUEVO MÓDULO: Relación de Pernoctas Mensuales
+            // Módulo: Relación de Pernoctas Mensuales
             relacion_pernoctas: {
                 ver: true,
                 crear: true,
@@ -108,6 +118,36 @@ class SistemaPermisos {
                 imprimir: true,
                 generar: true,
                 consultar: true
+            },
+
+            // ✅ NUEVO MÓDULO: Relación de Mantenimiento
+            relacion_mantenimiento: {
+                ver: true,
+                crear: true,
+                editar: true,
+                eliminar: esAdmin,
+                exportar: true,
+                imprimir: true,
+                generar: true,
+                consultar: true,
+                csv: true  // Permiso específico para generar CSV
+            },
+
+            // ✅ MÓDULO CORREGIDO: Asignación de Mantenimiento
+            asignacion_mantenimiento: {
+                ver: true,
+                crear: true,
+                editar: function(registro) {
+                    if (esAdmin) return true;
+                    // Permitir editar si el usuario es quien registró
+                    return registro && registro.Persona_Registro === this.usuario.nombre;
+                }.bind(this),
+                eliminar: esAdmin,
+                exportar: true,
+                imprimir: true,
+                // ✅ NUEVOS PERMISOS ESPECÍFICOS
+                extraer: true,  // Permiso para extraer aeronaves
+                asignar: true   // Permiso para asignar mantenimiento
             },
 
             // Módulos de Seguridad
@@ -130,13 +170,13 @@ class SistemaPermisos {
 
             // Módulos futuros (solo admin por ahora)
             rampa: {
-                ver: esAdmin, // Cambiado a solo admin por ahora
+                ver: esAdmin,
                 crear: esAdmin,
                 editar: esAdmin,
                 eliminar: esAdmin
             },
             trafico: {
-                ver: esAdmin, // Cambiado a solo admin por ahora
+                ver: esAdmin,
                 crear: esAdmin,
                 editar: esAdmin,
                 eliminar: esAdmin
@@ -153,53 +193,118 @@ class SistemaPermisos {
         };
     }
 
-    // Métodos de verificación
+    // ========== MÉTODOS DE VERIFICACIÓN GENERALES ==========
+
     puedeVer(modulo) {
-        return this.permisos[modulo]?.ver || false;
+        const puede = this.permisos[modulo]?.ver || false;
+        console.log(`🔍 Verificar ver módulo ${modulo}:`, puede);
+        return puede;
     }
 
     puedeCrear(modulo) {
-        return this.permisos[modulo]?.crear || false;
+        const puede = this.permisos[modulo]?.crear || false;
+        console.log(`🔍 Verificar crear módulo ${modulo}:`, puede);
+        return puede;
     }
 
     puedeEditar(modulo, registro = null) {
         const permiso = this.permisos[modulo]?.editar;
+        let resultado = false;
+        
         if (typeof permiso === 'function') {
-            return permiso(registro);
+            resultado = permiso(registro);
+        } else {
+            resultado = permiso || false;
         }
-        return permiso || false;
+        
+        console.log(`🔍 Verificar editar módulo ${modulo}:`, resultado, 'Registro:', registro);
+        return resultado;
     }
 
     puedeEliminar(modulo) {
-        return this.permisos[modulo]?.eliminar || false;
+        const puede = this.permisos[modulo]?.eliminar || false;
+        console.log(`🔍 Verificar eliminar módulo ${modulo}:`, puede);
+        return puede;
     }
 
-    // ✅ NUEVO: Método específico para relación de pernoctas
+    puedeExportar(modulo) {
+        const puede = this.permisos[modulo]?.exportar || false;
+        console.log(`🔍 Verificar exportar módulo ${modulo}:`, puede);
+        return puede;
+    }
+
+    puedeImprimir(modulo) {
+        const puede = this.permisos[modulo]?.imprimir || false;
+        console.log(`🔍 Verificar imprimir módulo ${modulo}:`, puede);
+        return puede;
+    }
+
+    // ========== MÉTODOS ESPECÍFICOS POR MÓDULO ==========
+
+    // Método específico para relación de pernoctas
     puedeGenerarRelacion() {
-        return this.permisos.relacion_pernoctas?.generar || false;
+        const puede = this.permisos.relacion_pernoctas?.generar || false;
+        console.log('🔍 Verificar generar relación:', puede);
+        return puede;
+    }
+
+    // ✅ NUEVO: Método específico para relación de mantenimiento
+    puedeGenerarRelacionMantenimiento() {
+        const puede = this.permisos.relacion_mantenimiento?.generar || false;
+        console.log('🔍 Verificar generar relación mantenimiento:', puede);
+        return puede;
+    }
+
+    puedeGenerarCSVMantenimiento() {
+        const puede = this.permisos.relacion_mantenimiento?.csv || false;
+        console.log('🔍 Verificar generar CSV mantenimiento:', puede);
+        return puede;
+    }
+
+    // ✅ MÉTODOS ESPECÍFICOS PARA ASIGNACIÓN DE MANTENIMIENTO
+    puedeExtraerAeronaves() {
+        const puede = this.permisos.asignacion_mantenimiento?.extraer || false;
+        console.log('🔍 Verificar extraer aeronaves:', puede);
+        return puede;
+    }
+
+    puedeAsignarMantenimiento() {
+        const puede = this.permisos.asignacion_mantenimiento?.asignar || false;
+        console.log('🔍 Verificar asignar mantenimiento:', puede);
+        return puede;
     }
 
     // Método específico para control de pernoctas
     puedeProcesarControl() {
-        return this.permisos.control_pernoctas?.procesar || false;
+        const puede = this.permisos.control_pernoctas?.procesar || false;
+        console.log('🔍 Verificar procesar control:', puede);
+        return puede;
     }
 
     // Método específico para seguridad
     puedeAccederSeguridad(submodulo = null) {
         if (submodulo) {
-            return this.permisos.seguridad?.[submodulo] || false;
+            const puede = this.permisos.seguridad?.[submodulo] || false;
+            console.log(`🔍 Verificar seguridad submodulo ${submodulo}:`, puede);
+            return puede;
         }
-        return this.puedeVer('seguridad');
+        const puede = this.puedeVer('seguridad');
+        console.log('🔍 Verificar seguridad general:', puede);
+        return puede;
     }
 
-    // Métodos para UI
+    // ========== MÉTODOS PARA UI ==========
+
     aplicarPermisosUI() {
+        console.log('🎨 Aplicando permisos en UI...');
         this.aplicarPermisosMenu();
         this.aplicarPermisosBotones();
         this.mostrarInfoPermisos();
     }
 
     aplicarPermisosMenu() {
+        console.log('📱 Aplicando permisos en menú...');
+        
         // Ocultar módulos no accesibles
         const modulosNoAccesibles = ['rampa', 'trafico', 'administracion'];
         
@@ -214,7 +319,7 @@ class SistemaPermisos {
             }
         });
 
-        // ✅ Asegurar que relacion_pernoctas sea accesible
+        // Asegurar que relacion_pernoctas sea accesible
         const elementosRelacionPernoctas = document.querySelectorAll('[data-modulo="relacion_pernoctas"]');
         elementosRelacionPernoctas.forEach(el => {
             if (this.puedeVer('relacion_pernoctas')) {
@@ -225,6 +330,38 @@ class SistemaPermisos {
                 el.style.opacity = '0.5';
                 el.style.pointerEvents = 'none';
                 el.title = 'No tienes permisos para acceder a esta sección';
+            }
+        });
+
+        // ✅ NUEVO: Asegurar que relacion_mantenimiento sea accesible
+        const elementosRelacionMantenimiento = document.querySelectorAll('[data-modulo="relacion_mantenimiento"]');
+        elementosRelacionMantenimiento.forEach(el => {
+            if (this.puedeVer('relacion_mantenimiento')) {
+                el.style.opacity = '1';
+                el.style.pointerEvents = 'auto';
+                el.title = 'Acceder al módulo de relación de mantenimiento';
+                console.log('✅ Módulo relacion_mantenimiento habilitado en menú');
+            } else {
+                el.style.opacity = '0.5';
+                el.style.pointerEvents = 'none';
+                el.title = 'No tienes permisos para acceder a esta sección';
+                console.log('❌ Módulo relacion_mantenimiento deshabilitado en menú');
+            }
+        });
+
+        // ✅ CORREGIDO: Asegurar que asignacion_mantenimiento sea accesible
+        const elementosAsignacionMantenimiento = document.querySelectorAll('[data-modulo="asignacion_mantenimiento"]');
+        elementosAsignacionMantenimiento.forEach(el => {
+            if (this.puedeVer('asignacion_mantenimiento')) {
+                el.style.opacity = '1';
+                el.style.pointerEvents = 'auto';
+                el.title = 'Acceder al módulo de asignación de mantenimiento';
+                console.log('✅ Módulo asignacion_mantenimiento habilitado en menú');
+            } else {
+                el.style.opacity = '0.5';
+                el.style.pointerEvents = 'none';
+                el.title = 'No tienes permisos para acceder a esta sección';
+                console.log('❌ Módulo asignacion_mantenimiento deshabilitado en menú');
             }
         });
 
@@ -250,13 +387,28 @@ class SistemaPermisos {
     }
 
     aplicarPermisosBotones() {
+        console.log('🔄 Aplicando permisos en botones...');
+        
         // Aplicar a botones de acción genéricos
         const botonesCrear = document.querySelectorAll('.btn-crear');
         const botonesEditar = document.querySelectorAll('.btn-editar');
         const botonesEliminar = document.querySelectorAll('.btn-eliminar');
         const botonesControl = document.querySelectorAll('.btn-control');
-        const botonesRelacion = document.querySelectorAll('.btn-relacion'); // ✅ NUEVO
+        const botonesRelacion = document.querySelectorAll('.btn-relacion');
+        const botonesPDF = document.querySelectorAll('.btn-pdf');
+        const botonesCSV = document.querySelectorAll('.btn-csv'); // ✅ NUEVO
         
+        // ✅ NUEVO: Botones específicos de asignación de mantenimiento
+        const botonesExtraer = document.querySelectorAll('.btn-extraer');
+        const botonesAsignar = document.querySelectorAll('.btn-asignar');
+        
+        console.log(`🎯 Encontrados ${botonesExtraer.length} botones extraer`);
+        console.log(`🎯 Encontrados ${botonesAsignar.length} botones asignar`);
+        console.log(`🎯 Encontrados ${botonesEditar.length} botones editar`);
+        console.log(`🎯 Encontrados ${botonesEliminar.length} botones eliminar`);
+        console.log(`🎯 Encontrados ${botonesCSV.length} botones CSV`); // ✅ NUEVO
+
+        // Botones crear
         botonesCrear.forEach(btn => {
             const modulo = btn.dataset.modulo;
             if (modulo && !this.puedeCrear(modulo)) {
@@ -264,6 +416,7 @@ class SistemaPermisos {
             }
         });
 
+        // Botones editar
         botonesEditar.forEach(btn => {
             const modulo = btn.dataset.modulo;
             if (modulo && !this.puedeEditar(modulo)) {
@@ -271,6 +424,7 @@ class SistemaPermisos {
             }
         });
 
+        // Botones eliminar
         botonesEliminar.forEach(btn => {
             const modulo = btn.dataset.modulo;
             if (modulo && !this.puedeEliminar(modulo)) {
@@ -278,6 +432,7 @@ class SistemaPermisos {
             }
         });
 
+        // Botones control
         botonesControl.forEach(btn => {
             const modulo = btn.dataset.modulo;
             if (modulo && !this.puedeVer(modulo)) {
@@ -285,26 +440,105 @@ class SistemaPermisos {
             }
         });
 
-        // ✅ NUEVO: Aplicar permisos a botones de relación
+        // Botones relación
         botonesRelacion.forEach(btn => {
             const modulo = btn.dataset.modulo;
             if (modulo && !this.puedeVer(modulo)) {
                 this.deshabilitarElemento(btn, 'No tienes permisos para generar relación');
             }
         });
+
+        // Botones PDF (siempre activos para todos)
+        botonesPDF.forEach(btn => {
+            const modulo = btn.dataset.modulo;
+            if (modulo && !this.puedeExportar(modulo)) {
+                this.deshabilitarElemento(btn, 'No tienes permisos para generar PDF');
+            }
+        });
+
+        // ✅ NUEVO: Botones CSV
+        botonesCSV.forEach(btn => {
+            const modulo = btn.dataset.modulo;
+            console.log(`📊 Procesando botón CSV - Módulo: ${modulo}`);
+            
+            if (modulo === 'relacion_mantenimiento' && !this.puedeGenerarCSVMantenimiento()) {
+                this.deshabilitarElemento(btn, 'No tienes permisos para generar CSV de mantenimiento');
+                console.log('❌ Botón CSV deshabilitado para relación mantenimiento');
+            } else if (modulo && !this.puedeExportar(modulo)) {
+                this.deshabilitarElemento(btn, 'No tienes permisos para generar CSV');
+                console.log('❌ Botón CSV deshabilitado');
+            } else {
+                console.log('✅ Botón CSV habilitado');
+            }
+        });
+
+        // ✅ NUEVO: Aplicar permisos a botones de generación de relación mantenimiento
+        const botonesGenerarRelacionMantenimiento = document.querySelectorAll('.btn-generar-relacion-mantenimiento');
+        botonesGenerarRelacionMantenimiento.forEach(btn => {
+            const modulo = btn.dataset.modulo;
+            console.log(`🔧 Procesando botón generar relación mantenimiento - Módulo: ${modulo}`);
+            
+            if (modulo && !this.puedeGenerarRelacionMantenimiento()) {
+                this.deshabilitarElemento(btn, 'No tienes permisos para generar relación de mantenimiento');
+                console.log('❌ Botón generar relación mantenimiento deshabilitado');
+            } else {
+                console.log('✅ Botón generar relación mantenimiento habilitado');
+            }
+        });
+
+        // ✅ NUEVO: Aplicar permisos a botones de extracción
+        botonesExtraer.forEach(btn => {
+            const modulo = btn.dataset.modulo;
+            console.log(`🔧 Procesando botón extraer - Módulo: ${modulo}`);
+            
+            if (modulo && !this.puedeExtraerAeronaves()) {
+                this.deshabilitarElemento(btn, 'No tienes permisos para extraer aeronaves');
+                console.log('❌ Botón extraer deshabilitado');
+            } else {
+                console.log('✅ Botón extraer habilitado');
+            }
+        });
+
+        // ✅ NUEVO: Aplicar permisos a botones de asignación
+        botonesAsignar.forEach(btn => {
+            const modulo = btn.dataset.modulo;
+            console.log(`🔧 Procesando botón asignar - Módulo: ${modulo}`);
+            
+            if (modulo && !this.puedeAsignarMantenimiento()) {
+                this.deshabilitarElemento(btn, 'No tienes permisos para asignar mantenimiento');
+                console.log('❌ Botón asignar deshabilitado');
+            } else {
+                console.log('✅ Botón asignar habilitado');
+            }
+        });
+
+        console.log('✅ Aplicación de permisos en botones completada');
     }
 
     deshabilitarElemento(elemento, mensaje) {
         elemento.disabled = true;
         elemento.style.opacity = '0.6';
-        elemento.style.pointerEvents = 'none';
+        elemento.style.cursor = 'not-allowed';
         elemento.title = mensaje;
+        
+        // Agregar indicador visual adicional
+        if (!elemento.querySelector('.permiso-denegado')) {
+            const icono = document.createElement('span');
+            icono.className = 'permiso-denegado ms-1';
+            icono.innerHTML = '⛔';
+            icono.title = mensaje;
+            elemento.appendChild(icono);
+        }
     }
 
     mostrarInfoPermisos() {
         const infoElement = document.getElementById('infoPermisos');
         if (infoElement) {
             const esAdmin = this.usuario.tipo === 'admin';
+            const puedeExtraer = this.puedeExtraerAeronaves();
+            const puedeAsignar = this.puedeAsignarMantenimiento();
+            const puedeRelacionMantenimiento = this.puedeVer('relacion_mantenimiento');
+            const puedeCSVMantenimiento = this.puedeGenerarCSVMantenimiento();
             
             infoElement.innerHTML = `
                 <div class="alert alert-info mt-3">
@@ -313,27 +547,32 @@ class SistemaPermisos {
                         <strong>Permisos actuales:</strong> 
                         ${esAdmin ? 
                             'Tienes permisos completos de administrador' : 
-                            'Puedes crear y ver registros'
+                            'Tienes permisos de usuario regular. Puedes crear y ver registros'
                         }
-                        ${this.puedeVer('relacion_pernoctas') ? ' | Puedes generar relaciones de pernoctas' : ''}
                     </small>
                 </div>
             `;
         }
     }
 
-    // Verificar acceso a página
+    // ========== VERIFICACIÓN DE ACCESO ==========
+
     verificarAccesoPagina(modulo) {
+        console.log(`🔐 Verificando acceso a página: ${modulo}`);
+        
         if (!this.usuario.logueado) {
+            console.log('❌ Usuario no logueado, redirigiendo a login');
             window.location.href = '../app/views/login.html';
             return false;
         }
 
         if (!this.puedeVer(modulo)) {
+            console.log(`❌ Usuario no tiene permisos para ver módulo: ${modulo}`);
             this.mostrarErrorAcceso();
             return false;
         }
 
+        console.log(`✅ Acceso permitido al módulo: ${modulo}`);
         return true;
     }
 
@@ -367,7 +606,67 @@ class SistemaPermisos {
         const modal = new bootstrap.Modal(document.getElementById('errorAccesoModal'));
         modal.show();
     }
+
+    
+
+    depurarPermisosCompletos() {
+        console.log('🔐 === DEPURACIÓN COMPLETA DE PERMISOS ===');
+        console.log('👤 Usuario:', this.usuario);
+        
+        // Depurar módulo de relación de mantenimiento
+        const moduloRelacionMantenimiento = 'relacion_mantenimiento';
+        console.log(`📋 Todos los permisos para ${moduloRelacionMantenimiento}:`, this.permisos[moduloRelacionMantenimiento]);
+        
+        console.log(`👀 Puede ver ${moduloRelacionMantenimiento}:`, this.puedeVer(moduloRelacionMantenimiento));
+        console.log(`📊 Puede generar relación ${moduloRelacionMantenimiento}:`, this.puedeGenerarRelacionMantenimiento());
+        console.log(`💾 Puede generar CSV ${moduloRelacionMantenimiento}:`, this.puedeGenerarCSVMantenimiento());
+        
+        // Depurar módulo de asignación de mantenimiento
+        const moduloAsignacion = 'asignacion_mantenimiento';
+        console.log(`📋 Todos los permisos para ${moduloAsignacion}:`, this.permisos[moduloAsignacion]);
+        
+        console.log(`👀 Puede ver ${moduloAsignacion}:`, this.puedeVer(moduloAsignacion));
+        console.log(`➕ Puede crear ${moduloAsignacion}:`, this.puedeCrear(moduloAsignacion));
+        console.log(`✏️ Puede editar ${moduloAsignacion}:`, this.puedeEditar(moduloAsignacion));
+        console.log(`🗑️ Puede eliminar ${moduloAsignacion}:`, this.puedeEliminar(moduloAsignacion));
+        console.log(`📤 Puede exportar ${moduloAsignacion}:`, this.puedeExportar(moduloAsignacion));
+        console.log(`🖨️ Puede imprimir ${moduloAsignacion}:`, this.puedeImprimir(moduloAsignacion));
+        console.log(`🔄 Puede extraer aeronaves:`, this.puedeExtraerAeronaves());
+        console.log(`🔧 Puede asignar mantenimiento:`, this.puedeAsignarMantenimiento());
+        
+        // Mostrar estado de botones en la página
+        const botones = document.querySelectorAll('button');
+        console.log('🎯 Total de botones en página:', botones.length);
+        
+        botones.forEach((btn, index) => {
+            if (btn.classList.contains('btn-editar') || btn.classList.contains('btn-eliminar') || 
+                btn.classList.contains('btn-extraer') || btn.classList.contains('btn-crear') ||
+                btn.classList.contains('btn-asignar') || btn.classList.contains('btn-pdf') ||
+                btn.classList.contains('btn-csv') || btn.classList.contains('btn-generar-relacion-mantenimiento')) {
+                console.log(`🔘 Botón ${index}:`, {
+                    texto: btn.textContent.trim(),
+                    clases: btn.className,
+                    disabled: btn.disabled,
+                    modulo: btn.dataset.modulo,
+                    onclick: btn.onclick ? 'Sí' : 'No'
+                });
+            }
+        });
+    }
 }
 
 // Instancia global
 const permisosSistema = new SistemaPermisos();
+
+// Ejecutar depuración después de que la página cargue
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('🚀 permisos.js cargado completamente');
+    
+    // Depurar después de un breve delay para que todos los elementos estén listos
+    setTimeout(() => {
+        permisosSistema.depurarPermisosCompletos();
+    }, 2000);
+});
+
+// Hacer disponible globalmente para depuración
+window.permisosSistema = permisosSistema;

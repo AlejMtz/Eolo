@@ -52,6 +52,9 @@ document.addEventListener('DOMContentLoaded', function() {
     // Configurar responsividad para móviles
     configurarResponsividadMovil();
 
+    // Configurar campos requeridos
+    configurarCamposRequeridos();
+
     // Detecta si estamos en la página de listado
     if (document.getElementById('tablaTurnos')) {
         console.log('📋 Inicializando página de listado de turnos');
@@ -77,6 +80,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
     console.log('✅ entrega_turno.js inicializado correctamente');
 });
+
 
 /**
  * Configura el formulario de entrega de turno
@@ -110,16 +114,342 @@ function configurarFormulario() {
 }
 
 /**
- * Guarda o actualiza una entrega de turno
+ * Valida que todos los campos del formulario estén completos
+ */
+function validarFormularioCompleto() {
+    const formulario = document.getElementById('formEntregaTurno');
+    let camposVacios = [];
+
+    // 1. Validar campos básicos (texto, número, fecha)
+    const camposBasicos = [
+        { id: 'fecha', nombre: 'Fecha' },
+        { id: 'nombre', nombre: 'Nombre' },
+        { id: 'fallas-comunicaciones', nombre: 'Fallas en equipo de comunicaciones' },
+        { id: 'paquetes-hojas', nombre: 'Paquetes de hojas para impresión' },
+        { id: 'fallas-copiadoras', nombre: 'Fallas en las copiadoras' },
+        { id: 'fondo-recibido', nombre: 'Fondo recibido' },
+        { id: 'fondo-entregado', nombre: 'Fondo entregado' },
+        { id: 'vales-cantidad', nombre: 'Vales de gasolina - Cantidad' },
+        { id: 'vales-folio', nombre: 'Vales de gasolina - Folio' },
+        { id: 'aterrizajes-cantidad', nombre: 'Cantidad de aterrizajes' },
+        { id: 'llegadas', nombre: 'Total de operaciones - Llegadas' },
+        { id: 'salidas', nombre: 'Total de operaciones - Salidas' },
+        { id: 'reporte-operaciones', nombre: 'Reporte de operaciones enviadas por correo' },
+        { id: 'operaciones-coordinadas', nombre: 'Cantidad de operaciones coordinadas' },
+        { id: 'walk-arounds', nombre: 'Walk-arounds' },
+        { id: 'caja-fuerte', nombre: 'Estado de la caja fuerte' },
+        { id: 'firma-entregador', nombre: 'Firma y nombre de quien entrega' },
+        { id: 'firma-receptor', nombre: 'Jefe turno de despacho' }
+    ];
+
+    camposBasicos.forEach(campo => {
+        const elemento = document.getElementById(campo.id);
+        if (elemento && !elemento.value.trim()) {
+            camposVacios.push(campo.nombre);
+        }
+    });
+
+    // 2. Validar equipos de oficina (números)
+    const equiposOficina = [
+        { id: 'engrapadoras-entregadas', nombre: 'Engrapadoras entregadas' },
+        { id: 'engrapadoras-recibidas', nombre: 'Engrapadoras recibidas' },
+        { id: 'perforadoras-entregadas', nombre: 'Perforadoras entregadas' },
+        { id: 'perforadoras-recibidas', nombre: 'Perforadoras recibidas' }
+    ];
+
+    equiposOficina.forEach(equipo => {
+        const elemento = document.getElementById(equipo.id);
+        if (elemento && elemento.value === '') {
+            camposVacios.push(equipo.nombre);
+        }
+    });
+
+    // 3. Validar radio buttons requeridos
+    const radiosRequeridos = [
+        { name: 'reporte_aterrizajes', mensaje: 'Reporte de aterrizajes' },
+        { name: 'copiadoras_funciona', mensaje: 'Estado de copiadoras (funciona)' },
+        { name: 'toner', mensaje: 'Estado del toner' }
+    ];
+
+    radiosRequeridos.forEach(radioGroup => {
+        const seleccionado = formulario.querySelector(`input[name="${radioGroup.name}"]:checked`);
+        if (!seleccionado) {
+            camposVacios.push(radioGroup.mensaje);
+        }
+    });
+
+    // 4. Validar equipos de comunicación
+    const equiposComunicacion = [
+        { 
+            prefijo: 'celular', 
+            nombre: 'Celular ZTE',
+            tieneEstado: true,
+            tipoEstado: 'checkbox' // checkbox en lugar de radio
+        },
+        { 
+            prefijo: 'radio_motorola', 
+            nombre: 'Radio Motorola',
+            tieneEstado: true,
+            tipoEstado: 'radio',
+            estadoName: 'radio_motorola_cargado'
+        },
+        { 
+            prefijo: 'radio_vhf_portatil', 
+            nombre: 'Radio VHF Portátil',
+            tieneEstado: true,
+            tipoEstado: 'radio',
+            estadoName: 'radio_vhf_portatil_cargado'
+        },
+        { 
+            prefijo: 'radio_vhf_fijo', 
+            nombre: 'Radio VHF Fijo',
+            tieneEstado: true,
+            tipoEstado: 'radio',
+            estadoName: 'radio_vhf_fijo_fallas'
+        }
+    ];
+
+    equiposComunicacion.forEach(equipo => {
+        const entregado = document.getElementById(`${equipo.prefijo}-entregado`);
+        
+        // Si el equipo está marcado como entregado, validar su estado
+        if (entregado && entregado.checked) {
+            let estadoValido = false;
+            
+            if (equipo.tieneEstado) {
+                if (equipo.tipoEstado === 'checkbox') {
+                    // Para celular (checkbox)
+                    const estadoCheckbox = document.getElementById(`${equipo.prefijo}-cargado`);
+                    estadoValido = estadoCheckbox && estadoCheckbox.checked;
+                } else if (equipo.tipoEstado === 'radio') {
+                    // Para radios (radio buttons)
+                    estadoValido = !!formulario.querySelector(`input[name="${equipo.estadoName}"]:checked`);
+                }
+            }
+            
+            if (!estadoValido) {
+                camposVacios.push(`Estado del ${equipo.nombre}`);
+            }
+        } else {
+            // Si no está marcado como entregado, lo consideramos como no entregado (válido)
+            // Pero podrías forzar que al menos uno esté entregado si lo necesitas
+        }
+    });
+
+    return camposVacios;
+}
+
+/**
+ * Muestra errores de validación
+ */
+function mostrarErroresValidacion(camposVacios) {
+    let mensaje = 'Por favor completa los siguientes campos obligatorios:\n\n';
+    camposVacios.forEach((campo, index) => {
+        mensaje += `${index + 1}. ${campo}\n`;
+    });
+    
+    mensaje += '\nTodos los campos son obligatorios para guardar la entrega de turno.';
+    mostrarError(mensaje);
+    
+    // Resaltar campos faltantes
+    resaltarCamposFaltantes(camposVacios);
+}
+
+/**
+ * Resalta visualmente los campos faltantes
+ */
+function resaltarCamposFaltantes(camposVacios) {
+    // Remover resaltado anterior
+    const elementosResaltados = document.querySelectorAll('.campo-faltante');
+    elementosResaltados.forEach(el => {
+        el.classList.remove('campo-faltante');
+        if (el.style) el.style.borderColor = '';
+    });
+
+    // Mapa de nombres de campos a IDs
+    const mapaCampos = {
+        'Fecha': 'fecha',
+        'Nombre': 'nombre',
+        'Fallas en equipo de comunicaciones': 'fallas-comunicaciones',
+        'Paquetes de hojas para impresión': 'paquetes-hojas',
+        'Fallas en las copiadoras': 'fallas-copiadoras',
+        'Fondo recibido': 'fondo-recibido',
+        'Fondo entregado': 'fondo-entregado',
+        'Vales de gasolina - Cantidad': 'vales-cantidad',
+        'Vales de gasolina - Folio': 'vales-folio',
+        'Cantidad de aterrizajes': 'aterrizajes-cantidad',
+        'Total de operaciones - Llegadas': 'llegadas',
+        'Total de operaciones - Salidas': 'salidas',
+        'Reporte de operaciones enviadas por correo': 'reporte-operaciones',
+        'Cantidad de operaciones coordinadas': 'operaciones-coordinadas',
+        'Walk-arounds': 'walk-arounds',
+        'Estado de la caja fuerte': 'caja-fuerte',
+        'Firma y nombre de quien entrega': 'firma-entregador',
+        'Jefe turno de despacho': 'firma-receptor',
+        'Engrapadoras entregadas': 'engrapadoras-entregadas',
+        'Engrapadoras recibidas': 'engrapadoras-recibidas',
+        'Perforadoras entregadas': 'perforadoras-entregadas',
+        'Perforadoras recibidas': 'perforadoras-recibidas'
+    };
+
+    // Resaltar campos de entrada
+    camposVacios.forEach(nombreCampo => {
+        const campoId = mapaCampos[nombreCampo];
+        if (campoId) {
+            const campo = document.getElementById(campoId);
+            if (campo) {
+                campo.classList.add('campo-faltante');
+                campo.style.borderColor = '#dc3545';
+                
+                // Hacer scroll al primer campo faltante
+                if (camposVacios[0] === nombreCampo) {
+                    campo.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+            }
+        }
+    });
+
+    // Resaltar radio buttons faltantes
+    if (camposVacios.includes('Reporte de aterrizajes')) {
+        resaltarGrupoRadio('reporte_aterrizajes');
+    }
+    if (camposVacios.includes('Estado de copiadoras (funciona)')) {
+        resaltarGrupoRadio('copiadoras_funciona');
+    }
+    if (camposVacios.includes('Estado del toner')) {
+        resaltarGrupoRadio('toner');
+    }
+}
+
+/**
+ * Resalta un grupo de radio buttons
+ */
+function resaltarGrupoRadio(nombre) {
+    const radios = document.querySelectorAll(`input[name="${nombre}"]`);
+    radios.forEach(radio => {
+        const label = radio.closest('.form-check') || radio.closest('.form-check-inline');
+        if (label) {
+            label.classList.add('campo-faltante');
+            label.style.border = '2px solid #dc3545';
+            label.style.padding = '5px';
+            label.style.borderRadius = '4px';
+        }
+    });
+}
+
+/**
+ * Configura automáticamente todos los campos como requeridos
+ */
+function configurarCamposRequeridos() {
+    const formulario = document.getElementById('formEntregaTurno');
+    if (!formulario) return;
+
+    // Agregar atributo required a todos los campos de entrada
+    const inputs = formulario.querySelectorAll('input, textarea, select');
+    inputs.forEach(input => {
+        // No agregar required a checkboxes y radios (se validan diferente)
+        if (input.type !== 'checkbox' && input.type !== 'radio' && !input.name.includes('_entregado')) {
+            input.setAttribute('required', 'required');
+        }
+    });
+
+    // Agregar indicador visual de campos requeridos
+    const labels = formulario.querySelectorAll('label');
+    labels.forEach(label => {
+        const forAttr = label.getAttribute('for');
+        if (forAttr) {
+            const input = document.getElementById(forAttr);
+            if (input && input.hasAttribute('required')) {
+                if (!label.querySelector('.required-indicator')) {
+                    const indicator = document.createElement('span');
+                    indicator.className = 'required-indicator';
+                    indicator.textContent = ' *';
+                    indicator.style.color = '#dc3545';
+                    label.appendChild(indicator);
+                }
+            }
+        }
+    });
+
+    console.log('✅ Todos los campos configurados como requeridos');
+}
+
+/**
+ * Obtiene el nombre legible del equipo
+ */
+function obtenerNombreEquipo(codigo) {
+    const nombres = {
+        'celular': 'Celular ZTE',
+        'radio_motorola': 'Radio Motorola',
+        'radio_vhf_portatil': 'Radio VHF Portátil',
+        'radio_vhf_fijo': 'Radio VHF Fijo'
+    };
+    return nombres[codigo] || codigo;
+}
+
+/**
+ * Muestra errores de validación
+ */
+function mostrarErroresValidacion(camposVacios) {
+    let mensaje = 'Por favor completa los siguientes campos obligatorios:\n\n';
+    camposVacios.forEach((campo, index) => {
+        mensaje += `${index + 1}. ${campo}\n`;
+    });
+    
+    mensaje += '\nTodos los campos marcados con * son obligatorios.';
+    mostrarError(mensaje);
+    
+    // Resaltar campos faltantes
+    resaltarCamposFaltantes(camposVacios);
+}
+
+/**
+ * Resalta visualmente los campos faltantes
+ */
+function resaltarCamposFaltantes(camposVacios) {
+    // Remover resaltado anterior
+    const elementosResaltados = document.querySelectorAll('.campo-faltante');
+    elementosResaltados.forEach(el => {
+        el.classList.remove('campo-faltante');
+        el.style.borderColor = '';
+    });
+
+    // Resaltar nuevos campos faltantes
+    camposVacios.forEach(nombreCampo => {
+        // Buscar el campo por su label o nombre
+        const labels = document.querySelectorAll('label');
+        labels.forEach(label => {
+            if (label.textContent.includes(nombreCampo)) {
+                const campo = document.getElementById(label.htmlFor);
+                if (campo) {
+                    campo.classList.add('campo-faltante');
+                    campo.style.borderColor = '#dc3545';
+                    campo.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+            }
+        });
+    });
+}
+
+/**
+ * Guarda o actualiza una entrega de turno con validación completa
  */
 function guardarEntregaTurno() {
+    // Validar que todos los campos estén completos
+    const camposVacios = validarFormularioCompleto();
+    
+    if (camposVacios.length > 0) {
+        mostrarErroresValidacion(camposVacios);
+        return;
+    }
+
     const formData = new FormData(document.getElementById('formEntregaTurno'));
     const id_entrega = document.getElementById('id_entrega') ? document.getElementById('id_entrega').value : '';
     
     const url = id_entrega ? '/Eolo/app/controllers/entrega_turno_actualizar.php' : '/Eolo/app/controllers/entrega_turno_crear.php';
     
     // DEBUG: Mostrar todos los datos del formulario
-    console.log('=== DATOS DEL FORMULARIO ===');
+    console.log('=== DATOS DEL FORMULARIO VALIDADOS ===');
     for (let [key, value] of formData.entries()) {
         console.log(key + ': ' + value);
     }
@@ -165,6 +495,7 @@ function guardarEntregaTurno() {
         }
     });
 }
+
 /**
  * Recopila todos los datos del formulario y los agrega al FormData
  */

@@ -22,16 +22,36 @@
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto">
-                    
+
                     <li class="nav-item">
                         <a class="nav-link active" href="../../app/views/ver_pernocta_diaria.html">
-                            <i class="fas fa-bed"></i> 
-                            <span class="desktop-only">Pernoctas</span>
+                            <i class="fas fa-clipboard-check"></i> 
+                            <span class="desktop-only">Pernoctas Diarias</span>
                         </a>
                     </li>
-                    
+                    <li class="nav-item">
+                        <a class="nav-link " href="../../app/views/ver_control_pernoctas.html">
+                            <i class="fas fa-check-circle"></i> 
+                            <span class="desktop-only">Control Pernoctas</span>
+                        </a>
+                    </li>
+
+                    <li class="nav-item">
+                        <a class="nav-link" href="../../app/views/relacion_pernocta.html">
+                            <i class="fas fa-clipboard-list	"></i> 
+                            <span class="desktop-only">Pernocta Mensual</span>
+                        </a>
+                    </li>
+
+                    <li class="nav-item">
+                        <a class="nav-link" href="../../app/views/relacion_mantenimiento.html">
+                            <i class="fas fa-tools icon"></i> 
+                            <span class="desktop-only">Asigancion Manto</span>
+                        </a>
+                    </li>
                 </ul>
             </div>
+
 
             <div class="navbar-nav ms-auto">
                 <span class="navbar-text text-light me-3 desktop-only" id="userInfo"></span>
@@ -51,19 +71,28 @@
     <div class="card-body">
         <form id="pernoctaForm">
             <div class="row mb-3">
-                <div class="col-md-6">
-                    <div class="form-group">
-                        <label for="fecha" class="form-label">Fecha:</label>
-                        <input type="date" id="fecha" name="fecha" class="form-control" required>
-                    </div>
-                </div>
-                <div class="col-md-6">
-                    <div class="form-group">
-                        <label for="hora" class="form-label">Hora:</label>
-                        <input type="time" id="hora" name="hora" class="form-control" required>
-                    </div>
-                </div>
+    <div class="col-md-6">
+        <div class="form-group">
+            <label for="fecha" class="form-label">Fecha:</label>
+            <input type="date" id="fecha" name="fecha" class="form-control" required readonly>
+            <div class="form-text">
+                Fecha actual del sistema • Se establece automáticamente
             </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="form-group">
+            <label for="hora" class="form-label">Hora:</label>
+            <input type="time" id="hora" name="hora" class="form-control" 
+                   required
+                   step="300"
+                   placeholder="HH:MM">
+            <div class="form-text">
+                Ajuste la hora según sea necesario 
+            </div>
+        </div>
+    </div>
+</div>
 
             <!-- Búsqueda de Aeronave -->
             <div class="row mb-3">

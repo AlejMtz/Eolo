@@ -19,8 +19,8 @@ let filtrosActivos = {
     movimiento: ''
 };
 
-// Variables globales para el filtro de búsqueda
 let timeoutBusqueda = null;
+
 
 document.addEventListener('DOMContentLoaded', () => {
     // Inicializar modales de Bootstrap
@@ -153,33 +153,25 @@ async function generarReporteControlCompleto() {
 function inicializarPernoctaDiaria() {
     console.log('🔄 Inicializando módulo de pernoctas diarias...');
     
-    // Verificar si el formulario existe en esta página (página de formulario)
     const pernoctaForm = document.getElementById('pernoctaForm');
-    
-    // Verificar si la tabla existe en esta página (página de lista)
-    const tablaPernoctas = document.getElementById('cuerpoTablaPernoctas');
     
     if (pernoctaForm) {
         console.log('📝 Estamos en la página de FORMULARIO');
-        // Establecer fecha y hora actual del dispositivo
-        establecerFechaHoraActual();
         
-        // Cargar aeronaves para el selector
+        // ✅ SOLO ESTABLECER FECHA AUTOMÁTICA, HORA MANUAL
+        establecerFechaActual();
+        
+        // Configurar campo de hora para entrada manual
+        configurarCampoHoraManual();
+        
         cargarAeronavesParaSelector();
-        
-        // Configurar búsqueda de aeropuertos
         configurarBusquedaAeropuertos();
-        
-        // Configurar envío del formulario
         pernoctaForm.addEventListener('submit', function(event) {
             event.preventDefault();
             enviarPernocta();
         });
-        
-        // Configurar radio buttons de tipo de movimiento
         configurarRadiosMovimiento();
         
-        // Verificar si hay ID en URL para edición
         const urlParams = new URLSearchParams(window.location.search);
         const idPernocta = urlParams.get('id');
         if (idPernocta) {
@@ -189,7 +181,7 @@ function inicializarPernoctaDiaria() {
         
         console.log('✅ Formulario de pernoctas inicializado');
     }
-    
+
     if (tablaPernoctas) {
         console.log('📊 Estamos en la página de LISTA');
         // Configurar eventos para los filtros (si existen)
@@ -349,10 +341,8 @@ function configurarFiltros() {
     console.log('✅ Filtros configurados:', filtrosActivos);
 }
 
-/**
- * Establece la fecha y hora actual del dispositivo
- */
-function establecerFechaHoraActual() {
+
+function establecerFechaActual() {
     const now = new Date();
     
     // Formatear fecha (YYYY-MM-DD)
@@ -361,22 +351,83 @@ function establecerFechaHoraActual() {
     const day = String(now.getDate()).padStart(2, '0');
     const fechaFormatted = `${year}-${month}-${day}`;
     
-    // Formatear hora (HH:MM)
-    const hours = String(now.getHours()).padStart(2, '0');
-    const minutes = String(now.getMinutes()).padStart(2, '0');
-    const horaFormatted = `${hours}:${minutes}`;
-    
-    // Establecer valores en los campos
-    document.getElementById('fecha').value = fechaFormatted;
-    document.getElementById('hora').value = horaFormatted;
-    
-    // También establecer en el campo de consulta
-    const fechaConsulta = document.getElementById('fechaConsulta');
-    if (fechaConsulta) {
-        fechaConsulta.value = fechaFormatted;
+    // ✅ SOLO establecer fecha automáticamente
+    const campoFecha = document.getElementById('fecha');
+    if (campoFecha && !isEditMode) {
+        campoFecha.value = fechaFormatted;
     }
     
-    console.log('🕐 Fecha y hora local establecida:', fechaFormatted, horaFormatted);
+    console.log('📅 Fecha actual establecida:', fechaFormatted);
+}
+
+function configurarCampoHoraManual() {
+    const campoHora = document.getElementById('hora');
+    
+    if (campoHora) {
+        // En todos los navegadores, intentar abrir picker si está disponible
+        campoHora.addEventListener('click', function() {
+            if (this.showPicker && typeof this.showPicker === 'function') {
+                try {
+                    this.showPicker();
+                } catch (error) {
+                    console.log('ℹ️ showPicker no disponible en este navegador');
+                }
+            }
+        });
+        
+        // Seleccionar texto al enfocar para fácil edición
+        campoHora.addEventListener('focus', function() {
+            this.select();
+        });
+        
+        // ✅ CORREGIDO: Validación más flexible del formato de hora
+        campoHora.addEventListener('change', function() {
+            console.log('✅ Hora establecida manualmente:', this.value);
+            
+            // Validación más flexible - permitir varios formatos
+            if (this.value) {
+                // Patrón más flexible para hora
+                const horaPattern = /^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/;
+                if (!horaPattern.test(this.value)) {
+                    console.warn('⚠️ Formato de hora no válido:', this.value);
+                    this.setCustomValidity('Por favor ingrese una hora válida en formato HH:MM (ej: 14:30, 09:15)');
+                    this.reportValidity();
+                } else {
+                    this.setCustomValidity('');
+                }
+            } else {
+                this.setCustomValidity('');
+            }
+        });
+        
+        // ✅ AGREGAR: Validación también en input para feedback inmediato
+        campoHora.addEventListener('input', function() {
+            if (this.value) {
+                const horaPattern = /^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/;
+                if (!horaPattern.test(this.value)) {
+                    this.setCustomValidity('Formato HH:MM requerido (ej: 14:30)');
+                } else {
+                    this.setCustomValidity('');
+                }
+            } else {
+                this.setCustomValidity('');
+            }
+        });
+        
+        // Navegación con teclado mejorada
+        campoHora.addEventListener('keydown', function(e) {
+            if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
+                console.log('🕐 Usando flechas para ajustar hora manualmente');
+            }
+            
+            // ✅ PERMITIR TECLAS ESPECIALES
+            if (e.key === 'Backspace' || e.key === 'Delete' || e.key === 'Tab') {
+                return; // Permitir estas teclas
+            }
+        });
+        
+        console.log('✅ Campo de hora configurado para entrada manual');
+    }
 }
 
 /**
@@ -822,26 +873,36 @@ function validarFormularioPernocta() {
         return false;
     }
     
-    
-    console.log('🔄 Iniciando validación de estado (no bloqueante)...');
-    validarEstadoAeronave(aeronaveSeleccionada, entrada)
-        .then(esValido => {
-            if (!esValido) {
-                console.log('⚠️ Validación frontend falló, pero permitiendo envío al backend');
-            }
-        })
-        .catch(error => {
-            console.error('❌ Error en validación asíncrona:', error);
-        });
+    // NO validar estado de aeronave en modo edición
+    if (!isEditMode) {
+        console.log('🔄 Iniciando validación de estado (solo para creación)...');
+        validarEstadoAeronave(aeronaveSeleccionada, entrada)
+            .then(esValido => {
+                if (!esValido) {
+                    console.log('⚠️ Validación frontend falló, pero permitiendo envío al backend');
+                }
+            })
+            .catch(error => {
+                console.error('❌ Error en validación asíncrona:', error);
+            });
+    } else {
+        console.log('ℹ️ Modo edición - omitiendo validación de estado de aeronave');
+    }
     
     console.log('✅ Formulario válido - Enviando al backend');
     return true;
 }
 
 /**
- * Valida el estado de la aeronave antes de registrar movimiento
+ * Valida el estado de la aeronave antes de registrar movimiento (SOLO CREACIÓN)
  */
 async function validarEstadoAeronave(idAeronave, esEntrada) {
+    // ✅ CORRECCIÓN: No validar en modo edición
+    if (isEditMode) {
+        console.log('ℹ️ Modo edición - omitiendo validación de estado');
+        return true;
+    }
+    
     try {
         console.log('🔄 Validando estado de aeronave ID:', idAeronave, 'Es entrada:', esEntrada);
         
@@ -878,7 +939,7 @@ async function validarEstadoAeronave(idAeronave, esEntrada) {
         }
     } catch (error) {
         console.error('❌ Error validando estado:', error);
-        // ✅ PERMITIR CONTINUAR SI HAY ERROR EN LA VALIDACIÓN FRONTEND
+        // PERMITIR CONTINUAR SI HAY ERROR EN LA VALIDACIÓN FRONTEND
         // El backend igual hará la validación final
         return true;
     }
@@ -1259,9 +1320,6 @@ async function editarPernocta(id) {
     }
 }
 
-/**
- * Llena el formulario con datos para edición
- */
 function llenarFormularioEdicion(pernocta) {
     console.log('📝 Llenando formulario para edición...');
     
@@ -1270,7 +1328,13 @@ function llenarFormularioEdicion(pernocta) {
     
     // Llenar el formulario con los datos
     document.getElementById('fecha').value = pernocta.Fecha || '';
-    document.getElementById('hora').value = pernocta.Hora || '';
+    
+    // ✅ CORREGIDO: Establecer la hora del registro sin validaciones molestas
+    const campoHora = document.getElementById('hora');
+    if (campoHora && pernocta.Hora) {
+        campoHora.value = pernocta.Hora;
+        console.log('✅ Hora del registro establecida:', pernocta.Hora);
+    }
     
     // Llenar aeronave
     document.getElementById('buscarAeronave').value = pernocta.Matricula || '';
@@ -1314,13 +1378,54 @@ function llenarFormularioEdicion(pernocta) {
     }
     idInput.value = pernocta.Id_Pernocta;
     
-    // MOSTRAR BOTÓN CANCELAR
+    // ✅ CONFIGURAR CAMPO DE HORA ESPECIAL PARA EDICIÓN
+    configurarCampoHoraParaEdicion();
+    
+    // Mostrar botón cancelar
     const cancelarBtn = document.getElementById('cancelarBtn');
     if (cancelarBtn) {
         cancelarBtn.style.display = 'block';
     }
     
-    console.log('✅ Formulario cargado para edición');
+    console.log('Formulario cargado para edición');
+}
+
+/**
+ * NUEVA FUNCIÓN: Configura campo de hora específicamente para modo edición
+ */
+function configurarCampoHoraParaEdicion() {
+    const campoHora = document.getElementById('hora');
+    
+    if (campoHora) {
+        console.log('⚙️ Configurando campo de hora para edición...');
+        
+        // Remover atributos que causan validación estricta
+        campoHora.removeAttribute('step');
+        campoHora.removeAttribute('pattern');
+        
+        // Desactivar validación HTML5
+        campoHora.setAttribute('novalidate', 'true');
+        campoHora.form.setAttribute('novalidate', 'true');
+        
+        // Validación personalizada muy flexible
+        campoHora.addEventListener('change', function() {
+            console.log('✅ Hora modificada:', this.value);
+            this.setCustomValidity(''); // Siempre limpiar validación
+        });
+        
+        campoHora.addEventListener('input', function() {
+            this.setCustomValidity(''); // Limpiar mientras escribe
+        });
+        
+        // Si el navegador marca como inválido, ignorarlo
+        campoHora.addEventListener('invalid', function(e) {
+            e.preventDefault(); // Prevenir comportamiento por defecto
+            console.warn('⚠️ Validación nativa ignorada en edición');
+            this.setCustomValidity(''); // Forzar como válido
+        });
+        
+        console.log('✅ Validación desactivada para campo de hora en edición');
+    }
 }
 
 /**
