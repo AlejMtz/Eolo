@@ -2296,3 +2296,56 @@ body {
     border-radius: 6px;
 }
 
+/* Estilos específicos para botones en móviles */
+@media (max-width: 768px) {
+    #submitButton {
+        min-height: 50px !important;
+        font-size: 1.1rem !important;
+        padding: 12px 24px !important;
+        border-radius: 8px !important;
+        touch-action: manipulation;
+        -webkit-tap-highlight-color: transparent;
+    }
+    
+    /* Mejorar área táctil */
+    .btn {
+        min-height: 44px; /* Tamaño mínimo recomendado para touch */
+        padding: 12px 20px;
+    }
+    
+    /* Evitar zoom en inputs en iOS */
+    input, select, textarea {
+        font-size: 16px !important;
+    }
+    
+    /* Feedback visual para botones táctiles */
+    .btn:active {
+        transform: scale(0.96);
+        transition: transform 0.1s;
+    }
+}
+
+/* Estilos para prevenir problemas táctiles */
+.btn {
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    cursor: pointer;
+}
+
+/* Mejorar el formulario para móviles */
+@media (max-width: 576px) {
+    .card-body {
+        padding: 15px 10px;
+    }
+    
+    .form-group {
+        margin-bottom: 1rem;
+    }
+    
+    .form-control {
+        font-size: 16px; /* Prevenir zoom en iOS */
+        height: 45px;
+    }
+}

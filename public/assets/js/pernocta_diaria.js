@@ -21,6 +21,71 @@ let filtrosActivos = {
 
 let timeoutBusqueda = null;
 
+// CORRECCIÓN DE ERRORES CRÍTICOS
+console.log('🔧 Aplicando correcciones críticas...');
+
+// 1. Corregir variable faltante
+if (typeof tablaPernoctas === 'undefined') {
+    var tablaPernoctas = document.getElementById('tablaPernoctas');
+    console.log('✅ Variable tablaPernoctas corregida:', !!tablaPernoctas);
+}
+
+// 2. Corregir función faltante
+function crearElementoEstado() {
+    console.log('🔄 Creando elemento de estado...');
+    const estadoElement = document.createElement('div');
+    estadoElement.id = 'infoEstado';
+    estadoElement.className = 'mt-2';
+    
+    const infoContainer = document.getElementById('infoAeronaveContainer');
+    if (infoContainer) {
+        const cardBody = infoContainer.querySelector('.card-body');
+        if (cardBody) {
+            cardBody.appendChild(estadoElement);
+        }
+    }
+    
+    return estadoElement;
+}
+
+// 3. CORREGIR EL PROBLEMA PRINCIPAL DEL BOTÓN
+function corregirBotonGuardar() {
+    const boton = document.getElementById('submitButton');
+    const formulario = document.getElementById('pernoctaForm');
+    
+    if (!boton || !formulario) {
+        console.error('❌ No se encontró botón o formulario');
+        return;
+    }
+    
+    console.log('🔧 Corrigiendo evento del botón...');
+    
+    // ELIMINAR EVENTOS EXISTENTES
+    const nuevoBoton = boton.cloneNode(true);
+    boton.parentNode.replaceChild(nuevoBoton, boton);
+    
+    // ASIGNAR EVENTOS NUEVOS Y FUNCIONALES
+    nuevoBoton.addEventListener('click', function(e) {
+        console.log('🎯 CLICK CORREGIDO - Ejecutando enviarPernocta()');
+        e.preventDefault();
+        enviarPernocta();
+    });
+    
+    nuevoBoton.addEventListener('touchend', function(e) {
+        console.log('📱 TOUCH CORREGIDO - Ejecutando enviarPernocta()');
+        e.preventDefault();
+        enviarPernocta();
+    });
+    
+    // También asegurar el evento submit del formulario
+    formulario.addEventListener('submit', function(e) {
+        console.log('📤 SUBMIT CORREGIDO - Ejecutando enviarPernocta()');
+        e.preventDefault();
+        enviarPernocta();
+    });
+    
+    console.log('✅ Botón corregido exitosamente');
+}
 
 document.addEventListener('DOMContentLoaded', () => {
     // Inicializar modales de Bootstrap
@@ -51,6 +116,30 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 });
+
+
+function configurarBotonMovil() {
+    const submitButton = document.getElementById('submitButton');
+    
+    if (submitButton) {
+        console.log('📱 Configurando botón para móviles...');
+        
+        // SOLO feedback visual, la lógica principal va en corregirBotonGuardar
+        submitButton.addEventListener('touchstart', function(e) {
+            console.log('📱 Botón presionado (feedback visual)');
+            this.style.transform = 'scale(0.98)';
+            this.style.opacity = '0.8';
+        });
+        
+        submitButton.addEventListener('touchend', function(e) {
+            console.log('📱 Botón liberado (feedback visual)');
+            this.style.transform = 'scale(1)';
+            this.style.opacity = '1';
+        });
+        
+        console.log('✅ Feedback táctil configurado');
+    }
+}
 
 /**
  * Función para generar reporte de control completo y redirigir
@@ -166,10 +255,20 @@ function inicializarPernoctaDiaria() {
         
         cargarAeronavesParaSelector();
         configurarBusquedaAeropuertos();
+        
+        // Configurar eventos del formulario
         pernoctaForm.addEventListener('submit', function(event) {
             event.preventDefault();
+            console.log('📤 Formulario enviado (evento submit)');
             enviarPernocta();
         });
+        
+        // Configurar específicamente para móviles
+        configurarBotonMovil();
+        
+        // ✅ CORREGIR EL BOTÓN PRINCIPAL
+        setTimeout(corregirBotonGuardar, 500);
+        
         configurarRadiosMovimiento();
         
         const urlParams = new URLSearchParams(window.location.search);
@@ -179,21 +278,14 @@ function inicializarPernoctaDiaria() {
             cargarPernoctaParaEdicion(idPernocta);
         }
         
-        console.log('✅ Formulario de pernoctas inicializado');
+        console.log('✅ Formulario de pernoctas inicializado completamente');
     }
 
-    if (tablaPernoctas) {
+    // Ignorar el error de tablaPernoctas si estamos en formulario
+    if (typeof tablaPernoctas !== 'undefined' && tablaPernoctas) {
         console.log('📊 Estamos en la página de LISTA');
-        // Configurar eventos para los filtros (si existen)
         configurarFiltros();
-        
-        // Cargar pernoctas del día actual
         cargarPernoctasDelDia();
-    }
-    
-    // Si no estamos en ninguna de las dos páginas principales
-    if (!pernoctaForm && !tablaPernoctas) {
-        console.log('ℹ️ No estamos en una página de pernoctas principal');
     }
 }
 
@@ -846,7 +938,7 @@ function configurarRadiosMovimiento() {
  * Valida el formulario de pernocta
  */
 function validarFormularioPernocta() {
-    console.log('🔍 Validando formulario de pernocta...');
+    console.log('🔍 Validando formulario para móvil...');
     
     // Validar aeronave seleccionada
     const aeronaveSeleccionada = document.getElementById('aeronaveSeleccionada').value;
@@ -873,23 +965,14 @@ function validarFormularioPernocta() {
         return false;
     }
     
-    // NO validar estado de aeronave en modo edición
-    if (!isEditMode) {
-        console.log('🔄 Iniciando validación de estado (solo para creación)...');
-        validarEstadoAeronave(aeronaveSeleccionada, entrada)
-            .then(esValido => {
-                if (!esValido) {
-                    console.log('⚠️ Validación frontend falló, pero permitiendo envío al backend');
-                }
-            })
-            .catch(error => {
-                console.error('❌ Error en validación asíncrona:', error);
-            });
-    } else {
-        console.log('ℹ️ Modo edición - omitiendo validación de estado de aeronave');
+    // Validación de hora en móviles
+    const hora = document.getElementById('hora').value;
+    if (!hora) {
+        mostrarError('Por favor, ingresa la hora del movimiento.');
+        return false;
     }
-    
-    console.log('✅ Formulario válido - Enviando al backend');
+
+    console.log('✅ Formulario válido - Listo para enviar');
     return true;
 }
 
