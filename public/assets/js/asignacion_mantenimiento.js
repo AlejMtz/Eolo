@@ -105,6 +105,57 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 /**
+ * Configura los eventos de los filtros y otros elementos
+ */
+function configurarEventos() {
+    console.log('🔧 Configurando eventos...');
+    
+    // Configurar eventos de los filtros
+    const filtroFecha = document.getElementById('filtroFecha');
+    const filtroMatricula = document.getElementById('filtroMatricula');
+    const filtroCliente = document.getElementById('filtroCliente');
+    const filtroMantenimiento = document.getElementById('filtroMantenimiento');
+    
+    if (filtroFecha) {
+        filtroFecha.addEventListener('change', function() {
+            filtrosActivos.fecha = this.value;
+            console.log('📅 Filtro fecha cambiado:', this.value);
+            aplicarFiltros();
+        });
+    }
+    
+    if (filtroMatricula) {
+        filtroMatricula.addEventListener('input', function() {
+            clearTimeout(timeoutBusqueda);
+            timeoutBusqueda = setTimeout(() => {
+                filtrosActivos.matricula = this.value.trim();
+                console.log('🔤 Filtro matrícula cambiado:', this.value);
+                aplicarFiltros();
+            }, 500);
+        });
+    }
+    
+    if (filtroCliente) {
+        filtroCliente.addEventListener('change', function() {
+            filtrosActivos.tipo_cliente = this.value;
+            console.log('👤 Filtro cliente cambiado:', this.value);
+            aplicarFiltros();
+        });
+    }
+    
+    if (filtroMantenimiento) {
+        filtroMantenimiento.addEventListener('change', function() {
+            // ✅ CORREGIDO: Guardar el valor tal cual, incluso si es "0"
+            filtrosActivos.tipo_mantenimiento = this.value;
+            console.log('🔧 Filtro mantenimiento cambiado:', this.value, 'Tipo:', typeof this.value);
+            aplicarFiltros();
+        });
+    }
+    
+    console.log('✅ Eventos configurados correctamente');
+}
+
+/**
  * Carga las asignaciones de mantenimiento
  */
 async function cargarAsignaciones(pagina = 1) {
@@ -120,9 +171,7 @@ async function cargarAsignaciones(pagina = 1) {
     try {
         console.log(`📄 Página actual: ${pagina}`);
         
-        // ✅ CORREGIR RUTA - Está en app/models/
-        let url = `/Eolo/app/models/leer_asignacion_mantenimiento.php?pagina=${pagina}&registros_por_pagina=${registrosPorPagina}`;
-        
+        let url = `/Eolo/app/models/leer_asignacion_mantenimiento.php?pagina=${pagina}&registros_por_pagina=${registrosPorPagina}`;        
         if (filtrosActivos.fecha) {
             url += `&fecha=${filtrosActivos.fecha}`;
         }
@@ -187,7 +236,7 @@ async function cargarAsignaciones(pagina = 1) {
 }
 
 /**
- * Función para generar asignaciones automáticas - VERSIÓN CORREGIDA DEFINITIVA
+ * Función para generar asignaciones automáticas
  */
 async function generarAsignacionMantenimiento() {
     try {
@@ -195,9 +244,10 @@ async function generarAsignacionMantenimiento() {
             return;
         }
 
-        // ✅ CORREGIDO: Usar el selector correcto para el botón
+        // Usar el selector correcto para el botón
         mostrarLoadingBtn('.btn-extraer', true);
 
+        // Pasar explícitamente el módulo
         const response = await fetch('/Eolo/app/models/obtener_entradas_control_pernocta.php?modulo=asignacion_mantenimiento');
         
         if (!response.ok) {
@@ -205,6 +255,8 @@ async function generarAsignacionMantenimiento() {
         }
         
         const data = await response.json();
+
+        console.log(' Respuesta del servidor:', data); // Para debugging
 
         if (!data.success) {
             throw new Error(data.message || 'Error en la respuesta del servidor');
@@ -216,8 +268,13 @@ async function generarAsignacionMantenimiento() {
             mensaje = 'No hay entradas nuevas para asignar mantenimiento.';
         } else {
             let asignacionesCreadas = 0;
+            let duplicados = 0;
+
+            console.log(`Procesando ${data.entradas.length} entradas...`);
 
             for (const entrada of data.entradas) {
+                console.log(` Procesando aeronave: ${entrada.Matricula}, Fecha: ${entrada.Fecha}`);
+                
                 const formData = new FormData();
                 formData.append('id_aeronave', entrada.Id_Aeronave);
                 formData.append('id_ultimo_registro', entrada.Id_Pernocta);
@@ -230,16 +287,21 @@ async function generarAsignacionMantenimiento() {
                 const crearData = await crearResponse.json();
                 if (crearData.success) {
                     asignacionesCreadas++;
+                    console.log(`Creada asignación para ${entrada.Matricula}`);
+                } else {
+                    duplicados++;
+                    console.log(`Duplicado para ${entrada.Matricula}: ${crearData.message}`);
                 }
-                // ✅ NO CAPTURAR NI MOSTRAR ERRORES DE DUPLICADOS
             }
 
-            // ✅ SOLO MOSTRAR LAS QUE SE CREARON, NO MENCIONAR DUPLICADOS
+            //SOLO MOSTRAR LAS QUE SE CREARON, NO MENCIONAR DUPLICADOS
             if (asignacionesCreadas === 0) {
                 mensaje = 'Todas las aeronaves ya tenían asignación de mantenimiento.';
             } else {
                 mensaje = `Se crearon ${asignacionesCreadas} asignaciones de mantenimiento.`;
             }
+            
+            console.log(`📊 Resultado: ${asignacionesCreadas} creadas, ${duplicados} duplicados`);
         }
 
         mostrarExito(mensaje);
@@ -249,13 +311,12 @@ async function generarAsignacionMantenimiento() {
         console.error('Error:', error);
         mostrarError('Error al procesar: ' + error.message);
     } finally {
-        // ✅ CORREGIDO: Restaurar el texto original del botón
         mostrarLoadingBtn('.btn-extraer', false);
     }
 }
 
 /**
- * ✅ CORREGIDO: Función para mostrar/ocultar loading en botones
+ * Función para mostrar/ocultar loading en botones
  */
 function mostrarLoadingBtn(selector, mostrar) {
     const btn = document.querySelector(selector);
@@ -263,11 +324,11 @@ function mostrarLoadingBtn(selector, mostrar) {
     if (btn) {
         if (mostrar) {
             btn.disabled = true;
-            // ✅ TEXTO CORRECTO durante loading
+            //TEXTO CORRECTO durante loading
             btn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status"></span> Procesando...';
         } else {
             btn.disabled = false;
-            // ✅ RESTAURAR TEXTO ORIGINAL correctamente
+            //RESTAURAR TEXTO ORIGINAL correctamente
             btn.innerHTML = '<i class="fas fa-cogs me-2"></i>Obtener Entradas';
         }
     }
@@ -291,14 +352,14 @@ function mostrarAsignaciones(asignaciones) {
         return;
     }
 
-    // ✅ USAR EL SISTEMA DE PERMISOS CENTRALIZADO
+    // USAR EL SISTEMA DE PERMISOS CENTRALIZADO
     const puedeEditar = window.permisosSistema ? 
         window.permisosSistema.puedeEditar('asignacion_mantenimiento') : true;
     
     const puedeEliminar = window.permisosSistema ? 
         window.permisosSistema.puedeEliminar('asignacion_mantenimiento') : false;
 
-    console.log('🔐 Permisos aplicados en tabla:', { 
+    console.log(' Permisos aplicados en tabla:', { 
         puedeEditar, 
         puedeEliminar,
         usuario: window.permisosSistema?.usuario 
@@ -316,7 +377,7 @@ function mostrarAsignaciones(asignaciones) {
                                 (asignacion.Tipo_Mantenimiento === '0' ? 'Mantenimiento 0' : 'Mantenimiento 1') :
                                 '<span class="text-muted fst-italic">Por asignar</span>';
 
-        // ✅ BOTONES CORREGIDOS: SIN PDF, SOLO EDITAR Y ELIMINAR
+        // BOTONES CORREGIDOS: SIN PDF, SOLO EDITAR Y ELIMINAR
         const botonesHTML = `
             <!-- Botón Editar - CON PERMISOS -->
             <button class="btn btn-warning btn-editar" 
@@ -355,7 +416,7 @@ function mostrarAsignaciones(asignaciones) {
         `;
     }).join('');
 
-    console.log('✅ Tabla de asignaciones cargada con permisos aplicados');
+    console.log(' Tabla de asignaciones cargada con permisos aplicados');
 }
 
 /**
@@ -501,7 +562,26 @@ function cambiarPagina(pagina) {
  * Aplica los filtros y recarga la tabla
  */
 function aplicarFiltros() {
-    console.log('🔍 Aplicando filtros...');
+    console.log('🔍 Aplicando filtros...', filtrosActivos);
+    
+    // Obtener valores actuales de los inputs
+    const filtroFecha = document.getElementById('filtroFecha');
+    const filtroMatricula = document.getElementById('filtroMatricula');
+    const filtroCliente = document.getElementById('filtroCliente');
+    const filtroMantenimiento = document.getElementById('filtroMantenimiento');
+    
+    // ✅ CORREGIDO: Actualizar filtrosActivos correctamente, incluyendo el valor "0"
+    if (filtroFecha) filtrosActivos.fecha = filtroFecha.value;
+    if (filtroMatricula) filtrosActivos.matricula = filtroMatricula.value.trim();
+    if (filtroCliente) filtrosActivos.tipo_cliente = filtroCliente.value;
+    if (filtroMantenimiento) {
+        // ✅ IMPORTANTE: Guardar el valor aunque sea "0" o string vacío
+        filtrosActivos.tipo_mantenimiento = filtroMantenimiento.value;
+    }
+    
+    console.log('🎯 Filtros activos actualizados:', filtrosActivos);
+    console.log('🔧 Tipo mantenimiento:', filtrosActivos.tipo_mantenimiento, 'Tipo:', typeof filtrosActivos.tipo_mantenimiento);
+    
     paginaActual = 1;
     cargarAsignaciones();
 }
@@ -529,6 +609,8 @@ function limpiarFiltros() {
         tipo_mantenimiento: ''
     };
     
+    console.log('✅ Filtros limpiados:', filtrosActivos);
+    
     paginaActual = 1;
     cargarAsignaciones();
 }
@@ -542,11 +624,11 @@ function mostrarLoadingBtn(selector, mostrar) {
     if (btn) {
         if (mostrar) {
             btn.disabled = true;
-            // ✅ Texto durante loading
+            //  Texto durante loading
             btn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status"></span> Procesando...';
         } else {
             btn.disabled = false;
-            // ✅ CORREGIDO: Restaurar el texto EXACTO del HTML original
+            // CORREGIDO: Restaurar el texto EXACTO del HTML original
             btn.innerHTML = '<i class="fas fa-cogs me-2"></i>Obtener Entradas';
         }
     }
@@ -558,7 +640,7 @@ function mostrarLoadingBtn(selector, mostrar) {
 function editarAsignacion(idAsignacion) {
     console.log('✏️ Editando/Asignando mantenimiento ID:', idAsignacion);
     
-    // ✅ SOLO ADMIN PUEDE EDITAR
+    //  SOLO ADMIN PUEDE EDITAR
     if (window.permisosSistema && !window.permisosSistema.puedeEditar('asignacion_mantenimiento')) {
         mostrarError('Solo los administradores pueden editar asignaciones de mantenimiento.');
         return;
@@ -586,7 +668,7 @@ function inicializarPaginaEdicion() {
             event.preventDefault();
             actualizarAsignacion();
         });
-        console.log('✅ Formulario configurado para envío');
+        console.log(' Formulario configurado para envío');
     } else {
         console.error('❌ No se encontró el formulario asignacionForm');
     }

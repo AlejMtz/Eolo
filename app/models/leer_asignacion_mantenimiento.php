@@ -1,5 +1,5 @@
 <?php
-// Leer asignacón mantenimiento - CORREGIDO
+// Leer asignacón mantenimiento - CORREGIDO PARA VALOR "0"
 header('Content-Type: application/json');
 header('Access-Control-Allow-Origin: *');
 
@@ -23,7 +23,11 @@ try {
     $fecha = isset($_GET['fecha']) ? $_GET['fecha'] : '';
     $matricula = isset($_GET['matricula']) ? $_GET['matricula'] : '';
     $tipo_cliente = isset($_GET['tipo_cliente']) ? $_GET['tipo_cliente'] : '';
+    
+    // ✅ CORREGIDO: Manejar correctamente el valor "0" para tipo_mantenimiento
     $tipo_mantenimiento = isset($_GET['tipo_mantenimiento']) ? $_GET['tipo_mantenimiento'] : '';
+    // Verificar explícitamente si el parámetro está presente, incluso si es "0"
+    $tiene_filtro_mantenimiento = array_key_exists('tipo_mantenimiento', $_GET);
     
     // Construir consulta base - SOLO REGISTROS ACTIVOS
     $sql = "SELECT SQL_CALC_FOUND_ROWS am.*, a.Matricula, a.Equipo 
@@ -48,14 +52,20 @@ try {
         $params[] = $tipo_cliente;
     }
     
-    if (!empty($tipo_mantenimiento)) {
+    // ✅ CORREGIDO: Manejar filtro de mantenimiento incluyendo el valor "0"
+    if ($tiene_filtro_mantenimiento && $tipo_mantenimiento !== '') {
         $sql .= " AND am.Tipo_Mantenimiento = ?";
         $params[] = $tipo_mantenimiento;
+        error_log("🔧 Aplicando filtro mantenimiento: " . $tipo_mantenimiento);
     }
     
     // ORDEN por fecha y hora
     $sql .= " ORDER BY am.Fecha DESC, am.Hora DESC 
               LIMIT $registrosPorPagina OFFSET $offset";
+    
+    // Log para debugging
+    error_log("📊 Consulta SQL: " . $sql);
+    error_log("🎯 Parámetros: " . implode(', ', $params));
     
     $stmt = $pdo->prepare($sql);
     
@@ -84,6 +94,13 @@ try {
             'total_paginas' => $totalPaginas,
             'total_registros' => $totalRegistros,
             'registros_por_pagina' => $registrosPorPagina
+        ],
+        'filtros_aplicados' => [
+            'fecha' => $fecha,
+            'matricula' => $matricula,
+            'tipo_cliente' => $tipo_cliente,
+            'tipo_mantenimiento' => $tipo_mantenimiento,
+            'tiene_filtro_mantenimiento' => $tiene_filtro_mantenimiento
         ]
     ], JSON_UNESCAPED_UNICODE);
     
