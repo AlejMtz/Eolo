@@ -2,22 +2,18 @@
 header('Content-Type: application/json');
 header('Access-Control-Allow-Origin: *');
 
-// Configuración de la base de datos
 $servername = "localhost";
 $username = "root";
 $password = "";
 $dbname = "eolo";
 
 try {
-    // Crear conexión
     $conn = new mysqli($servername, $username, $password, $dbname);
 
-    // Verificar conexión
     if ($conn->connect_error) {
         throw new Exception('Error de conexión: ' . $conn->connect_error);
     }
 
-    // Consulta simple para obtener todas las aeronaves
     $sql = "SELECT Id_Aeronave, Matricula, Tipo, Equipo FROM aeronave ORDER BY Matricula";
     $result = $conn->query($sql);
 

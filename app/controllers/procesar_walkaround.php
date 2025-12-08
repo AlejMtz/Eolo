@@ -2,13 +2,11 @@
 header('Content-Type: application/json');
 header('Access-Control-Allow-Origin: *');
 
-// Configuración de la base de datos
 $servername = "localhost";
 $username = "root";
 $password = "";
 $dbname = "eolo";
 
-// Respuesta por defecto
 $response = ['success' => false, 'message' => 'Error desconocido'];
 
 try {
@@ -49,10 +47,9 @@ try {
         throw new Exception("Debe seleccionar al menos un tipo de walkaround (Entrada o Salida)");
     }
 
-    // Iniciar transacción
     $conn->begin_transaction();
 
-    // PRIMERO: Insertar en la tabla walkaround
+    // Insertar en la tabla walkaround
     $stmt_walkaround = $conn->prepare("INSERT INTO walkaround (Fechahora, Id_Aeronave, Elaboro, Responsable, JefeArea, VoBo, observaciones, Procedencia, Destino, entrada, salida) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
 
     if (!$stmt_walkaround) {
@@ -68,21 +65,17 @@ try {
     $id_walkaround = $stmt_walkaround->insert_id;
     $stmt_walkaround->close();
 
-    // SEGUNDO: Procesar TODOS los componentes - VERSIÓN CORREGIDA
+    //Procesar TODOS los componentes
 $component_count = 0;
 $componentes_data = [];
 
-// Procesar directamente desde $_POST - VERSIÓN CORREGIDA
 foreach ($_POST as $key => $value) {
     if (strpos($key, 'dano_') === 0) {
-        // Extraer el componente_id y tipo_dano correctamente
         $key_parts = explode('_', $key);
         
-        // El primer elemento es "dano", el último es el tipo de daño
-        // Todo lo del medio es el componente_id
-        $tipo_dano = array_pop($key_parts); // quita el último elemento (tipo de daño)
-        array_shift($key_parts); // quita el primer elemento ("dano")
-        $componente_id = implode('_', $key_parts); // junta el resto como componente_id
+        $tipo_dano = array_pop($key_parts);
+        array_shift($key_parts);
+        $componente_id = implode('_', $key_parts);
         
         if (!isset($componentes_data[$componente_id])) {
             $componentes_data[$componente_id] = [
@@ -96,7 +89,6 @@ foreach ($_POST as $key => $value) {
     }
 }
 
-// DEBUG: Mostrar cuántos componentes se procesaron
 error_log("DEBUG - Componentes procesados: " . count($componentes_data));
 
     // Insertar en la base de datos
@@ -112,7 +104,7 @@ error_log("DEBUG - Componentes procesados: " . count($componentes_data));
             throw new Exception("Error al preparar consulta: " . $conn->error);
         }
         
-        // ORDEN CORREGIDO DEFINITIVO
+        // Orden de Insercion
         $stmt->bind_param(
             "issiiiiiiii", 
             $id_walkaround,                    
@@ -136,7 +128,7 @@ error_log("DEBUG - Componentes procesados: " . count($componentes_data));
         $component_count++;
     }
 
-    // TERCERO: Procesar evidencias generales
+    // Procesar evidencias
     if (isset($_FILES['generalEvidence']) && count($_FILES['generalEvidence']['name']) > 0) {
         $evidencias = $_FILES['generalEvidence'];
         $archivosProcesados = 0;
@@ -160,7 +152,6 @@ error_log("DEBUG - Componentes procesados: " . count($componentes_data));
         }
     }
     
-    // Confirmar transacción
     $conn->commit();
     
     $response = [
@@ -171,7 +162,6 @@ error_log("DEBUG - Componentes procesados: " . count($componentes_data));
     ];
     
 } catch (Exception $e) {
-    // Revertir transacción en caso de error
     if (isset($conn) && $conn) {
         $conn->rollback();
     }
@@ -179,16 +169,14 @@ error_log("DEBUG - Componentes procesados: " . count($componentes_data));
     $response = ['success' => false, 'message' => $e->getMessage()];
 }
 
-// Cerrar conexión si existe
 if (isset($conn) && $conn) {
     $conn->close();
 }
 
-// Enviar respuesta JSON
 echo json_encode($response);
 exit;
 
-// Función para guardar evidencias (se mantiene igual)
+// Función para guardar evidencias
 function guardarEvidencia($conn, $evidencia, $id_walkaround, $id_aeronave) {
     // Validaciones iniciales
     if (!is_uploaded_file($evidencia['tmp_name'])) {
@@ -207,7 +195,6 @@ function guardarEvidencia($conn, $evidencia, $id_walkaround, $id_aeronave) {
         return null;
     }
 
-    // Verificar si el archivo ya existe para este walkaround
     $sql_verificar = "SELECT COUNT(*) as count FROM evidencias WHERE Id_Wk = ? AND FileName = ?";
     $stmt_verificar = $conn->prepare($sql_verificar);
     
@@ -230,7 +217,6 @@ function guardarEvidencia($conn, $evidencia, $id_walkaround, $id_aeronave) {
         return null;
     }
 
-    // Crear directorio si no existe
 $uploadDir = $_SERVER['DOCUMENT_ROOT'] . '/Eolo/public/assets/evidencias/';
 if (!file_exists($uploadDir)) {
     if (!mkdir($uploadDir, 0777, true)) {
@@ -246,32 +232,32 @@ $uniqueId = uniqid();
 $fileName = $uniqueId . '_' . $id_walkaround . '_' . $fileNameClean;
 $filePath = $uploadDir . $fileName;
 
-// Ruta que se guardará en la BD (accesible desde el frontend)
+// Ruta que se guardará en la BD
 $rutaParaBD = '/Eolo/public/assets/evidencias/' . $fileName;
 
-error_log("📁 Guardando evidencia:");
+error_log(" Guardando evidencia:");
 error_log("  - Ruta física: " . $filePath);
 error_log("  - Ruta BD: " . $rutaParaBD);
 error_log("  - Nombre archivo: " . $evidencia['name']);
 
 // Mover archivo
 if (move_uploaded_file($evidencia['tmp_name'], $filePath)) {
-    error_log("✅ Archivo movido exitosamente");
+    error_log("Archivo movido exitosamente");
     
     // Verificar que el archivo existe y tiene contenido
     if (!file_exists($filePath) || filesize($filePath) == 0) {
-        error_log("❌ Archivo no válido después de mover");
+        error_log("Archivo no válido después de mover");
         if (file_exists($filePath)) {
             unlink($filePath);
         }
         return null;
     }
 
-    // Insertar en la base de datos - USAR $rutaParaBD en lugar de $filePath
+    // Insertar en la base de datos
     $stmt_evidencia = $conn->prepare("INSERT INTO evidencias (Id_Wk, Id_Aeronave, Ruta, FileName) VALUES (?, ?, ?, ?)");
     
     if (!$stmt_evidencia) {
-        error_log("❌ Error al preparar consulta de inserción: " . $conn->error);
+        error_log("Error al preparar consulta de inserción: " . $conn->error);
         if (file_exists($filePath)) {
             unlink($filePath);
         }
@@ -283,10 +269,10 @@ if (move_uploaded_file($evidencia['tmp_name'], $filePath)) {
     if ($stmt_evidencia->execute()) {
         $id_evidencia = $stmt_evidencia->insert_id;
         $stmt_evidencia->close();
-        error_log("🎉 Evidencia guardada en BD con ID: " . $id_evidencia);
+        error_log("Evidencia guardada en BD con ID: " . $id_evidencia);
         return $id_evidencia;
     } else {
-        error_log("❌ Error al insertar evidencia en BD: " . $stmt_evidencia->error);
+        error_log("Error al insertar evidencia en BD: " . $stmt_evidencia->error);
         $stmt_evidencia->close();
         if (file_exists($filePath)) {
             unlink($filePath);
@@ -294,7 +280,7 @@ if (move_uploaded_file($evidencia['tmp_name'], $filePath)) {
         return null;
     }
 } else {
-    error_log("❌ Error al mover el archivo subido");
+    error_log("Error al mover el archivo subido");
     return null;
 }
 }

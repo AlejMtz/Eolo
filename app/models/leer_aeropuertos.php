@@ -5,11 +5,9 @@ header('Access-Control-Allow-Origin: *');
 
 require '../../app/models/conexion.php';
 
-// Parámetros de paginación - CAMBIADO A 10 REGISTROS
 $pagina = isset($_GET['pagina']) ? intval($_GET['pagina']) : 1;
 $registros_por_pagina = isset($_GET['registros_por_pagina']) ? intval($_GET['registros_por_pagina']) : 10;
 
-// Validar parámetros
 if ($pagina < 1) $pagina = 1;
 if ($registros_por_pagina < 1) $registros_por_pagina = 10;
 
@@ -22,7 +20,7 @@ try {
     $total_registros = $stmt_count->fetch(PDO::FETCH_ASSOC)['total'];
     $total_paginas = ceil($total_registros / $registros_por_pagina);
 
-    // Obtener aeropuertos con paginación - ORDENADO POR ID ASCENDENTE
+    // Obtener aeropuertos con paginación
     $sql = "SELECT * FROM aeropuertos ORDER BY Id_Aeropuerto ASC LIMIT :limit OFFSET :offset"; // CAMBIADO: Id_Aeropuerto ASC
     $stmt = $pdo->prepare($sql);
     $stmt->bindValue(':limit', $registros_por_pagina, PDO::PARAM_INT);

@@ -12,8 +12,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 
 require '../models/conexion.php';
 
-// Log para depuración (remover en producción)
-error_log("Solicitud recibida para ID: " . $_GET['id']);
 
 try {
     // Validar que el ID esté presente

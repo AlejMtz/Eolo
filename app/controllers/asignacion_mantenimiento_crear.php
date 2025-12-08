@@ -40,7 +40,7 @@ try {
         throw new Exception("Ya existe una asignación activa para esta entrada de aeronave");
     }
 
-    // ✅ INSERTAR CON CAMPOS NULL (como quieres)
+    // INSERTAR CON CAMPOS NULL
     $sql = "INSERT INTO asignacion_mantenimiento 
             (Fecha, Hora, Id_Aeronave, Id_Ultimo_Registro, Tipo_Cliente, Tipo_Mantenimiento, Estado_Registro) 
             VALUES (?, ?, ?, ?, NULL, NULL, 'activo')";

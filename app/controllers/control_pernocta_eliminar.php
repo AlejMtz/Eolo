@@ -23,12 +23,11 @@ try {
         throw new Exception("El control no existe o ya fue eliminado");
     }
 
-    // DESHABILITAR control (no eliminar) pero mantener mensaje de "eliminado"
+    // Deshabilitar control
     $sql = "UPDATE control_pernocta SET Estado_Registro = 'inactivo' WHERE Id_Control = ?";
     $stmt = $pdo->prepare($sql);
     $stmt->execute([$id_control]);
 
-    // ✅ MANTENER MENSAJE DE "ELIMINADO" PARA EL USUARIO
     $response = [
         'success' => true, 
         'message' => 'Control eliminado correctamente'

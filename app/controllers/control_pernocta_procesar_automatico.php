@@ -5,7 +5,7 @@ header('Access-Control-Allow-Origin: *');
 require '../models/conexion.php';
 
 try {
-    // En la consulta SQL, agregar filtro para estado activo
+
 $sql = "
     SELECT p1.*, a.Matricula, a.Equipo 
     FROM pernocta_diaria p1 
@@ -33,7 +33,7 @@ $sql = "
     $entradas = $stmt->fetchAll(PDO::FETCH_ASSOC);
     
     $contador = 0;
-    $hora_final = date('H:i:s'); // Hora actual del servidor
+    $hora_final = date('H:i:s');
     
     foreach ($entradas as $entrada) {
         // Insertar automáticamente en control_pernocta
@@ -45,7 +45,7 @@ $sql = "
         $stmtInsert->execute([
             $entrada['Fecha'],
             $entrada['Hora'],
-            $hora_final, // ✅ AGREGAR HORA FINAL
+            $hora_final,
             $entrada['Id_Aeronave'],
             $entrada['Id_Pernocta']
         ]);

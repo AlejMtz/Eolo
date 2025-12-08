@@ -13,11 +13,11 @@ try {
         exit;
     }
 
-    // Consulta para obtener datos del control - SOLO SI ESTÁ ACTIVO
+    // Consulta para obtener datos del control
     $sql = "SELECT cp.*, a.Matricula, a.Equipo, a.Tipo 
             FROM control_pernocta cp 
             LEFT JOIN aeronave a ON cp.Id_Aeronave = a.Id_Aeronave 
-            WHERE cp.Id_Control = ? AND cp.Estado_Registro = 'activo'"; // ✅ FILTRO NUEVO
+            WHERE cp.Id_Control = ? AND cp.Estado_Registro = 'activo'"; 
     
     $stmt = $pdo->prepare($sql);
     $stmt->execute([$id]);

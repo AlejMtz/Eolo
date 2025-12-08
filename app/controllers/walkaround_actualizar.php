@@ -2,13 +2,11 @@
 header('Content-Type: application/json');
 header('Access-Control-Allow-Origin: *');
 
-// Configuración de la base de datos
 $servername = "localhost";
 $username = "root";
 $password = "";
 $dbname = "eolo";
 
-// Respuesta por defecto
 $response = ['success' => false, 'message' => 'Error desconocido'];
 
 try {
@@ -20,7 +18,7 @@ try {
         throw new Exception('Error de conexión a la base de datos: ' . $conn->connect_error);
     }
 
-    // Verificar que todos los campos requeridos estén presentes (EXCLUYENDO fechaHora)
+    // Verificar que todos los campos requeridos estén presentes
     $required_fields = ['id_walk', 'id_aeronave', 'elaboro', 'responsable', 'jefe_area', 'vobo'];
     foreach ($required_fields as $field) {
         if (!isset($_POST[$field]) || empty($_POST[$field])) {
@@ -48,31 +46,26 @@ try {
         throw new Exception("Debe seleccionar al menos un tipo de walkaround (Entrada o Salida)");
     }
 
-    // Iniciar transacción
     $conn->begin_transaction();
 
-    // ⭐⭐ CORRECCIÓN: NO actualizar la fecha/hora - mantener la ORIGINAL
-    // PRIMERO: Actualizar la tabla walkaround (SIN Fechahora)
     $stmt_walkaround = $conn->prepare("UPDATE walkaround SET Id_Aeronave=?, Elaboro=?, Responsable=?, JefeArea=?, VoBo=?, observaciones=?, Procedencia=?, Destino=?, entrada=?, salida=? WHERE Id_Walk=?");
 
     if (!$stmt_walkaround) {
         throw new Exception("Error al preparar consulta walkaround: " . $conn->error);
     }
 
-    // ⭐⭐ CORRECCIÓN CRÍTICA: Arreglar el bind_param - 11 parámetros, 11 variables
-    // "isssssssiii" = 11 caracteres para 11 variables
     $stmt_walkaround->bind_param("isssssssiii", 
-        $id_aeronave,      // i (entero)
-        $elaboro,          // s (string)
-        $responsable,      // s (string)
-        $jefe_area,        // s (string)
-        $vobo,             // s (string)
-        $observacionesGenerales, // s (string)
-        $procedencia,      // s (string)
-        $destino,          // s (string)
-        $entrada,          // i (entero)
-        $salida,           // i (entero)
-        $id_walk           // i (entero)
+        $id_aeronave,      
+        $elaboro,          
+        $responsable,      
+        $jefe_area,        
+        $vobo,             
+        $observacionesGenerales,
+        $procedencia,      
+        $destino,          
+        $entrada,          
+        $salida,           
+        $id_walk           
     );    
     
     if (!$stmt_walkaround->execute()) {
@@ -81,8 +74,7 @@ try {
     
     $stmt_walkaround->close();
 
-    // El resto del código se mantiene igual...
-    // SEGUNDO: Eliminar componentes existentes
+    //Eliminar componentes existentes
     $stmt_delete = $conn->prepare("DELETE FROM componentewk WHERE Id_Walk = ?");
     if (!$stmt_delete) {
         throw new Exception("Error al preparar eliminación de componentes: " . $conn->error);
@@ -94,11 +86,10 @@ try {
     }
     $stmt_delete->close();
 
-    // TERCERO: Procesar TODOS los componentes
+    // Procesar TODOS los componentes
     $component_count = 0;
     $componentes_data = [];
 
-    // Procesar directamente desde $_POST
     foreach ($_POST as $key => $value) {
         if (strpos($key, 'dano_') === 0) {
             $key_parts = explode('_', $key);
@@ -154,7 +145,7 @@ try {
         $component_count++;
     }
 
-    // ⭐⭐ CUARTO: OBTENER EVIDENCIAS EXISTENTES PARA VERIFICAR DUPLICADOS
+    //OBTENER EVIDENCIAS EXISTENTES PARA VERIFICAR DUPLICADOS
     $evidencias_existentes = [];
     $stmt_get_evidencias = $conn->prepare("SELECT FileName FROM evidencias WHERE Id_Wk = ?");
     if ($stmt_get_evidencias) {
@@ -170,11 +161,11 @@ try {
     
     error_log("📋 Evidencias existentes para walkaround $id_walk: " . implode(', ', $evidencias_existentes));
 
-    // ⭐⭐ QUINTO: Procesar NUEVAS evidencias generales (evitando duplicados)
+    // Procesar NUEVAS evidencias generales
     $evidencias_procesadas = 0;
     $evidencias_duplicadas = 0;
     
-    // ⭐⭐ CORRECCIÓN: Verificar correctamente si hay archivos de evidencias
+    //Verificar correctamente si hay archivos de evidencias
     if (isset($_FILES['generalEvidence']) && !empty($_FILES['generalEvidence']['name'][0])) {
         $evidencias = $_FILES['generalEvidence'];
         $total_archivos = count($evidencias['name']);
@@ -189,7 +180,6 @@ try {
                 
                 $nombre_archivo = $evidencias['name'][$i];
                 
-                // ⭐⭐ VERIFICAR SI EL ARCHIVO YA EXISTE
                 if (in_array($nombre_archivo, $evidencias_existentes)) {
                     error_log("⚠️ Evidencia duplicada omitida: " . $nombre_archivo . " para walkaround " . $id_walk);
                     $evidencias_duplicadas++;
@@ -228,7 +218,6 @@ try {
         }
     }
     
-    // Confirmar transacción
     $conn->commit();
     
     $response = [
@@ -252,16 +241,14 @@ try {
     error_log("❌ Error en walkaround_actualizar: " . $e->getMessage());
 }
 
-// Cerrar conexión si existe
 if (isset($conn) && $conn) {
     $conn->close();
 }
 
-// Enviar respuesta JSON
 echo json_encode($response);
 exit;
 
-// ⭐⭐ FUNCIÓN CORREGIDA: Guardar evidencias (con rutas consistentes)
+//Guardar evidencias
 function guardarEvidencia($conn, $evidencia, $id_walkaround, $id_aeronave, $modoEdicion = false) {
     // Validaciones iniciales
     if (!is_uploaded_file($evidencia['tmp_name'])) {
@@ -284,7 +271,6 @@ function guardarEvidencia($conn, $evidencia, $id_walkaround, $id_aeronave, $modo
         return false;
     }
 
-    // ⭐⭐ VERIFICACIÓN ADICIONAL EN LA BD (doble verificación)
     $sql_verificar = "SELECT COUNT(*) as count FROM evidencias WHERE Id_Wk = ? AND FileName = ?";
     $stmt_verificar = $conn->prepare($sql_verificar);
     
@@ -310,7 +296,6 @@ function guardarEvidencia($conn, $evidencia, $id_walkaround, $id_aeronave, $modo
         return false;
     }
 
-    // ⭐⭐ CORRECCIÓN: Usar la misma ruta que en procesar_walkaround.php
     $uploadDir = $_SERVER['DOCUMENT_ROOT'] . '/Eolo/public/assets/evidencias/';
     if (!file_exists($uploadDir)) {
         if (!mkdir($uploadDir, 0777, true)) {
@@ -328,10 +313,9 @@ function guardarEvidencia($conn, $evidencia, $id_walkaround, $id_aeronave, $modo
     $fileName = $uniqueId . '_' . $id_walkaround . '_' . $fileNameClean;
     $filePath = $uploadDir . $fileName;
     
-    // ⭐⭐ CORRECCIÓN: Ruta que se guardará en la BD (igual que en procesar_walkaround.php)
     $rutaParaBD = '/Eolo/public/assets/evidencias/' . $fileName;
     
-    error_log("📁 Guardando nueva evidencia:");
+    error_log(" Guardando nueva evidencia:");
     error_log("  - Ruta física: " . $filePath);
     error_log("  - Ruta BD: " . $rutaParaBD);
     error_log("  - Nombre archivo: " . $evidencia['name']);
@@ -349,7 +333,6 @@ function guardarEvidencia($conn, $evidencia, $id_walkaround, $id_aeronave, $modo
             return false;
         }
 
-        // ⭐⭐ CORRECCIÓN: Insertar en la base de datos usando $rutaParaBD
         $stmt_evidencia = $conn->prepare("INSERT INTO evidencias (Id_Wk, Id_Aeronave, Ruta, FileName) VALUES (?, ?, ?, ?)");
         
         if (!$stmt_evidencia) {
@@ -360,17 +343,16 @@ function guardarEvidencia($conn, $evidencia, $id_walkaround, $id_aeronave, $modo
             return false;
         }
         
-        // ⭐⭐ CORRECCIÓN: Usar $rutaParaBD en lugar de $filePath
         $stmt_evidencia->bind_param("iiss", $id_walkaround, $id_aeronave, $rutaParaBD, $evidencia['name']);
         
         if ($stmt_evidencia->execute()) {
             $id_evidencia = $stmt_evidencia->insert_id;
             $stmt_evidencia->close();
             
-            error_log("🎉 Nueva evidencia guardada exitosamente - ID: " . $id_evidencia . " - Archivo: " . $evidencia['name']);
+            error_log("Nueva evidencia guardada exitosamente - ID: " . $id_evidencia . " - Archivo: " . $evidencia['name']);
             return true;
         } else {
-            error_log("❌ Error al insertar evidencia en BD: " . $stmt_evidencia->error);
+            error_log(" Error al insertar evidencia en BD: " . $stmt_evidencia->error);
             $stmt_evidencia->close();
             
             if (file_exists($filePath)) {
@@ -381,7 +363,7 @@ function guardarEvidencia($conn, $evidencia, $id_walkaround, $id_aeronave, $modo
         }
         
     } else {
-        error_log("❌ Error al mover el archivo subido: " . $evidencia['name']);
+        error_log("Error al mover el archivo subido: " . $evidencia['name']);
         error_log("  - tmp_name: " . $evidencia['tmp_name']);
         error_log("  - filePath: " . $filePath);
         error_log("  - upload_max_filesize: " . ini_get('upload_max_filesize'));

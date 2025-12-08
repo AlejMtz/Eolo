@@ -5,7 +5,6 @@ header('Access-Control-Allow-Origin: *');
 require '../../app/models/conexion.php';
 
 try {
-    // Obtener parámetros de paginación
     $pagina = isset($_GET['pagina']) ? (int)$_GET['pagina'] : 1;
     $registros_por_pagina = isset($_GET['registros_por_pagina']) ? (int)$_GET['registros_por_pagina'] : 10;
     
@@ -14,10 +13,8 @@ try {
     $matricula = isset($_GET['matricula']) ? $_GET['matricula'] : '';
     $movimiento = isset($_GET['movimiento']) ? $_GET['movimiento'] : '';
     
-    // Calcular el offset
     $offset = ($pagina - 1) * $registros_por_pagina;
     
-    // Construir consulta base con filtros
     $sql_where = "WHERE p.Estado_Registro = 'activo'";
     $params = [];
     
@@ -44,7 +41,6 @@ try {
     
     $stmt_total = $pdo->prepare($sql_total);
     
-    // Bind parameters
     foreach ($params as $key => $value) {
         $stmt_total->bindValue($key, $value);
     }
@@ -53,7 +49,6 @@ try {
     $total_registros = $stmt_total->fetch(PDO::FETCH_ASSOC)['total'];
     $total_paginas = ceil($total_registros / $registros_por_pagina);
     
-    // Consulta SQL para obtener pernoctas con paginación
     $sql = "SELECT 
                 p.Id_Pernocta,
                 p.Fecha,
@@ -79,7 +74,6 @@ try {
     
     $stmt = $pdo->prepare($sql);
     
-    // Bind parameters para la consulta principal
     foreach ($params as $key => $value) {
         $stmt->bindValue($key, $value);
     }

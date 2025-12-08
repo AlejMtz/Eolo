@@ -31,7 +31,6 @@ try {
         throw new Exception("Tipo de movimiento no válido");
     }
 
-    // CALCULAR ESTADO ACTUAL BASADO EN HISTORIAL ACTIVO
     $sql_estado = "SELECT Tipo_Movimiento 
                    FROM pernocta_diaria 
                    WHERE Id_Aeronave = ? 
@@ -48,7 +47,7 @@ try {
         $estado_actual = ($ultimo_movimiento['Tipo_Movimiento'] == 'entrada') ? 'en_hangar' : 'fuera';
     }
 
-    // VALIDACIÓN DE ESTADO - REGLA PRINCIPAL
+    // VALIDACIÓN DE ESTADO
     if ($tipo_movimiento == 'entrada' && $estado_actual == 'en_hangar') {
         throw new Exception("No puede registrar una ENTRADA. La aeronave ya se encuentra en hangar (basado en el último movimiento registrado).");
     }
@@ -60,7 +59,7 @@ try {
     // Determinar valor de Activo
     $activo = ($tipo_movimiento == 'entrada') ? 1 : 0;
 
-    // Insertar en pernocta_diaria (nuevos registros siempre son activos)
+    // Insertar en pernocta_diaria
     $sql = "INSERT INTO pernocta_diaria (Fecha, Hora, Id_Aeronave, Tipo_Movimiento, Procedencia, Destino, Tripulacion, Pasajeros, Persona_Registro, Activo, Estado_Registro) 
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'activo')";
     
@@ -69,7 +68,6 @@ try {
     
     $id_pernocta = $pdo->lastInsertId();
 
-    // Calcular nuevo estado para la respuesta
     $nuevo_estado = ($tipo_movimiento == 'entrada') ? 'en_hangar' : 'fuera';
 
     $response = [

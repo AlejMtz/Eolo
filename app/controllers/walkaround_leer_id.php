@@ -2,16 +2,13 @@
 header('Content-Type: application/json');
 header('Access-Control-Allow-Origin: *');
 
-// Configuración de la base de datos
 $servername = "localhost";
 $username = "root";
 $password = "";
 $dbname = "eolo";
 
-// Crear conexión
 $conn = new mysqli($servername, $username, $password, $dbname);
 
-// Verificar conexión
 if ($conn->connect_error) {
     die(json_encode(['error' => 'Error de conexión: ' . $conn->connect_error]));
 }
@@ -44,10 +41,8 @@ try {
     $walkaround = $result->fetch_assoc();
     $stmt->close();
     
-    // ⭐⭐ CORRECCIÓN: Usar el nombre EXACTO del campo de la BD - FechaHora con H mayúscula
     $fechahora = isset($walkaround['FechaHora']) ? $walkaround['FechaHora'] : null;
     
-    // DEBUG: Verificar que estamos obteniendo el campo correcto
     error_log("🔍 Campo FechaHora en BD: " . $walkaround['FechaHora']);
     error_log("🔍 Campo Fechahora en BD: " . ($walkaround['Fechahora'] ?? 'NO EXISTE'));
     
@@ -85,7 +80,6 @@ try {
     }
     $stmt_evidencias->close();
     
-    // ⭐⭐ CORRECCIÓN: Mantener consistencia - usar Fechahora (h minúscula) en JSON para que coincida con walkaround.js
     $response = array(
         'Id_Walk' => isset($walkaround['Id_Walk']) ? $walkaround['Id_Walk'] : null,
         'Fechahora' => $fechahora,  // ✅ JSON usa 'h' minúscula para coincidir con JavaScript

@@ -5,7 +5,6 @@ header('Access-Control-Allow-Origin: *');
 require '../../app/models/conexion.php';
 
 try {
-    // Obtener parámetros de paginación
     $pagina = isset($_GET['pagina']) ? (int)$_GET['pagina'] : 1;
     $registros_por_pagina = isset($_GET['registros_por_pagina']) ? (int)$_GET['registros_por_pagina'] : 15;
     
@@ -21,19 +20,19 @@ try {
     
     $params = [];
     
-    // Aplicar filtro por fecha
+    //filtro por fecha
     if (!empty($filtro_fecha)) {
         $sql_base .= " AND DATE(w.FechaHora) = :fecha";
         $params[':fecha'] = $filtro_fecha;
     }
     
-    // Aplicar filtro por matrícula
+    //filtro por matrícula
     if (!empty($filtro_matricula)) {
         $sql_base .= " AND a.Matricula LIKE :matricula";
         $params[':matricula'] = '%' . $filtro_matricula . '%';
     }
     
-    // Aplicar filtro por movimiento
+    // filtro por movimiento
     if (!empty($filtro_movimiento)) {
         if ($filtro_movimiento === 'entrada') {
             $sql_base .= " AND w.entrada = 1";
@@ -42,14 +41,11 @@ try {
         }
     }
     
-    // Calcular el offset
     $offset = ($pagina - 1) * $registros_por_pagina;
     
-    // Consulta para obtener el total de registros CON FILTROS
     $sql_total = "SELECT COUNT(*) as total " . $sql_base;
     $stmt_total = $pdo->prepare($sql_total);
     
-    // Bind parameters para el total
     foreach ($params as $key => $value) {
         $stmt_total->bindValue($key, $value);
     }
@@ -81,12 +77,10 @@ try {
     
     $stmt = $pdo->prepare($sql);
     
-    // Bind parameters para filtros
     foreach ($params as $key => $value) {
         $stmt->bindValue($key, $value);
     }
     
-    // Bind parameters para paginación
     $stmt->bindValue(':limit', $registros_por_pagina, PDO::PARAM_INT);
     $stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
     

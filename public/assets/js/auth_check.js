@@ -23,13 +23,11 @@ function cerrarSesion() {
     window.location.href = '../views/login.html';
 }
 
-// Verificar sesión automáticamente al cargar la página
 document.addEventListener('DOMContentLoaded', function() {
     if (!verificarSesion()) {
         return;
     }
     
-    // Mostrar información del usuario si existe el elemento
     const userInfoElement = document.getElementById('userInfo');
     if (userInfoElement) {
         const usuario = obtenerInfoUsuario();

@@ -1,42 +1,34 @@
-// Variables globales para paginación
 let paginaActual = 1;
 const registrosPorPagina = 10;
 let totalPaginas = 1;
 let totalRegistros = 0;
 
-// Variables para filtros
 let filtrosActivos = {
     matricula: '',
     equipo: ''
 };
 
-// Timeout para búsqueda en tiempo real
 let timeoutBusqueda = null;
 
 document.addEventListener('DOMContentLoaded', () => {
-    // Inicializar modales de Bootstrap
     if (typeof bootstrap !== 'undefined') {
         successModal = new bootstrap.Modal(document.getElementById('successModal'));
         errorModal = new bootstrap.Modal(document.getElementById('errorModal'));
         
-        // Solo inicializar confirmModal si existe
         const confirmModalElement = document.getElementById('confirmModal');
         if (confirmModalElement) {
             confirmModal = new bootstrap.Modal(confirmModalElement);
         }
     }
 
-    // Verificar permisos antes de cargar contenido
     if (!verificarPermisosAeronaves()) {
         return;
     }
 
-    // Detecta si el elemento de la tabla existe para saber en qué página estamos
     if (document.getElementById('tablaAeronaves')) {
         cargarAeronaves();
     }
 
-    // Detecta si el elemento del formulario existe para saber en qué página estamos
     if (document.getElementById('aeronaveForm')) {
         configurarFormularioAeronave();
     }
@@ -77,7 +69,7 @@ function configurarFiltros() {
             // Esperar 500ms después de que el usuario deje de escribir
             timeoutBusqueda = setTimeout(() => {
                 filtrosActivos.matricula = valor;
-                console.log('🛩️ Filtro matrícula actualizado:', valor);
+                console.log(' Filtro matrícula actualizado:', valor);
                 
                 // Aplicar filtros automáticamente después de escribir
                 if (valor.length >= 2 || valor.length === 0) {
@@ -86,7 +78,6 @@ function configurarFiltros() {
             }, 500);
         });
         
-        // También aplicar al presionar Enter
         filtroMatricula.addEventListener('keypress', function(e) {
             if (e.key === 'Enter') {
                 filtrosActivos.matricula = this.value.trim();
@@ -95,29 +86,24 @@ function configurarFiltros() {
         });
     }
     
-    // Filtro de equipo con debounce
     if (filtroEquipo) {
         filtroEquipo.addEventListener('input', function() {
             const valor = this.value.trim();
             
-            // Limpiar timeout anterior
             if (timeoutBusqueda) {
                 clearTimeout(timeoutBusqueda);
             }
             
-            // Esperar 500ms después de que el usuario deje de escribir
             timeoutBusqueda = setTimeout(() => {
                 filtrosActivos.equipo = valor;
                 console.log('✈️ Filtro equipo actualizado:', valor);
                 
-                // Aplicar filtros automáticamente después de escribir
                 if (valor.length >= 2 || valor.length === 0) {
                     aplicarFiltros();
                 }
             }, 500);
         });
         
-        // También aplicar al presionar Enter
         filtroEquipo.addEventListener('keypress', function(e) {
             if (e.key === 'Enter') {
                 filtrosActivos.equipo = this.value.trim();
@@ -133,7 +119,6 @@ function configurarFiltros() {
 function aplicarFiltros() {
     console.log('🔍 Aplicando filtros:', filtrosActivos);
     
-    // Resetear a primera página cuando se aplican filtros
     paginaActual = 1;
     cargarAeronaves();
 }
@@ -159,11 +144,7 @@ function limpiarFiltros() {
     cargarAeronaves();
 }
 
-/**
- * Muestra modal de éxito
- * @param {string} mensaje - Mensaje a mostrar
- * @param {function} callback - Función a ejecutar al cerrar el modal
- */
+
 function mostrarExito(mensaje, callback = null) {
     const modalBody = document.getElementById('successModalBody');
     if (modalBody && successModal) {
@@ -187,7 +168,6 @@ function mostrarExito(mensaje, callback = null) {
 
 /**
  * Muestra modal de error
- * @param {string} mensaje - Mensaje a mostrar
  */
 function mostrarError(mensaje) {
     const modalBody = document.getElementById('errorModalBody');
@@ -201,7 +181,6 @@ function mostrarError(mensaje) {
 
 /**
  * Muestra modal de confirmación para eliminar
- * @param {string} id - ID de la aeronave a eliminar
  */
 function mostrarConfirmacionEliminar(id) {
     const modalBody = document.getElementById('confirmModalBody');
@@ -228,7 +207,6 @@ function verificarPermisosAeronaves() {
         return false;
     }
     
-    // Todos pueden ver aeronaves, pero solo admin puede gestionar
     return true;
 }
 
@@ -299,7 +277,6 @@ async function cargarAeronaves(pagina = 1) {
     tablaBody.innerHTML = '<tr><td colspan="5" class="text-center">Cargando...</td></tr>';
 
     try {
-        // Construir URL con parámetros de paginación y filtros
         let url = `../../app/models/leer_aeronaves.php?pagina=${pagina}&registros_por_pagina=${registrosPorPagina}`;
         
         // Agregar filtros a la URL
@@ -310,7 +287,7 @@ async function cargarAeronaves(pagina = 1) {
             url += `&equipo=${encodeURIComponent(filtrosActivos.equipo)}`;
         }
         
-        console.log('🌐 URL de consulta:', url);
+        console.log(' URL de consulta:', url);
         
         const response = await fetch(url);
         if (!response.ok) {
@@ -318,7 +295,7 @@ async function cargarAeronaves(pagina = 1) {
         }
         
         const data = await response.json();
-        console.log('📊 Datos recibidos del servidor:', data);
+        console.log(' Datos recibidos del servidor:', data);
         
         if (data.error) {
             throw new Error(data.error);
@@ -326,7 +303,7 @@ async function cargarAeronaves(pagina = 1) {
 
         // Verificar estructura de respuesta
         if (!data.aeronaves || !data.paginacion) {
-            console.warn('⚠️ Estructura de respuesta inesperada:', data);
+            console.warn(' Estructura de respuesta inesperada:', data);
             throw new Error('Formato de respuesta no válido');
         }
 
@@ -337,15 +314,14 @@ async function cargarAeronaves(pagina = 1) {
         totalPaginas = infoPaginacion.total_paginas;
         totalRegistros = infoPaginacion.total_registros;
 
-        console.log('🔄 Información de paginación:', infoPaginacion);
-        console.log('📋 Aeronaves recibidas:', aeronaves.length);
+        console.log(' Información de paginación:', infoPaginacion);
+        console.log(' Aeronaves recibidas:', aeronaves.length);
 
         tablaBody.innerHTML = '';
         if (aeronaves.length === 0) {
             let mensaje = 'No hay aeronaves registradas.';
             if (filtrosActivos.matricula || filtrosActivos.equipo) {
                 mensaje = 'No se encontraron aeronaves que coincidan con los filtros aplicados.';
-                // Mostrar sugerencia para limpiar filtros
                 mensaje += '<br><small class="text-muted">Intenta con otros términos o <a href="javascript:void(0)" onclick="limpiarFiltros()">limpia los filtros</a></small>';
             }
             tablaBody.innerHTML = `<tr><td colspan="5" class="text-center">${mensaje}</td></tr>`;
@@ -437,7 +413,6 @@ function mostrarErrorPermisos(mensaje = 'No tienes permisos para realizar esta a
 
 /**
  * Carga los datos de una aeronave para rellenar el formulario de edición.
- * @param {string} id - El ID de la aeronave a editar.
  */
 async function cargarAeronaveParaEditar(id) {
     console.log('🔍 Intentando cargar aeronave ID:', id);
@@ -504,12 +479,10 @@ function configurarValidacionMatricula() {
     inputMatricula.addEventListener('input', function(e) {
         const matricula = e.target.value.trim();
         
-        // Limpiar timeout anterior
         if (timeoutValidacion) {
             clearTimeout(timeoutValidacion);
         }
         
-        // Esperar 500ms después de que el usuario deje de escribir
         timeoutValidacion = setTimeout(() => {
             if (matricula.length >= 2) {
                 validarMatriculaUnica(matricula);
@@ -519,7 +492,6 @@ function configurarValidacionMatricula() {
         }, 500);
     });
 
-    // Limpiar validación cuando el campo pierde el foco
     inputMatricula.addEventListener('blur', function() {
         const matricula = this.value.trim();
         if (matricula.length >= 2) {
@@ -569,7 +541,6 @@ async function validarMatriculaUnica(matricula) {
             inputMatricula.classList.remove('is-invalid');
             inputMatricula.classList.add('is-valid');
             
-            // Limpiar mensaje de error
             const feedbackElement = inputMatricula.nextElementSibling;
             if (feedbackElement && feedbackElement.classList.contains('invalid-feedback')) {
                 feedbackElement.textContent = '';
@@ -577,14 +548,11 @@ async function validarMatriculaUnica(matricula) {
         }
     } catch (error) {
         console.error('Error en validación de matrícula:', error);
-        // En caso de error, no mostramos validación
         limpiarValidacionMatricula();
     }
 }
 
-/**
- * Limpia los estilos de validación
- */
+
 function limpiarValidacionMatricula() {
     const inputMatricula = document.getElementById('matricula');
     if (inputMatricula) {
@@ -598,10 +566,7 @@ function limpiarValidacionMatricula() {
     }
 }
 
-/**
- * Elimina una aeronave de la base de datos (muestra confirmación primero).
- * @param {string} id - El ID de la aeronave a eliminar.
- */
+
 function eliminarAeronave(id) {
     // Verificar permisos antes de mostrar confirmación
     if (!permisosSistema.puedeEliminar('aeronaves')) {
@@ -612,17 +577,12 @@ function eliminarAeronave(id) {
     mostrarConfirmacionEliminar(id);
 }
 
-/**
- * Función que ejecuta la eliminación después de la confirmación
- * @param {string} id - El ID de la aeronave a eliminar.
- */
+
 function eliminarAeronaveConfirmada(id) {
-    // Cerrar inmediatamente el modal de confirmación
     if (confirmModal) {
         confirmModal.hide();
     }
     
-    // Pequeño delay para asegurar el cierre del modal
     setTimeout(() => {
         const formData = new FormData();
         formData.append('id_aeronave', id);
@@ -650,7 +610,7 @@ function eliminarAeronaveConfirmada(id) {
 }
 
 /**
- * Muestra un mensaje en un modal (función legacy - mantengo por compatibilidad)
+ * Muestra un mensaje en un modal
  */
 function mostrarMensaje(titulo, cuerpo, tipo) {
     if (tipo === 'success') {
@@ -689,7 +649,6 @@ function actualizarPaginador() {
         return;
     }
     
-    // Crear contenedor del paginador
     const paginadorContainer = document.createElement('div');
     paginadorContainer.className = 'paginador-container mt-4 d-flex justify-content-between align-items-center';
     paginadorContainer.id = 'paginadorAeronaves';
@@ -736,17 +695,14 @@ function actualizarPaginador() {
         `;
     }
     
-    // Números de página (mostrar máximo 5 páginas)
     const paginasAMostrar = 5;
     let inicioPaginas = Math.max(1, paginaActual - Math.floor(paginasAMostrar / 2));
     let finPaginas = Math.min(totalPaginas, inicioPaginas + paginasAMostrar - 1);
     
-    // Ajustar si estamos cerca del final
     if (finPaginas - inicioPaginas + 1 < paginasAMostrar) {
         inicioPaginas = Math.max(1, finPaginas - paginasAMostrar + 1);
     }
     
-    // Página inicial con elipsis si es necesario
     if (inicioPaginas > 1) {
         html += `
             <li class="page-item">
@@ -758,7 +714,6 @@ function actualizarPaginador() {
         }
     }
     
-    // Páginas intermedias
     for (let i = inicioPaginas; i <= finPaginas; i++) {
         if (i === paginaActual) {
             html += `
@@ -775,7 +730,6 @@ function actualizarPaginador() {
         }
     }
     
-    // Página final con elipsis si es necesario
     if (finPaginas < totalPaginas) {
         if (finPaginas < totalPaginas - 1) {
             html += '<li class="page-item disabled"><span class="page-link">...</span></li>';
@@ -815,10 +769,7 @@ function actualizarPaginador() {
     console.log('✅ Paginador actualizado correctamente');
 }
 
-/**
- * Cambia a una página específica
- * @param {number} pagina - Número de página a cargar
- */
+
 function cambiarPaginaAeronaves(pagina) {
     if (pagina >= 1 && pagina <= totalPaginas && pagina !== paginaActual) {
         cargarAeronaves(pagina);

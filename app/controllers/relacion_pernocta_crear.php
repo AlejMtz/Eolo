@@ -30,7 +30,7 @@ try {
     $pdo->beginTransaction();
 
     foreach ($aeronaves as $aeronave) {
-        $dias_array = array_fill(0, 31, 'F'); // Inicializar todos los días como 'F' (Fuera)
+        $dias_array = array_fill(0, 31, 'F');
         $total_hangar = 0;
         $total_fuera = 0;
 
@@ -40,7 +40,7 @@ try {
             
             // Verificar si la fecha es válida
             if (!checkdate($mes, $dia, $anio)) {
-                $dias_array[$dia-1] = ''; // Día no válido (meses con menos de 31 días)
+                $dias_array[$dia-1] = '';
                 continue;
             }
 
@@ -62,7 +62,6 @@ try {
 
         $dias_cadena = implode('', $dias_array);
 
-        // Insertar o actualizar relación mensual
         $sql_relacion = "INSERT INTO relacion_pernocta_mensual (Mes, Anio, Id_Aeronave, Dias, Total_Dias_Hangar, Total_Dias_Fuera) 
                          VALUES (?, ?, ?, ?, ?, ?)
                          ON DUPLICATE KEY UPDATE 

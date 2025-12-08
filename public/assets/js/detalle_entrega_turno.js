@@ -2,7 +2,6 @@ let entregaId = null;
 let entregaData = null;
 
 document.addEventListener('DOMContentLoaded', function() {
-    // Obtener ID de la URL
     const urlParams = new URLSearchParams(window.location.search);
     entregaId = urlParams.get('id');
     
@@ -11,10 +10,9 @@ document.addEventListener('DOMContentLoaded', function() {
         return;
     }
     
-    // Cargar datos de la entrega
+   
     cargarDetalleEntrega();
     
-    // Configurar eventos de botones
     document.getElementById('btnEditar').addEventListener('click', function() {
         window.location.href = `../app/views/entrega_turno.html?id=${entregaId}`;
     });
@@ -26,9 +24,7 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 
-/**
- * Carga el detalle completo de la entrega de turno
- */
+
 async function cargarDetalleEntrega() {
     try {
         const response = await fetch(`/Eolo/app/controllers/entrega_turno_leer_id.php?id=${entregaId}`);
@@ -47,7 +43,6 @@ async function cargarDetalleEntrega() {
         
         console.log('📊 Datos recibidos para detalles:', data);
         
-        // Llenar información general
         document.getElementById('fechaInfo').textContent = formatearFecha(data.Fecha);
         document.getElementById('nombreInfo').textContent = data.Nombre || 'No especificado';
         document.getElementById('fondoInfo').textContent = data.Fondo ? parseFloat(data.Fondo).toFixed(2) : '0.00';
@@ -96,9 +91,7 @@ async function cargarDetalleEntrega() {
     }
 }
 
-/**
- * Formatea la fecha para mostrarla
- */
+
 function formatearFecha(fecha) {
     if (!fecha) return 'No especificado';
     
@@ -114,9 +107,7 @@ function formatearFecha(fecha) {
     }
 }
 
-/**
- * Carga los equipos de comunicación
- */
+
 function cargarEquiposComunicacion(equipos) {
     const container = document.getElementById('comunicacionesContainer');
     
@@ -144,9 +135,7 @@ function cargarEquiposComunicacion(equipos) {
     container.innerHTML = html;
 }
 
-/**
- * Carga los equipos de oficina
- */
+
 function cargarEquiposOficina(equipos) {
     const container = document.getElementById('oficinaContainer');
     
@@ -158,7 +147,7 @@ function cargarEquiposOficina(equipos) {
     let html = '';
     
     equipos.forEach(equipo => {
-        // Para copiadoras, mostrar información adicional
+        
         let infoExtra = '';
         if (equipo.Nombre === 'COPIADORAS') {
             const funciona = equipo.Funciona ? 'Sí' : 'No';

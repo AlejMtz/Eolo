@@ -31,7 +31,7 @@ try {
     $stmt_comunicacion->execute([$id]);
     $equipos_comunicacion = $stmt_comunicacion->fetchAll(PDO::FETCH_ASSOC);
     
-    // Equipos de oficina - INCLUYENDO COPIADORAS
+    // Equipos de oficina
     $sql_oficina = "SELECT * FROM equipooficina WHERE Entrega_Turno_Id = ?";
     $stmt_oficina = $pdo->prepare($sql_oficina);
     $stmt_oficina->execute([$id]);
@@ -49,7 +49,6 @@ try {
         }
     }
     
-    // Agregar datos de copiadoras al resultado principal
     $entrega['Copiadoras_Funciona'] = $copiadoras_funciona;
     $entrega['Toner_Estado'] = $toner_estado;
     $entrega['equipos_comunicacion'] = $equipos_comunicacion;

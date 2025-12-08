@@ -12,23 +12,22 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 }
 
 try {
-    // Datos principales de la entrega - con valores por defecto más específicos
+    // Datos principales de la entrega
     $fecha = isset($_POST['fecha']) ? trim($_POST['fecha']) : date('Y-m-d');
     $nombre = isset($_POST['nombre']) ? trim($_POST['nombre']) : '';
     
-    // Campos numéricos con validación más estricta
+    // Campos numéricos
     $fondo_recibido = (isset($_POST['fondo_recibido']) && $_POST['fondo_recibido'] !== '') ? floatval($_POST['fondo_recibido']) : 0;
     $fondo_entregado = (isset($_POST['fondo_entregado']) && $_POST['fondo_entregado'] !== '') ? floatval($_POST['fondo_entregado']) : 0;
     $vales_gasolina = (isset($_POST['vales_gasolina']) && $_POST['vales_gasolina'] !== '') ? intval($_POST['vales_gasolina']) : 0;
     $vales_folio = isset($_POST['vales_folio']) ? trim($_POST['vales_folio']) : '';
     
-    // Reporte aterrizajes - más robusto
+    // Reporte aterrizajes
     $reporte_aterrizaje = 0;
     if (isset($_POST['reporte_aterrizajes'])) {
         $reporte_aterrizaje = ($_POST['reporte_aterrizajes'] === 'si') ? 1 : 0;
-    } // AQUÍ FALTABA CERRAR ESTE IF
+    } 
     
-    // NUEVO: Campos de copiadoras y toner - CORREGIDO (fuera del if anterior)
     $copiadoras_funciona = 1;
     if (isset($_POST['copiadoras_funciona'])) {
         $copiadoras_funciona = ($_POST['copiadoras_funciona'] === 'si') ? 1 : 0;
@@ -57,7 +56,6 @@ try {
         throw new Exception('Fecha y nombre son obligatorios.');
     }
 
-    // Iniciar transacción
     $pdo->beginTransaction();
 
     // Insertar en tabla principal
@@ -71,7 +69,6 @@ try {
 
     $stmt_principal = $pdo->prepare($sql_principal);
     
-    // Usar fondo_recibido como valor principal
     $fondo = $fondo_recibido;
     
     $stmt_principal->execute([
@@ -84,9 +81,9 @@ try {
 
     $entrega_turno_id = $pdo->lastInsertId();
 
-    // Insertar equipos de comunicación (simplificado para prueba)
+    // Insertar equipos de comunicación
     $equipos_comunicacion = [
-        ['CELULAR ZTE', 1, 1, 1, 0], // Valores fijos temporalmente para prueba
+        ['CELULAR ZTE', 1, 1, 1, 0],
         ['RADIO MOTOROLA', 2, 1, 1, 0],
         ['RADIO VHF Portátil', 2, 1, 1, 0],
         ['RADIO VHF Fijo', 1, 1, 0, 0]
@@ -99,14 +96,14 @@ try {
         $stmt_equipo->execute([$entrega_turno_id, $equipo[0], $equipo[1], $equipo[3], $equipo[4]]);
     }
 
-    // Insertar equipos de oficina - ACTUALIZADO con copiadoras
+    // Insertar equipos de oficina
     $equipos_oficina = [
         ['ENGRAPADORAS', 1, 1, 1, NULL, NULL],
         ['PERFORADORAS', 2, 2, 2, NULL, NULL],
-        ['COPIADORAS', 1, 1, 1, $copiadoras_funciona, $toner_estado] // NUEVO: incluye copiadoras
+        ['COPIADORAS', 1, 1, 1, $copiadoras_funciona, $toner_estado] 
     ];
 
-    // ACTUALIZADO: Agregar campos Funciona y Toner_Estado
+    // Agregar campos Funciona y Toner_Estado
     $sql_oficina = "INSERT INTO equipooficina (Entrega_Turno_Id, Nombre, Existencias, Entregadas, Recibidas, Funciona, Toner_Estado) VALUES (?, ?, ?, ?, ?, ?, ?)";
     $stmt_oficina = $pdo->prepare($sql_oficina);
 
@@ -123,7 +120,6 @@ try {
     ]);
 
 } catch (PDOException $e) {
-    // Rollback en caso de error de base de datos
     if (isset($pdo) && $pdo->inTransaction()) {
         $pdo->rollBack();
     }
@@ -131,7 +127,6 @@ try {
     echo json_encode(['error' => 'Error en la base de datos: ' . $e->getMessage()]);
     
 } catch (Exception $e) {
-    // Rollback en caso de otros errores
     if (isset($pdo) && $pdo->inTransaction()) {
         $pdo->rollBack();
     }

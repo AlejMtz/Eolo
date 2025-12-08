@@ -1,5 +1,4 @@
 <?php
-// app/controllers/aeropuerto_eliminar.php
 session_start();
 require_once('../models/conexion.php');
 
@@ -13,7 +12,7 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 }
 
 try {
-    // Obtener datos del cuerpo de la petición
+    // Obtener datos
     $input = file_get_contents('php://input');
     $data = json_decode($input, true);
     

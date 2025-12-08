@@ -5,7 +5,6 @@ header('Access-Control-Allow-Origin: *');
 require 'conexion.php';
 
 try {
-    // Parámetros de paginación
     $pagina = isset($_GET['pagina']) ? intval($_GET['pagina']) : 1;
     $registrosPorPagina = isset($_GET['registros_por_pagina']) ? intval($_GET['registros_por_pagina']) : 10;
     
@@ -19,7 +18,7 @@ try {
     $matricula = isset($_GET['matricula']) ? $_GET['matricula'] : '';
     $hangar = isset($_GET['hangar']) ? $_GET['hangar'] : '';
     
-    // Construir consulta base - SOLO REGISTROS ACTIVOS
+    // Construir consulta base
     $sql = "SELECT SQL_CALC_FOUND_ROWS cp.*, a.Matricula, a.Equipo 
             FROM control_pernocta cp 
             INNER JOIN aeronave a ON cp.Id_Aeronave = a.Id_Aeronave 
@@ -42,7 +41,7 @@ try {
         $params[] = $hangar;
     }
     
-    // ORDEN por fecha y hora inicial
+    // Orden por fecha y hora inicial
     $sql .= " ORDER BY cp.Fecha DESC, cp.HoraInicial DESC 
               LIMIT $registrosPorPagina OFFSET $offset";
     

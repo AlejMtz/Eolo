@@ -4,7 +4,6 @@ header('Access-Control-Allow-Origin: *');
 
 require 'conexion.php';
 
-// ✅ FUNCIÓN PARA OBTENER EMPRESA/PROCEDENCIA
 function obtenerEmpresaProcedencia($pdo, $id_aeronave, $fecha_inicio, $fecha_fin) {
     try {
         // Obtener de control_pernocta
@@ -25,7 +24,6 @@ function obtenerEmpresaProcedencia($pdo, $id_aeronave, $fecha_inicio, $fecha_fin
             return $control_result['EmpresaProcedencia'];
         }
         
-        // Si no se encuentra en control_pernocta
         return 'No especificada';
         
     } catch (Exception $e) {
@@ -34,7 +32,6 @@ function obtenerEmpresaProcedencia($pdo, $id_aeronave, $fecha_inicio, $fecha_fin
 }
 
 try {
-    // Validar parámetros
     $fecha_inicio = isset($_GET['fecha_inicio']) ? $_GET['fecha_inicio'] : null;
     $fecha_fin = isset($_GET['fecha_fin']) ? $_GET['fecha_fin'] : null;
     
@@ -42,7 +39,6 @@ try {
         throw new Exception('Fechas de inicio y fin son requeridas');
     }
     
-    // Validar formato de fechas
     if (!strtotime($fecha_inicio) || !strtotime($fecha_fin)) {
         throw new Exception('Formato de fecha inválido');
     }
@@ -70,7 +66,6 @@ try {
     $stmt_aeronaves->execute([$fecha_inicio, $fecha_fin]);
     $aeronaves_con_movimientos = $stmt_aeronaves->fetchAll(PDO::FETCH_ASSOC);
     
-    // Si no hay aeronaves con movimientos en control_pernocta, retornar array vacío
     if (empty($aeronaves_con_movimientos)) {
         echo json_encode([
             'success' => true,
@@ -89,7 +84,7 @@ try {
    foreach ($aeronaves_con_movimientos as $aeronave) {
     $id_aeronave = $aeronave['Id_Aeronave'];
     $cadena_dias = '';
-    $cadena_hangares = ''; // ✅ Cadena para el PDF con H1/H2/F
+    $cadena_hangares = ''; 
     $total_dias_hangar = 0;
     $total_dias_fuera = 0;
     
@@ -100,7 +95,6 @@ try {
     while ($fecha_actual <= $fecha_fin_obj && $contador_dias < 62) {
         $fecha_str = $fecha_actual->format('Y-m-d');
         
-        // Consultar si existe registro en control_pernocta para esta fecha
         $sql_movimiento = "
             SELECT Hangar, Estado_Registro 
             FROM control_pernocta 
@@ -115,22 +109,18 @@ try {
         $registro_control = $stmt_movimiento->fetch(PDO::FETCH_ASSOC);
         
         if ($registro_control) {
-            // Si tiene registro y tiene Hangar asignado (H1 o H2)
             if ($registro_control['Hangar'] && in_array($registro_control['Hangar'], ['H1', 'H2'])) {
-                // Aeronave en hangar - usar H1 o H2 específico
                 $cadena_dias .= 'H';
-                $cadena_hangares .= $registro_control['Hangar']; // ✅ H1 o H2
+                $cadena_hangares .= $registro_control['Hangar']; //H1 o H2
                 $total_dias_hangar++;
             } else {
-                // Aeronave fuera (registro existe pero no tiene hangar asignado)
                 $cadena_dias .= 'F';
-                $cadena_hangares .= 'F '; // ✅ F con espacio para separar
+                $cadena_hangares .= 'F ';
                 $total_dias_fuera++;
             }
         } else {
-            // Sin registro en control_pernocta para esta fecha - considerar fuera
             $cadena_dias .= 'F';
-            $cadena_hangares .= 'F '; // ✅ F con espacio para separar
+            $cadena_hangares .= 'F ';
             $total_dias_fuera++;
         }
         
@@ -138,17 +128,15 @@ try {
         $contador_dias++;
     }
     
-    // ✅ OBTENER EMPRESA/PROCEDENCIA solo de control_pernocta
     $empresa = obtenerEmpresaProcedencia($pdo, $id_aeronave, $fecha_inicio, $fecha_fin);
     
-    // Incluir aeronave en resultados
     $resultados[] = [
         'id_aeronave' => $id_aeronave,
         'matricula' => $aeronave['Matricula'],
         'equipo' => $aeronave['Equipo'],
         'empresa' => $empresa,
         'dias' => $cadena_dias,
-        'hangares' => $cadena_hangares, // ✅ Cadena con H1, H2 o F 
+        'hangares' => $cadena_hangares, 
         'total_dias_hangar' => $total_dias_hangar,
         'total_dias_fuera' => $total_dias_fuera,
         'total_dias' => $total_dias_hangar + $total_dias_fuera

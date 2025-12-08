@@ -32,9 +32,9 @@ try {
         throw new Exception('Credenciales incorrectas');
     }
     
-    // ✅ VERIFICACIÓN CON password_verify (IMPORTANTE)
+    // Verificación de password
     if (password_verify($password, $usuario['Password'])) {
-        // Contraseña correcta
+    
         $_SESSION['usuario_id'] = $usuario['Id_Usuario'];
         $_SESSION['usuario_nombre'] = $usuario['Nombre_Completo'];
         $_SESSION['tipo_usuario'] = $usuario['Tipo_Usuario'];

@@ -12,7 +12,7 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 }
 
 try {
-    // Validar y sanear el ID
+    // Validar el ID
     $id_aeronave = isset($_POST['id_aeronave']) ? intval($_POST['id_aeronave']) : null;
 
     // Validar que el ID no esté vacío
@@ -26,7 +26,6 @@ try {
     // Preparar la sentencia
     $stmt = $pdo->prepare($sql);
     
-    // Asignar valor al marcador de posición
     $stmt->bindParam(':id_aeronave', $id_aeronave, PDO::PARAM_INT);
     
     // Ejecutar la sentencia

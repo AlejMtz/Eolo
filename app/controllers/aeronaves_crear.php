@@ -22,7 +22,7 @@ try {
         throw new Exception('Todos los campos son obligatorios.');
     }
 
-    // ⭐⭐ NUEVA VALIDACIÓN: Verificar si la matrícula ya existe ⭐⭐
+    // Verificar si la matrícula ya existe
     $sql_verificar = "SELECT COUNT(*) as count FROM aeronave WHERE Matricula = :matricula";
     $stmt_verificar = $pdo->prepare($sql_verificar);
     $stmt_verificar->bindParam(':matricula', $matricula);

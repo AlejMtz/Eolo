@@ -2,34 +2,27 @@
 header('Content-Type: application/json');
 header('Access-Control-Allow-Origin: *');
 
-// Configuración de la base de datos
 $servername = "localhost";
 $username = "root";
 $password = "";
 $dbname = "eolo";
 
 try {
-    // Crear conexión
     $conn = new mysqli($servername, $username, $password, $dbname);
 
-    // Verificar conexión
     if ($conn->connect_error) {
         throw new Exception('Error de conexión: ' . $conn->connect_error);
     }
 
-    // Obtener parámetros de paginación
     $pagina = isset($_GET['pagina']) ? (int)$_GET['pagina'] : 1;
     $registros_por_pagina = isset($_GET['registros_por_pagina']) ? (int)$_GET['registros_por_pagina'] : 10;
     
-    // Obtener parámetros de filtro
     $matricula = isset($_GET['matricula']) ? $conn->real_escape_string($_GET['matricula']) : '';
     $equipo = isset($_GET['equipo']) ? $conn->real_escape_string($_GET['equipo']) : '';
     
-    // Validar parámetros
     if ($pagina < 1) $pagina = 1;
     if ($registros_por_pagina < 1) $registros_por_pagina = 10;
 
-    // Calcular offset
     $offset = ($pagina - 1) * $registros_por_pagina;
 
     // Construir consulta base con filtros
@@ -61,7 +54,6 @@ try {
             ORDER BY Id_Aeronave DESC 
             LIMIT ? OFFSET ?";
     
-    // Preparar statement para prevenir SQL injection
     $stmt = $conn->prepare($sql);
     if (!$stmt) {
         throw new Exception('Error preparando consulta: ' . $conn->error);
@@ -82,11 +74,9 @@ try {
         }
     }
 
-    // DEBUG: Log para verificar filtros
     error_log("🔍 Filtros aplicados - Matrícula: '$matricula', Equipo: '$equipo'");
     error_log("📊 Resultados - Encontrados: $total_registros, Mostrando: " . count($aeronaves));
 
-    // Devolver respuesta con estructura esperada por el frontend
     echo json_encode([
         'aeronaves' => $aeronaves,
         'paginacion' => [

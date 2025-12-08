@@ -12,46 +12,41 @@ let filtrosActivos = {
     tipo_mantenimiento: ''
 };
 
-// Variables globales para el filtro de búsqueda
 let timeoutBusqueda = null;
 
-// Almacenar modales
 let successModal = null;
 let errorModal = null;
 let confirmModal = null;
 
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('📄 DOM cargado, verificando sesión...');
+    console.log(' DOM cargado, verificando sesión...');
     
     if (!verificarSesion()) {
-        console.error('❌ Sesión no válida');
+        console.error(' Sesión no válida');
         return;
     }
     
-    console.log('✅ Sesión verificada, inicializando módulo...');
+    console.log('Sesión verificada, inicializando módulo...');
     
-    // ✅ DETECTAR SI ESTAMOS EN PÁGINA DE LISTA O EDICIÓN
     if (document.getElementById('cuerpoTablaAsignaciones')) {
         // Página de lista
-        console.log('📊 Inicializando página de lista...');
+        console.log(' Inicializando página de lista...');
         inicializarAsignacionMantenimiento();
     } else if (document.getElementById('asignacionForm')) {
         // Página de edición individual
-        console.log('✏️ Inicializando página de edición...');
+        console.log(' Inicializando página de edición...');
         inicializarPaginaEdicion();
     } else {
-        console.log('❓ Página no reconocida');
+        console.log(' Página no reconocida');
     }
 });
 
 function inicializarAsignacionMantenimiento() {
-    console.log('🚀 Inicializando módulo de Asignación de Mantenimiento');
+    console.log(' Inicializando módulo de Asignación de Mantenimiento');
     
-    // ✅ VERIFICACIÓN ROBUSTA DE PERMISOS
     if (typeof permisosSistema === 'undefined') {
-        console.error('❌ CRÍTICO: permisosSistema no está disponible');
+        console.error(' CRÍTICO: permisosSistema no está disponible');
         
-        // Crear permisos de emergencia basados en localStorage
         const tipoUsuario = localStorage.getItem('tipo_usuario') || 'unknown';
         const esAdmin = tipoUsuario === 'admin';
         
@@ -65,13 +60,13 @@ function inicializarAsignacionMantenimiento() {
             puedeEliminar: function(modulo) { return esAdmin; }
         };
         
-        console.log('🆘 Permisos de emergencia creados:', window.permisosSistema);
+        console.log(' Permisos de emergencia creados:', window.permisosSistema);
     }
     
-    console.log('🔐 Permisos cargados:', window.permisosSistema);
-    console.log('👤 Usuario:', window.permisosSistema.usuario);
-    console.log('✏️ Puede editar:', window.permisosSistema.puedeEditar('asignacion_mantenimiento'));
-    console.log('🗑️ Puede eliminar:', window.permisosSistema.puedeEliminar('asignacion_mantenimiento'));
+    console.log(' Permisos cargados:', window.permisosSistema);
+    console.log(' Usuario:', window.permisosSistema.usuario);
+    console.log(' Puede editar:', window.permisosSistema.puedeEditar('asignacion_mantenimiento'));
+    console.log(' Puede eliminar:', window.permisosSistema.puedeEliminar('asignacion_mantenimiento'));
     
     // Inicializar modales
     if (typeof bootstrap !== 'undefined') {
@@ -87,28 +82,26 @@ function inicializarAsignacionMantenimiento() {
     // Configurar eventos
     configurarEventos();
     
-    // Cargar asignaciones
     cargarAsignaciones();
 }
 
-// Configurar cuando el DOM esté listo
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('📄 DOM cargado, verificando sesión...');
+    console.log(' DOM cargado, verificando sesión...');
     
     if (!verificarSesion()) {
-        console.error('❌ Sesión no válida');
+        console.error(' Sesión no válida');
         return;
     }
     
-    console.log('✅ Sesión verificada, inicializando módulo...');
+    console.log(' Sesión verificada, inicializando módulo...');
     inicializarAsignacionMantenimiento();
 });
 
 /**
- * Configura los eventos de los filtros y otros elementos
+ * Configura los eventos de los filtros
  */
 function configurarEventos() {
-    console.log('🔧 Configurando eventos...');
+    console.log(' Configurando eventos...');
     
     // Configurar eventos de los filtros
     const filtroFecha = document.getElementById('filtroFecha');
@@ -119,7 +112,7 @@ function configurarEventos() {
     if (filtroFecha) {
         filtroFecha.addEventListener('change', function() {
             filtrosActivos.fecha = this.value;
-            console.log('📅 Filtro fecha cambiado:', this.value);
+            console.log(' Filtro fecha cambiado:', this.value);
             aplicarFiltros();
         });
     }
@@ -129,7 +122,7 @@ function configurarEventos() {
             clearTimeout(timeoutBusqueda);
             timeoutBusqueda = setTimeout(() => {
                 filtrosActivos.matricula = this.value.trim();
-                console.log('🔤 Filtro matrícula cambiado:', this.value);
+                console.log(' Filtro matrícula cambiado:', this.value);
                 aplicarFiltros();
             }, 500);
         });
@@ -138,21 +131,20 @@ function configurarEventos() {
     if (filtroCliente) {
         filtroCliente.addEventListener('change', function() {
             filtrosActivos.tipo_cliente = this.value;
-            console.log('👤 Filtro cliente cambiado:', this.value);
+            console.log(' Filtro cliente cambiado:', this.value);
             aplicarFiltros();
         });
     }
     
     if (filtroMantenimiento) {
         filtroMantenimiento.addEventListener('change', function() {
-            // ✅ CORREGIDO: Guardar el valor tal cual, incluso si es "0"
             filtrosActivos.tipo_mantenimiento = this.value;
             console.log('🔧 Filtro mantenimiento cambiado:', this.value, 'Tipo:', typeof this.value);
             aplicarFiltros();
         });
     }
     
-    console.log('✅ Eventos configurados correctamente');
+    console.log(' Eventos configurados correctamente');
 }
 
 /**
@@ -161,15 +153,15 @@ function configurarEventos() {
 async function cargarAsignaciones(pagina = 1) {
     const tablaBody = document.getElementById('cuerpoTablaAsignaciones');
     if (!tablaBody) {
-        console.error('❌ No se encontró el elemento cuerpoTablaAsignaciones');
+        console.error(' No se encontró el elemento cuerpoTablaAsignaciones');
         return;
     }
     
-    console.log('🔄 Iniciando carga de asignaciones...');
+    console.log(' Iniciando carga de asignaciones...');
     mostrarLoading(true);
 
     try {
-        console.log(`📄 Página actual: ${pagina}`);
+        console.log(` Página actual: ${pagina}`);
         
         let url = `/Eolo/app/models/leer_asignacion_mantenimiento.php?pagina=${pagina}&registros_por_pagina=${registrosPorPagina}`;        
         if (filtrosActivos.fecha) {
@@ -185,11 +177,11 @@ async function cargarAsignaciones(pagina = 1) {
             url += `&tipo_mantenimiento=${filtrosActivos.tipo_mantenimiento}`;
         }
 
-        console.log(`🌐 URL de consulta: ${url}`);
+        console.log(` URL de consulta: ${url}`);
         
         const response = await fetch(url);
         
-        console.log(`📨 Status de respuesta: ${response.status}`);
+        console.log(` Status de respuesta: ${response.status}`);
         
         if (!response.ok) {
             if (response.status === 404) {
@@ -199,26 +191,26 @@ async function cargarAsignaciones(pagina = 1) {
         }
         
         const responseText = await response.text();
-        console.log('📄 Respuesta del servidor (primeros 500 chars):', responseText.substring(0, 500));
+        console.log(' Respuesta del servidor (primeros 500 chars):', responseText.substring(0, 500));
         
         let data;
         try {
             data = JSON.parse(responseText);
-            console.log('📊 Datos recibidos del servidor:', data);
+            console.log(' Datos recibidos del servidor:', data);
         } catch (parseError) {
-            console.error('❌ Error parseando JSON:', parseError);
+            console.error(' Error parseando JSON:', parseError);
             throw new Error('El servidor devolvió una respuesta no válida. Verifica la consola para más detalles.');
         }
         
         if (data.success) {
             const asignaciones = data.asignaciones;
-            console.log(`✅ Número de asignaciones recibidas: ${asignaciones.length}`);
+            console.log(` Número de asignaciones recibidas: ${asignaciones.length}`);
             
             paginaActual = data.paginacion.pagina_actual;
             totalPaginas = data.paginacion.total_paginas;
             totalRegistros = data.paginacion.total_registros;
 
-            console.log(`📊 Paginación: página ${paginaActual} de ${totalPaginas}, total registros: ${totalRegistros}`);
+            console.log(` Paginación: página ${paginaActual} de ${totalPaginas}, total registros: ${totalRegistros}`);
 
             mostrarAsignaciones(asignaciones);
             actualizarPaginador();
@@ -228,7 +220,7 @@ async function cargarAsignaciones(pagina = 1) {
         }
         
     } catch (error) {
-        console.error('❌ Error al cargar asignaciones:', error);
+        console.error(' Error al cargar asignaciones:', error);
         mostrarError('Error al cargar las asignaciones: ' + error.message);
     } finally {
         mostrarLoading(false);
@@ -294,7 +286,6 @@ async function generarAsignacionMantenimiento() {
                 }
             }
 
-            //SOLO MOSTRAR LAS QUE SE CREARON, NO MENCIONAR DUPLICADOS
             if (asignacionesCreadas === 0) {
                 mensaje = 'Todas las aeronaves ya tenían asignación de mantenimiento.';
             } else {
@@ -315,27 +306,23 @@ async function generarAsignacionMantenimiento() {
     }
 }
 
-/**
- * Función para mostrar/ocultar loading en botones
- */
+
 function mostrarLoadingBtn(selector, mostrar) {
     const btn = document.querySelector(selector);
     
     if (btn) {
         if (mostrar) {
             btn.disabled = true;
-            //TEXTO CORRECTO durante loading
             btn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status"></span> Procesando...';
         } else {
             btn.disabled = false;
-            //RESTAURAR TEXTO ORIGINAL correctamente
             btn.innerHTML = '<i class="fas fa-cogs me-2"></i>Obtener Entradas';
         }
     }
 }
 
 /**
- * Muestra las asignaciones en la tabla - VERSIÓN CORREGIDA CON PERMISOS
+ * Muestra las asignaciones en la tabla
  */
 function mostrarAsignaciones(asignaciones) {
     const tbody = document.getElementById('cuerpoTablaAsignaciones');
@@ -352,7 +339,6 @@ function mostrarAsignaciones(asignaciones) {
         return;
     }
 
-    // USAR EL SISTEMA DE PERMISOS CENTRALIZADO
     const puedeEditar = window.permisosSistema ? 
         window.permisosSistema.puedeEditar('asignacion_mantenimiento') : true;
     
@@ -377,7 +363,6 @@ function mostrarAsignaciones(asignaciones) {
                                 (asignacion.Tipo_Mantenimiento === '0' ? 'Mantenimiento 0' : 'Mantenimiento 1') :
                                 '<span class="text-muted fst-italic">Por asignar</span>';
 
-        // BOTONES CORREGIDOS: SIN PDF, SOLO EDITAR Y ELIMINAR
         const botonesHTML = `
             <!-- Botón Editar - CON PERMISOS -->
             <button class="btn btn-warning btn-editar" 
@@ -419,9 +404,7 @@ function mostrarAsignaciones(asignaciones) {
     console.log(' Tabla de asignaciones cargada con permisos aplicados');
 }
 
-/**
- * Muestra el loading en la tabla
- */
+
 function mostrarLoading(mostrar) {
     const tbody = document.getElementById('cuerpoTablaAsignaciones');
     if (mostrar) {
@@ -495,7 +478,6 @@ function actualizarPaginador() {
         `;
     }
     
-    // Páginas intermedias
     for (let i = inicioPaginas; i <= finPaginas; i++) {
         if (i === paginaActual) {
             html += `
@@ -559,28 +541,25 @@ function cambiarPagina(pagina) {
 }
 
 /**
- * Aplica los filtros y recarga la tabla
+ * Aplica los filtros
  */
 function aplicarFiltros() {
-    console.log('🔍 Aplicando filtros...', filtrosActivos);
+    console.log(' Aplicando filtros...', filtrosActivos);
     
-    // Obtener valores actuales de los inputs
     const filtroFecha = document.getElementById('filtroFecha');
     const filtroMatricula = document.getElementById('filtroMatricula');
     const filtroCliente = document.getElementById('filtroCliente');
     const filtroMantenimiento = document.getElementById('filtroMantenimiento');
     
-    // ✅ CORREGIDO: Actualizar filtrosActivos correctamente, incluyendo el valor "0"
     if (filtroFecha) filtrosActivos.fecha = filtroFecha.value;
     if (filtroMatricula) filtrosActivos.matricula = filtroMatricula.value.trim();
     if (filtroCliente) filtrosActivos.tipo_cliente = filtroCliente.value;
     if (filtroMantenimiento) {
-        // ✅ IMPORTANTE: Guardar el valor aunque sea "0" o string vacío
         filtrosActivos.tipo_mantenimiento = filtroMantenimiento.value;
     }
     
-    console.log('🎯 Filtros activos actualizados:', filtrosActivos);
-    console.log('🔧 Tipo mantenimiento:', filtrosActivos.tipo_mantenimiento, 'Tipo:', typeof filtrosActivos.tipo_mantenimiento);
+    console.log(' Filtros activos actualizados:', filtrosActivos);
+    console.log(' Tipo mantenimiento:', filtrosActivos.tipo_mantenimiento, 'Tipo:', typeof filtrosActivos.tipo_mantenimiento);
     
     paginaActual = 1;
     cargarAsignaciones();
@@ -590,7 +569,7 @@ function aplicarFiltros() {
  * Limpia los filtros y recarga la tabla
  */
 function limpiarFiltros() {
-    console.log('🧹 Limpiando filtros...');
+    console.log(' Limpiando filtros...');
     
     const filtroFecha = document.getElementById('filtroFecha');
     const filtroMatricula = document.getElementById('filtroMatricula');
@@ -609,36 +588,32 @@ function limpiarFiltros() {
         tipo_mantenimiento: ''
     };
     
-    console.log('✅ Filtros limpiados:', filtrosActivos);
+    console.log(' Filtros limpiados:', filtrosActivos);
     
     paginaActual = 1;
     cargarAsignaciones();
 }
 
-/**
- * Muestra loading en el botón
- */
+
 function mostrarLoadingBtn(selector, mostrar) {
     const btn = document.querySelector(selector);
     
     if (btn) {
         if (mostrar) {
             btn.disabled = true;
-            //  Texto durante loading
             btn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status"></span> Procesando...';
         } else {
             btn.disabled = false;
-            // CORREGIDO: Restaurar el texto EXACTO del HTML original
             btn.innerHTML = '<i class="fas fa-cogs me-2"></i>Obtener Entradas';
         }
     }
 }
 
 /**
- * Función para editar asignación - Redirige a la página de edición
+ * Función para editar asignación
  */
 function editarAsignacion(idAsignacion) {
-    console.log('✏️ Editando/Asignando mantenimiento ID:', idAsignacion);
+    console.log(' Editando/Asignando mantenimiento ID:', idAsignacion);
     
     //  SOLO ADMIN PUEDE EDITAR
     if (window.permisosSistema && !window.permisosSistema.puedeEditar('asignacion_mantenimiento')) {
@@ -647,10 +622,9 @@ function editarAsignacion(idAsignacion) {
     }
 
     try {
-        // Redirigir a la página de edición individual
         window.location.href = `../../app/views/asignacion_mantenimiento_editar.html?id=${idAsignacion}`;
     } catch (error) {
-        console.error('❌ Error al redirigir a edición:', error);
+        console.error(' Error al redirigir a edición:', error);
         mostrarError('Error al redirigir a edición: ' + error.message);
     }
 }
@@ -659,7 +633,7 @@ function editarAsignacion(idAsignacion) {
  * Inicializa la página de edición individual
  */
 function inicializarPaginaEdicion() {
-    console.log('🔄 Inicializando página de edición individual...');
+    console.log(' Inicializando página de edición individual...');
     
     // Configurar envío del formulario
     const asignacionForm = document.getElementById('asignacionForm');
@@ -670,7 +644,7 @@ function inicializarPaginaEdicion() {
         });
         console.log(' Formulario configurado para envío');
     } else {
-        console.error('❌ No se encontró el formulario asignacionForm');
+        console.error(' No se encontró el formulario asignacionForm');
     }
 
     // Cargar datos para edición
@@ -692,7 +666,7 @@ async function cargarAsignacionParaEdicion(idAsignacion = null) {
             throw new Error('No se proporcionó ID de asignación');
         }
 
-        console.log('🔄 Cargando asignación para edición ID:', idAsignacion);
+        console.log(' Cargando asignación para edición ID:', idAsignacion);
 
         const response = await fetch(`/Eolo/app/controllers/asignacion_mantenimiento_leer_id.php?id=${idAsignacion}`);
         
@@ -702,17 +676,17 @@ async function cargarAsignacionParaEdicion(idAsignacion = null) {
         
         const data = await response.json();
         
-        console.log('📊 Respuesta completa del servidor:', data);
+        console.log(' Respuesta completa del servidor:', data);
 
         if (data.success && data.asignacion) {
-            console.log('✅ Datos de la asignación recibidos:', data.asignacion);
+            console.log(' Datos de la asignación recibidos:', data.asignacion);
             llenarFormularioEdicion(data.asignacion);
         } else {
             throw new Error(data.message || 'No se pudieron cargar los datos de la asignación');
         }
         
     } catch (error) {
-        console.error('❌ Error al cargar asignación para edición:', error);
+        console.error(' Error al cargar asignación para edición:', error);
         mostrarError('Error al cargar los datos para editar: ' + error.message);
         
         // Redirigir después de 3 segundos
@@ -726,22 +700,19 @@ async function cargarAsignacionParaEdicion(idAsignacion = null) {
  * Llena el formulario con datos para edición
  */
 function llenarFormularioEdicion(asignacion) {
-    console.log('📝 Llenando formulario con datos de la asignación:', asignacion);
+    console.log(' Llenando formulario con datos de la asignación:', asignacion);
     
-    // ✅ CAMPOS DE SOLO LECTURA
     setFieldValue('id_asignacion', asignacion.Id_Asignacion);
     setFieldValue('matricula', asignacion.Matricula);
     setFieldValue('equipo', asignacion.Equipo);
     setFieldValue('fecha', asignacion.Fecha);
     setFieldValue('hora', formatearHoraParaMostrar(asignacion.Hora));
     
-    // ✅ HACER CAMPOS DE SOLO LECTURA
     document.getElementById('fecha').readOnly = true;
     document.getElementById('hora').readOnly = true;
     document.getElementById('matricula').readOnly = true;
     document.getElementById('equipo').readOnly = true;
     
-    // ✅ Agregar clases CSS para indicar que son de solo lectura
     const camposSoloLectura = ['fecha', 'hora', 'matricula', 'equipo'];
     camposSoloLectura.forEach(campoId => {
         const campo = document.getElementById(campoId);
@@ -751,11 +722,10 @@ function llenarFormularioEdicion(asignacion) {
         }
     });
     
-    // ✅ CAMPOS EDITABLES - Solo tipo cliente y mantenimiento
     setFieldValue('tipo_cliente', asignacion.Tipo_Cliente);
     setFieldValue('tipo_mantenimiento', asignacion.Tipo_Mantenimiento);
 
-    console.log('✅ Formulario cargado correctamente para edición');
+    console.log(' Formulario cargado correctamente para edición');
 }
 
 /**
@@ -766,26 +736,22 @@ function setFieldValue(fieldId, value) {
     if (field) {
         const finalValue = value !== null && value !== undefined ? value : '';
         field.value = finalValue;
-        console.log(`✅ Campo ${fieldId} establecido: "${finalValue}"`);
+        console.log(` Campo ${fieldId} establecido: "${finalValue}"`);
     } else {
-        console.error(`❌ Campo no encontrado: ${fieldId}`);
+        console.error(` Campo no encontrado: ${fieldId}`);
     }
 }
 
-/**
- * Formatea la hora de HH:MM:SS a HH:MM para mostrar
- */
+
 function formatearHoraParaMostrar(hora) {
     if (!hora || hora === 'null' || hora === 'undefined') {
         return '';
     }
     
-    // Si la hora viene en formato HH:MM:SS, tomar solo HH:MM
     if (typeof hora === 'string' && hora.length >= 8 && hora.includes(':')) {
         return hora.substring(0, 5); // Tomar solo los primeros 5 caracteres (HH:MM)
     }
     
-    // Si ya está en formato HH:MM, devolver tal cual
     return hora;
 }
 
@@ -794,7 +760,6 @@ function formatearHoraParaMostrar(hora) {
  */
 async function actualizarAsignacion() {
     try {
-        // ✅ DIAGNÓSTICO ANTES DE ENVIAR
         console.log('🔍 DIAGNÓSTICO ANTES DE ENVIAR:');
         console.log('- tipo_cliente seleccionado:', document.getElementById('tipo_cliente').value);
         console.log('- tipo_mantenimiento seleccionado:', document.getElementById('tipo_mantenimiento').value);
@@ -802,8 +767,8 @@ async function actualizarAsignacion() {
 
         const formData = new FormData(document.getElementById('asignacionForm'));
         
-        // ✅ VERIFICAR QUÉ SE ESTÁ ENVIANDO REALMENTE
-        console.log('📤 Contenido real del FormData:');
+        // VERIFICAR QUÉ SE ESTÁ ENVIANDO
+        console.log(' Contenido real del FormData:');
         for (let [key, value] of formData.entries()) {
             console.log(`  ${key}: "${value}"`);
         }
@@ -813,7 +778,6 @@ async function actualizarAsignacion() {
             return;
         }
         
-        // Mostrar loading
         const btnSubmit = document.getElementById('submitButton');
         btnSubmit.disabled = true;
         const spinner = btnSubmit.querySelector('.spinner-border');
@@ -821,28 +785,26 @@ async function actualizarAsignacion() {
             spinner.style.display = 'inline-block';
         }
         
-        // ✅ RUTA CORREGIDA
         const url = '/Eolo/app/controllers/asignacion_mantenimiento_actualizar.php';
-        console.log(`🌐 Enviando a: ${url}`);
+        console.log(` Enviando a: ${url}`);
         
         const response = await fetch(url, {
             method: 'POST',
             body: formData
         });
 
-        console.log('📨 Respuesta del servidor recibida');
+        console.log('Respuesta del servidor recibida');
         console.log('Status:', response.status);
 
-        // Obtener la respuesta como texto primero
         const responseText = await response.text();
-        console.log('📄 Respuesta completa:', responseText);
+        console.log(' Respuesta completa:', responseText);
 
         let data;
         try {
             data = JSON.parse(responseText);
-            console.log('📊 Respuesta parseada (JSON):', data);
+            console.log(' Respuesta parseada (JSON):', data);
         } catch (parseError) {
-            console.error('❌ Error parseando JSON:', parseError);
+            console.error(' Error parseando JSON:', parseError);
             throw new Error('Error en la respuesta del servidor: ' + responseText.substring(0, 200));
         }
         
@@ -855,7 +817,7 @@ async function actualizarAsignacion() {
         }
         
     } catch (error) {
-        console.error('❌ Error al actualizar asignación:', error);
+        console.error(' Error al actualizar asignación:', error);
         mostrarError(error.message);
     } finally {
         // Ocultar loading
@@ -887,7 +849,6 @@ function validarFormularioEdicion() {
         return false;
     }
     
-    // ✅ Validar que el tipo de mantenimiento sea solo 0 o 1
     if (!['0', '1'].includes(tipoMantenimiento)) {
         mostrarError('El tipo de mantenimiento debe ser 0 o 1.');
         return false;
@@ -908,20 +869,19 @@ function cancelarEdicion() {
 
 
 /**
- * Función para eliminar asignación - COMPLETA
+ * Función para eliminar asignación
  */
 async function eliminarAsignacion(idAsignacion) {
-    console.log('🗑️ Eliminando asignación ID:', idAsignacion);
+    console.log(' Eliminando asignación ID:', idAsignacion);
     
-    // ✅ SOLO ADMIN PUEDE ELIMINAR
+    //SOLO ADMIN PUEDE ELIMINAR
     if (window.permisosSistema && !window.permisosSistema.puedeEliminar('asignacion_mantenimiento')) {
         mostrarError('Solo los administradores pueden eliminar asignaciones de mantenimiento.');
         return;
     }
 
     try {
-        // Obtener información de la asignación para mostrar en confirmación
-        console.log('🔄 Obteniendo información de la asignación...');
+        console.log(' Obteniendo información de la asignación...');
         const infoResponse = await fetch(`../../app/controllers/asignacion_mantenimiento_leer_id.php?id=${idAsignacion}`);
         
         if (!infoResponse.ok) {
@@ -929,7 +889,7 @@ async function eliminarAsignacion(idAsignacion) {
         }
         
         const infoData = await infoResponse.json();
-        console.log('📊 Información de asignación:', infoData);
+        console.log(' Información de asignación:', infoData);
 
         if (!infoData.success) {
             throw new Error(infoData.message || 'No se pudo obtener información de la asignación');
@@ -937,7 +897,6 @@ async function eliminarAsignacion(idAsignacion) {
 
         const asignacion = infoData.asignacion;
         
-        // Crear mensaje de confirmación
         const mensajeConfirmacion = `
             ¿Está seguro de que desea eliminar la siguiente asignación?
             <br><br>
@@ -959,7 +918,7 @@ async function eliminarAsignacion(idAsignacion) {
         mostrarConfirmacionEliminar(idAsignacion, mensajeConfirmacion);
 
     } catch (error) {
-        console.error('❌ Error al obtener información para eliminar:', error);
+        console.error(' Error al obtener información para eliminar:', error);
         mostrarError('Error al obtener información de la asignación: ' + error.message);
     }
 }
@@ -968,7 +927,7 @@ async function eliminarAsignacion(idAsignacion) {
  * Función que ejecuta la eliminación después de la confirmación
  */
 async function eliminarAsignacionConfirmada(id) {
-    console.log('🎯 Confirmada eliminación de asignación ID:', id);
+    console.log(' Confirmada eliminación de asignación ID:', id);
     
     // Cerrar modal de confirmación
     if (confirmModal) {
@@ -976,7 +935,7 @@ async function eliminarAsignacionConfirmada(id) {
     }
     
     try {
-        console.log('🔄 Enviando solicitud de eliminación...');
+        console.log(' Enviando solicitud de eliminación...');
         
         const formData = new FormData();
         formData.append('id', id);
@@ -986,17 +945,17 @@ async function eliminarAsignacionConfirmada(id) {
             body: formData
         });
         
-        console.log('📨 Respuesta del servidor - Status:', response.status);
+        console.log(' Respuesta del servidor - Status:', response.status);
         
         if (!response.ok) {
             throw new Error(`Error HTTP: ${response.status}`);
         }
         
         const data = await response.json();
-        console.log('📊 Respuesta de eliminación:', data);
+        console.log(' Respuesta de eliminación:', data);
 
         if (data.success) {
-            console.log('✅ Asignación eliminada correctamente');
+            console.log(' Asignación eliminada correctamente');
             
             // Mostrar mensaje de éxito
             mostrarExito(`
@@ -1015,7 +974,7 @@ async function eliminarAsignacionConfirmada(id) {
         }
 
     } catch (error) {
-        console.error('❌ Error al eliminar asignación:', error);
+        console.error(' Error al eliminar asignación:', error);
         
         // Mostrar mensaje de error
         mostrarError(`
@@ -1061,7 +1020,7 @@ function mostrarConfirmacionEliminar(id, mensaje) {
     }
 }
 
-// Funciones de utilidad - VERSIÓN SIMPLIFICADA
+// Funciones de utilidad
 function formatearFecha(fecha) {
     if (!fecha) return '-';
     
@@ -1072,7 +1031,6 @@ function formatearFecha(fecha) {
         }
     }
     
-    // Fallback para otros formatos
     try {
         const date = new Date(fecha);
         if (!isNaN(date.getTime())) {
@@ -1082,13 +1040,12 @@ function formatearFecha(fecha) {
         console.warn('Error formateando fecha:', fecha, e);
     }
     
-    return fecha; // Devolver original si no se puede formatear
+    return fecha;
 }
 
 function formatearHora(hora) {
     if (!hora) return '-';
     
-    // ✅ SOLUCIÓN DIRECTA: Extraer HH:MM de cualquier formato
     if (typeof hora === 'string') {
         // Buscar patrón de hora HH:MM en la cadena
         const match = hora.match(/(\d{1,2}):(\d{2})/);
@@ -1103,7 +1060,7 @@ function formatearHora(hora) {
 }
 function formatearHora(hora) {
     if (!hora) return '-';
-    return hora.substring(0, 5); // Formato HH:MM
+    return hora.substring(0, 5); 
 }
 
 function escapeHtml(text) {

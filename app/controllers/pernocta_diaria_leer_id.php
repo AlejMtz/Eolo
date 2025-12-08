@@ -15,7 +15,7 @@ try {
         exit;
     }
 
-    // Primero verificar si la pernocta existe sin el JOIN
+    // Primero verificar si la pernocta existe
     $sql_check = "SELECT * FROM pernocta_diaria WHERE Id_Pernocta = ?";
     $stmt_check = $pdo->prepare($sql_check);
     $stmt_check->execute([$id]);
@@ -26,9 +26,8 @@ try {
         exit;
     }
     
-    error_log("✅ Pernocta encontrada en pernocta_diaria, procediendo con JOIN...");
+    error_log(" Pernocta encontrada en pernocta_diaria, procediendo con JOIN...");
 
-    // Ahora hacer la consulta completa con JOIN
     $sql = "SELECT p.*, a.Matricula, a.Equipo, a.Tipo 
             FROM pernocta_diaria p 
             LEFT JOIN aeronave a ON p.Id_Aeronave = a.Id_Aeronave 
@@ -38,14 +37,14 @@ try {
     $stmt->execute([$id]);
     
     if ($stmt->rowCount() === 0) {
-        error_log("❌ Error en JOIN - pernocta encontrada pero falló el JOIN");
+        error_log("Error en JOIN - pernocta encontrada pero falló el JOIN");
         echo json_encode(['error' => 'Error al cargar datos relacionados de la pernocta']);
         exit;
     }
     
     $pernocta = $stmt->fetch(PDO::FETCH_ASSOC);
     
-    error_log("✅ Pernocta cargada exitosamente: " . json_encode($pernocta));
+    error_log("Pernocta cargada exitosamente: " . json_encode($pernocta));
 
     echo json_encode([
         'success' => true,

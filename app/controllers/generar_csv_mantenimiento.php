@@ -77,17 +77,17 @@ try {
         $mantenimientos_por_aeronave[$matricula][$fecha] = $tipo_mantenimiento;
     }
 
-    // Crear archivo CSV de salida
+    // Crear archivo CSV
     $output = fopen('php://output', 'w');
     fputs($output, $bom = (chr(0xEF) . chr(0xBB) . chr(0xBF)));
 
-    // ========== ENCABEZADO ==========
+    // ENCABEZADO
     fputcsv($output, ['EOLO - CALENDARIO DE MANTENIMIENTO']);
     fputcsv($output, ['Período:', date('d/m/Y', strtotime($fecha_inicio)) . ' al ' . date('d/m/Y', strtotime($fecha_fin))]);
     fputcsv($output, ['Fecha generación:', date('d/m/Y H:i')]);
     fputcsv($output, []); // Línea vacía
 
-    // ========== CABECERA DE FECHAS ==========
+    //  CABECERA DE FECHAS
     $cabecera = ['MATRÍCULA', 'EQUIPO', 'TIPO AERONAVE', 'TIPO CLIENTE'];
     
     // Agregar días del período como columnas
@@ -102,11 +102,11 @@ try {
     
     fputcsv($output, $cabecera);
 
-    // ========== DATOS POR AERONAVE ==========
+    //DATOS POR AERONAVE
     foreach ($aeronaves as $aeronave) {
         $matricula = $aeronave['Matricula'];
         
-        // Obtener el tipo de cliente (tomamos el más reciente)
+        // Obtener el tipo de cliente
         $sql_cliente = "SELECT Tipo_Cliente 
                        FROM asignacion_mantenimiento 
                        WHERE Id_Aeronave = ? 
@@ -134,12 +134,12 @@ try {
         foreach ($fechas as $fecha) {
             if (isset($mantenimientos_por_aeronave[$matricula][$fecha])) {
                 $tipo_mant = $mantenimientos_por_aeronave[$matricula][$fecha];
-                $fila[] = $tipo_mant; // 0 o 1
+                $fila[] = $tipo_mant;
                 
                 if ($tipo_mant === '0') $total_mant_0++;
                 if ($tipo_mant === '1') $total_mant_1++;
             } else {
-                $fila[] = ''; // Día sin mantenimiento
+                $fila[] = '';
             }
         }
 
@@ -151,7 +151,7 @@ try {
         fputcsv($output, $fila);
     }
     
-    // ========== LEYENDA ==========
+    // LEYENDA INFORMATIVA
     fputcsv($output, []); // Línea vacía
     fputcsv($output, ['LEYENDA:']);
     fputcsv($output, ['0 = Mantenimiento 0']);

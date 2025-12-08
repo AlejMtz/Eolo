@@ -42,7 +42,6 @@ try {
         throw new Exception("El control no existe o está deshabilitado");
     }
 
-    // Actualizar control - MANTENER EL ESTADO ACTIVO
     $sql = "UPDATE control_pernocta 
             SET Hangar = ?, EmpresaProcedencia = ?, Observaciones = ?, Persona_Registro = ?
             WHERE Id_Control = ?";

@@ -2,7 +2,6 @@ document.addEventListener('DOMContentLoaded', function() {
     const loginForm = document.getElementById('loginForm');
     const errorModal = new bootstrap.Modal(document.getElementById('errorModal'));
     
-    // Si ya está logueado, redirigir al menú principal
     if (localStorage.getItem('usuario_logueado')) {
         window.location.href = '/Eolo/app/views/Index.html';
     }
@@ -17,7 +16,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
     
-    // Quitar validación cuando el usuario escriba
     document.getElementById('username').addEventListener('input', function() {
         this.classList.remove('is-invalid');
     });
@@ -32,7 +30,6 @@ function realizarLogin() {
     const btnSubmit = document.querySelector('#loginForm button[type="submit"]');
     const originalText = btnSubmit.innerHTML;
     
-    // Mostrar loading
     btnSubmit.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Verificando...';
     btnSubmit.disabled = true;
     
@@ -49,7 +46,6 @@ function realizarLogin() {
             localStorage.setItem('usuario_nombre', data.usuario_nombre);
             localStorage.setItem('tipo_usuario', data.tipo_usuario);
             
-            // Redirigir al menú principal
             window.location.href = '../../app/views/Index.html';
         } else {
             mostrarError(data.error || 'Error desconocido');

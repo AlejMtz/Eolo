@@ -1,26 +1,20 @@
-// Variables globales para paginación
 let paginaActualTurnos = 1;
 const registrosPorPaginaTurnos = 15;
 let totalPaginasTurnos = 1;
 let totalRegistrosTurnos = 0;
 
-// Función para verificar permisos de edición/eliminación
 function tienePermisosAdmin() {
     const tipoUsuario = localStorage.getItem('tipo_usuario');
     return tipoUsuario === 'admin';
 }
 
-/**
- * Configura mejoras específicas para dispositivos móviles
- */
+
 function configurarResponsividadMovil() {
-    // Detectar si es un dispositivo móvil
     const esMovil = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
     
     if (esMovil) {
-        console.log('📱 Configurando responsividad para dispositivo móvil');
+        console.log(' Configurando responsividad para dispositivo móvil');
         
-        // Agregar indicadores de scroll a las tablas específicas
         const tableContainers = document.querySelectorAll('.table-scroll-container');
         tableContainers.forEach(container => {
             if (!container.querySelector('.table-scroll-indicator')) {
@@ -31,7 +25,6 @@ function configurarResponsividadMovil() {
             }
         });
         
-        // Optimizar tablas para touch
         const tablas = document.querySelectorAll('.table-scroll-container');
         tablas.forEach(tabla => {
             tabla.style.webkitOverflowScrolling = 'touch';
@@ -42,32 +35,26 @@ function configurarResponsividadMovil() {
 document.addEventListener('DOMContentLoaded', function() {
     console.log('🚀 DOM cargado - Inicializando entrega_turno.js');
     
-    // Inicializar modales de Bootstrap
     if (typeof bootstrap !== 'undefined') {
         window.successModal = new bootstrap.Modal(document.getElementById('successModal'));
         window.errorModal = new bootstrap.Modal(document.getElementById('errorModal'));
         window.confirmModal = new bootstrap.Modal(document.getElementById('confirmModal'));
     }
 
-    // Configurar responsividad para móviles
     configurarResponsividadMovil();
 
-    // Configurar campos requeridos
     configurarCamposRequeridos();
 
-    // Detecta si estamos en la página de listado
     if (document.getElementById('tablaTurnos')) {
         console.log('📋 Inicializando página de listado de turnos');
         cargarEntregasTurno();
     }
 
-    // Detecta si estamos en la página del formulario
     if (document.getElementById('formEntregaTurno')) {
         console.log('📝 Inicializando formulario de entrega de turno');
         configurarFormulario();
     }
 
-    // Configurar evento para el botón de confirmación de eliminación
     const confirmBtn = document.getElementById('confirmActionBtn');
     if (confirmBtn) {
         confirmBtn.addEventListener('click', function() {
@@ -78,17 +65,14 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
     
-    console.log('✅ entrega_turno.js inicializado correctamente');
+    console.log('entrega_turno.js inicializado correctamente');
 });
 
 
-/**
- * Configura el formulario de entrega de turno
- */
+
 function configurarFormulario() {
     const formulario = document.getElementById('formEntregaTurno');
     
-    // Si el formulario existe, configurar el evento submit
     if (formulario) {
         formulario.addEventListener('submit', function(event) {
             event.preventDefault();
@@ -96,20 +80,19 @@ function configurarFormulario() {
         });
     }
 
-    // Comprobar si hay un ID en la URL para cargar datos en el formulario de edición
+    // cargar datos en el formulario de edición
     const params = new URLSearchParams(window.location.search);
     const id = params.get('id');
     if (id) {
-        console.log('✏️ Modo edición detectado, ID:', id);
+        console.log(' Modo edición detectado, ID:', id);
         cargarEntregaParaEditar(id);
     }
 
-    // Configurar valores por defecto para la fecha
     const fechaInput = document.getElementById('fecha');
     if (fechaInput && !fechaInput.value) {
         const today = new Date().toISOString().split('T')[0];
         fechaInput.value = today;
-        console.log('📅 Fecha predeterminada establecida:', today);
+        console.log(' Fecha predeterminada establecida:', today);
     }
 }
 
@@ -120,7 +103,7 @@ function validarFormularioCompleto() {
     const formulario = document.getElementById('formEntregaTurno');
     let camposVacios = [];
 
-    // 1. Validar campos básicos (texto, número, fecha)
+
     const camposBasicos = [
         { id: 'fecha', nombre: 'Fecha' },
         { id: 'nombre', nombre: 'Nombre' },
@@ -149,7 +132,7 @@ function validarFormularioCompleto() {
         }
     });
 
-    // 2. Validar equipos de oficina (números)
+    // Validar equipos de oficina
     const equiposOficina = [
         { id: 'engrapadoras-entregadas', nombre: 'Engrapadoras entregadas' },
         { id: 'engrapadoras-recibidas', nombre: 'Engrapadoras recibidas' },
@@ -164,7 +147,7 @@ function validarFormularioCompleto() {
         }
     });
 
-    // 3. Validar radio buttons requeridos
+    // validar radio buttons 
     const radiosRequeridos = [
         { name: 'reporte_aterrizajes', mensaje: 'Reporte de aterrizajes' },
         { name: 'copiadoras_funciona', mensaje: 'Estado de copiadoras (funciona)' },
@@ -178,13 +161,13 @@ function validarFormularioCompleto() {
         }
     });
 
-    // 4. Validar equipos de comunicación
+    // Validar equipos de comunicación
     const equiposComunicacion = [
         { 
             prefijo: 'celular', 
             nombre: 'Celular ZTE',
             tieneEstado: true,
-            tipoEstado: 'checkbox' // checkbox en lugar de radio
+            tipoEstado: 'checkbox' 
         },
         { 
             prefijo: 'radio_motorola', 
@@ -212,17 +195,14 @@ function validarFormularioCompleto() {
     equiposComunicacion.forEach(equipo => {
         const entregado = document.getElementById(`${equipo.prefijo}-entregado`);
         
-        // Si el equipo está marcado como entregado, validar su estado
         if (entregado && entregado.checked) {
             let estadoValido = false;
             
             if (equipo.tieneEstado) {
                 if (equipo.tipoEstado === 'checkbox') {
-                    // Para celular (checkbox)
                     const estadoCheckbox = document.getElementById(`${equipo.prefijo}-cargado`);
                     estadoValido = estadoCheckbox && estadoCheckbox.checked;
                 } else if (equipo.tipoEstado === 'radio') {
-                    // Para radios (radio buttons)
                     estadoValido = !!formulario.querySelector(`input[name="${equipo.estadoName}"]:checked`);
                 }
             }
@@ -231,17 +211,14 @@ function validarFormularioCompleto() {
                 camposVacios.push(`Estado del ${equipo.nombre}`);
             }
         } else {
-            // Si no está marcado como entregado, lo consideramos como no entregado (válido)
-            // Pero podrías forzar que al menos uno esté entregado si lo necesitas
+            
         }
     });
 
     return camposVacios;
 }
 
-/**
- * Muestra errores de validación
- */
+
 function mostrarErroresValidacion(camposVacios) {
     let mensaje = 'Por favor completa los siguientes campos obligatorios:\n\n';
     camposVacios.forEach((campo, index) => {
@@ -251,22 +228,17 @@ function mostrarErroresValidacion(camposVacios) {
     mensaje += '\nTodos los campos son obligatorios para guardar la entrega de turno.';
     mostrarError(mensaje);
     
-    // Resaltar campos faltantes
     resaltarCamposFaltantes(camposVacios);
 }
 
-/**
- * Resalta visualmente los campos faltantes
- */
+
 function resaltarCamposFaltantes(camposVacios) {
-    // Remover resaltado anterior
     const elementosResaltados = document.querySelectorAll('.campo-faltante');
     elementosResaltados.forEach(el => {
         el.classList.remove('campo-faltante');
         if (el.style) el.style.borderColor = '';
     });
 
-    // Mapa de nombres de campos a IDs
     const mapaCampos = {
         'Fecha': 'fecha',
         'Nombre': 'nombre',
@@ -292,7 +264,7 @@ function resaltarCamposFaltantes(camposVacios) {
         'Perforadoras recibidas': 'perforadoras-recibidas'
     };
 
-    // Resaltar campos de entrada
+  
     camposVacios.forEach(nombreCampo => {
         const campoId = mapaCampos[nombreCampo];
         if (campoId) {
@@ -309,7 +281,7 @@ function resaltarCamposFaltantes(camposVacios) {
         }
     });
 
-    // Resaltar radio buttons faltantes
+   
     if (camposVacios.includes('Reporte de aterrizajes')) {
         resaltarGrupoRadio('reporte_aterrizajes');
     }
@@ -321,9 +293,7 @@ function resaltarCamposFaltantes(camposVacios) {
     }
 }
 
-/**
- * Resalta un grupo de radio buttons
- */
+
 function resaltarGrupoRadio(nombre) {
     const radios = document.querySelectorAll(`input[name="${nombre}"]`);
     radios.forEach(radio => {
@@ -337,23 +307,18 @@ function resaltarGrupoRadio(nombre) {
     });
 }
 
-/**
- * Configura automáticamente todos los campos como requeridos
- */
+
 function configurarCamposRequeridos() {
     const formulario = document.getElementById('formEntregaTurno');
     if (!formulario) return;
 
-    // Agregar atributo required a todos los campos de entrada
     const inputs = formulario.querySelectorAll('input, textarea, select');
     inputs.forEach(input => {
-        // No agregar required a checkboxes y radios (se validan diferente)
         if (input.type !== 'checkbox' && input.type !== 'radio' && !input.name.includes('_entregado')) {
             input.setAttribute('required', 'required');
         }
     });
 
-    // Agregar indicador visual de campos requeridos
     const labels = formulario.querySelectorAll('label');
     labels.forEach(label => {
         const forAttr = label.getAttribute('for');
@@ -371,12 +336,10 @@ function configurarCamposRequeridos() {
         }
     });
 
-    console.log('✅ Todos los campos configurados como requeridos');
+    console.log(' Todos los campos configurados como requeridos');
 }
 
-/**
- * Obtiene el nombre legible del equipo
- */
+
 function obtenerNombreEquipo(codigo) {
     const nombres = {
         'celular': 'Celular ZTE',
@@ -403,20 +366,15 @@ function mostrarErroresValidacion(camposVacios) {
     resaltarCamposFaltantes(camposVacios);
 }
 
-/**
- * Resalta visualmente los campos faltantes
- */
+
 function resaltarCamposFaltantes(camposVacios) {
-    // Remover resaltado anterior
     const elementosResaltados = document.querySelectorAll('.campo-faltante');
     elementosResaltados.forEach(el => {
         el.classList.remove('campo-faltante');
         el.style.borderColor = '';
     });
 
-    // Resaltar nuevos campos faltantes
     camposVacios.forEach(nombreCampo => {
-        // Buscar el campo por su label o nombre
         const labels = document.querySelectorAll('label');
         labels.forEach(label => {
             if (label.textContent.includes(nombreCampo)) {
@@ -432,10 +390,9 @@ function resaltarCamposFaltantes(camposVacios) {
 }
 
 /**
- * Guarda o actualiza una entrega de turno con validación completa
+ * Guarda o actualiza una entrega de turno 
  */
 function guardarEntregaTurno() {
-    // Validar que todos los campos estén completos
     const camposVacios = validarFormularioCompleto();
     
     if (camposVacios.length > 0) {
@@ -448,8 +405,7 @@ function guardarEntregaTurno() {
     
     const url = id_entrega ? '/Eolo/app/controllers/entrega_turno_actualizar.php' : '/Eolo/app/controllers/entrega_turno_crear.php';
     
-    // DEBUG: Mostrar todos los datos del formulario
-    console.log('=== DATOS DEL FORMULARIO VALIDADOS ===');
+    console.log('DATOS DEL FORMULARIO VALIDADOS');
     for (let [key, value] of formData.entries()) {
         console.log(key + ': ' + value);
     }
@@ -457,7 +413,6 @@ function guardarEntregaTurno() {
     console.log('ID Entrega:', id_entrega);
     console.log('============================');
     
-    // Mostrar loading
     const btnGuardar = document.getElementById('btnGuardar');
     const originalText = btnGuardar.innerHTML;
     btnGuardar.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Guardando...';
@@ -500,7 +455,6 @@ function guardarEntregaTurno() {
  * Recopila todos los datos del formulario y los agrega al FormData
  */
 function recopilarDatosFormulario(formData) {
-    // Datos principales
     const camposPrincipales = [
         'fecha', 'nombre', 'fondo_recibido', 'fondo_entregado', 'vales_gasolina', 'vales_folio',
         'aterrizajes_cantidad', 'llegadas', 'salidas', 'reporte_operaciones', 
@@ -515,13 +469,11 @@ function recopilarDatosFormulario(formData) {
         }
     });
 
-    // Radio buttons para reporte de aterrizajes
     const reporteAterrizaje = document.querySelector('input[name="reporte_aterrizajes"]:checked');
     if (reporteAterrizaje) {
         formData.append('reporte_aterrizaje', reporteAterrizaje.value);
     }
 
-    // Equipos de comunicación - checkboxes y radios
     const equiposComunicacion = [
         { prefijo: 'celular', cantidad: 1 },
         { prefijo: 'radio_motorola', cantidad: 2 },
@@ -530,13 +482,11 @@ function recopilarDatosFormulario(formData) {
     ];
 
     equiposComunicacion.forEach(equipo => {
-        // Checkbox de entregado
         const entregado = document.getElementById(`${equipo.prefijo}_entregado`);
         if (entregado && entregado.checked) {
             formData.append(`${equipo.prefijo}_entregado`, '1');
         }
 
-        // Radio buttons de estado (cargado/fallas)
         const estado = document.querySelector(`input[name="${equipo.prefijo}_cargado"]:checked`) || 
                       document.querySelector(`input[name="${equipo.prefijo}_fallas"]:checked`);
         if (estado) {
@@ -544,7 +494,6 @@ function recopilarDatosFormulario(formData) {
         }
     });
 
-    // Equipos de oficina
     const equiposOficina = ['engrapadoras', 'perforadoras'];
     equiposOficina.forEach(equipo => {
         const entregadas = document.getElementById(`${equipo}_entregadas`);
@@ -554,18 +503,15 @@ function recopilarDatosFormulario(formData) {
         if (recibidas) formData.append(`${equipo}_recibidas`, recibidas.value);
     });
 
-    // ID de entrega si existe (para actualización)
     const idEntrega = document.getElementById('id_entrega');
     if (idEntrega && idEntrega.value) {
         formData.append('id_entrega', idEntrega.value);
     }
 }
 
-/**
- * Carga los datos de una entrega para editar
- */
+
 function cargarEntregaParaEditar(id) {
-    console.log('🔍 Cargando entrega ID:', id);
+    console.log(' Cargando entrega ID:', id);
     
     const btnGuardar = document.getElementById('btnGuardar');
     const originalText = btnGuardar.innerHTML;
@@ -584,9 +530,8 @@ function cargarEntregaParaEditar(id) {
             throw new Error(data.error);
         }
 
-        console.log('✅ Datos recibidos:', data);
+        console.log(' Datos recibidos:', data);
         
-        // DEBUG: Mostrar estructura completa
         console.log('🔍 ESTRUCTURA COMPLETA DE DATOS:');
         console.log('Campos principales:', Object.keys(data));
         if (data.equipos_comunicacion) {
@@ -617,45 +562,40 @@ function cargarEntregaParaEditar(id) {
         setValue('firma-entregador', data.Firma_Entrega);
         setValue('firma-receptor', data.Firma_Recibe);
 
-        // Radio button para reporte de aterrizajes
         if (data.Reporte_Aterrizaje !== null && data.Reporte_Aterrizaje !== undefined) {
             const valor = data.Reporte_Aterrizaje ? 'si' : 'no';
             setRadioValue('reporte_aterrizajes', valor);
         }
 
-        // Cargar equipos de comunicación
         if (data.equipos_comunicacion && Array.isArray(data.equipos_comunicacion)) {
             cargarEquiposComunicacion(data.equipos_comunicacion);
         } else {
-            console.warn('⚠️ No se encontraron equipos de comunicación');
+            console.warn(' No se encontraron equipos de comunicación');
         }
 
-        // Cargar equipos de oficina
         if (data.equipos_oficina && Array.isArray(data.equipos_oficina)) {
             cargarEquiposOficina(data.equipos_oficina);
         } else {
-            console.warn('⚠️ No se encontraron equipos de oficina');
+            console.warn(' No se encontraron equipos de oficina');
         }
-        // CARGAR COPIADORAS Y TONER - NUEVO CÓDIGO
         if (data.Copiadoras_Funciona !== null && data.Copiadoras_Funciona !== undefined) {
             const valorCopiadoras = data.Copiadoras_Funciona ? 'si' : 'no';
             setRadioValue('copiadoras_funciona', valorCopiadoras);
         }
         
         if (data.Toner_Estado) {
-            setRadioValue('toner', data.Toner_Estado); // 'bueno' o 'malo'
+            setRadioValue('toner', data.Toner_Estado); 
         }
 
-        // Cambiar estilo del botón
         btnGuardar.textContent = 'Actualizar Entrega';
         btnGuardar.classList.remove('btn-primary');
         btnGuardar.classList.add('btn-warning');
         
-        console.log('✅ Formulario llenado exitosamente');
+        console.log(' Formulario llenado exitosamente');
 
     })
     .catch(error => {
-        console.error('❌ Error al cargar datos:', error);
+        console.error(' Error al cargar datos:', error);
         mostrarError('Error al cargar los datos: ' + error.message);
     })
     .finally(() => {
@@ -664,9 +604,7 @@ function cargarEntregaParaEditar(id) {
     });
 }
 
-/**
- * Carga los equipos de comunicación en el formulario
- */
+
 function cargarEquiposComunicacion(equipos) {
     console.log('📱 Cargando equipos comunicación:', equipos);
     
@@ -674,8 +612,7 @@ function cargarEquiposComunicacion(equipos) {
         const nombre = equipo.Nombre;
         console.log(`Procesando equipo: ${nombre}`, equipo);
         
-        // Para los equipos de comunicación, asumimos que si existe el registro, está entregado
-        const entregado = true; // Siempre true porque el registro existe
+        const entregado = true; 
         
         switch(nombre) {
             case 'CELULAR ZTE':
@@ -716,11 +653,9 @@ function cargarEquiposComunicacion(equipos) {
     });
 }
 
-/**
- * Carga los equipos de oficina en el formulario
- */
+
 function cargarEquiposOficina(equipos) {
-    console.log('🏢 Cargando equipos oficina:', equipos);
+    console.log(' Cargando equipos oficina:', equipos);
     
     equipos.forEach(equipo => {
         const nombre = equipo.Nombre;
@@ -743,7 +678,6 @@ function cargarEquiposOficina(equipos) {
     });
 }
 
-// Funciones auxiliares (ya las tienes)
 function setValue(elementId, value) {
     const element = document.getElementById(elementId);
     if (element) {
@@ -778,7 +712,6 @@ function setRadioValue(name, value) {
  * Genera PDF de entrega de turno
  */
 function generarPDFEntregaTurno(id) {
-    // Abrir en nueva pestaña
     window.open(`/Eolo/app/helpers/pdf_generator.php?tipo=entrega_turno&id=${id}`, '_blank');
 }
 
@@ -813,11 +746,9 @@ async function cargarEntregasTurno(pagina = 1) {
         };
 
         if (data.entregas && data.paginacion) {
-            // Nueva estructura con paginación
             entregas = data.entregas;
             infoPaginacion = data.paginacion;
         } else if (Array.isArray(data)) {
-            // Estructura antigua (array simple) - aplicar paginación manual
             const inicio = (pagina - 1) * registrosPorPaginaTurnos;
             const fin = inicio + registrosPorPaginaTurnos;
             entregas = data.slice(inicio, fin);
@@ -831,7 +762,7 @@ async function cargarEntregasTurno(pagina = 1) {
         totalPaginasTurnos = infoPaginacion.total_paginas;
         totalRegistrosTurnos = infoPaginacion.total_registros;
 
-        console.log('🔄 Información de paginación entregas:', infoPaginacion);
+        console.log(' Información de paginación entregas:', infoPaginacion);
 
         tablaBody.innerHTML = '';
         
@@ -843,7 +774,6 @@ async function cargarEntregasTurno(pagina = 1) {
             entregas.forEach(entrega => {
                 const fila = document.createElement('tr');
                 
-                // Determinar permisos para este registro específico
                 const puedeEditar = permisosSistema.puedeEditar('entregas_turno', entrega);
                 const puedeEliminar = permisosSistema.puedeEliminar('entregas_turno');
                 const esPropietario = entrega.Nombre === usuarioActual;
@@ -904,7 +834,6 @@ async function cargarEntregasTurno(pagina = 1) {
             });
         }
         
-        // Actualizar el paginador
         actualizarPaginadorTurnos();
         
     } catch (error) {
@@ -913,9 +842,7 @@ async function cargarEntregasTurno(pagina = 1) {
     }
 }
 
-/**
- * Formatea una fecha para mostrar
- */
+
 function formatearFecha(fechaString) {
     if (!fechaString) return 'N/A';
     
@@ -927,9 +854,7 @@ function formatearFecha(fechaString) {
     }
 }
 
-/**
- * Muestra modal de éxito
- */
+
 function mostrarExito(mensaje, callback = null) {
     const modalBody = document.getElementById('successModalBody');
     if (modalBody && successModal) {
@@ -950,9 +875,7 @@ function mostrarExito(mensaje, callback = null) {
     }
 }
 
-/**
- * Muestra modal de error
- */
+
 function mostrarError(mensaje) {
     const modalBody = document.getElementById('errorModalBody');
     if (modalBody && errorModal) {
@@ -963,9 +886,7 @@ function mostrarError(mensaje) {
     }
 }
 
-/**
- * Muestra confirmación para eliminar una entrega
- */
+
 function eliminarEntrega(id) {
     const modalBody = document.getElementById('confirmModalBody');
     const confirmBtn = document.getElementById('confirmActionBtn');
@@ -981,9 +902,7 @@ function eliminarEntrega(id) {
     }
 }
 
-/**
- * Elimina una entrega después de la confirmación
- */
+
 function eliminarEntregaConfirmada(id) {
     if (confirmModal) {
         confirmModal.hide();
@@ -1001,7 +920,6 @@ function eliminarEntregaConfirmada(id) {
         .then(data => {
             if (data.success) {
                 mostrarExito(data.success, () => {
-                    // Recargar manteniendo la página actual
                     cargarEntregasTurno(paginaActualTurnos);
                 });
             } else {
@@ -1015,9 +933,7 @@ function eliminarEntregaConfirmada(id) {
     }, 300);
 }
 
-/**
- * Función legacy para compatibilidad
- */
+
 function mostrarMensaje(titulo, cuerpo, tipo) {
     if (tipo === 'success') {
         mostrarExito(cuerpo);
@@ -1026,27 +942,22 @@ function mostrarMensaje(titulo, cuerpo, tipo) {
     }
 }
 
-/**
- * Actualiza el paginador en la interfaz para entregas de turno
- */
+
 function actualizarPaginadorTurnos() {
     const tabla = document.getElementById('tablaTurnos');
     if (!tabla) return;
     
-    // Eliminar paginador existente
     const paginadorExistente = tabla.nextElementSibling;
     if (paginadorExistente && paginadorExistente.classList.contains('paginador-container')) {
         paginadorExistente.remove();
     }
     
-    // Crear contenedor del paginador
     const paginadorContainer = document.createElement('div');
     paginadorContainer.className = 'paginador-container mt-4';
     paginadorContainer.id = 'paginadorTurnos';
     
     let html = '';
     
-    // Información de registros
     const inicio = ((paginaActualTurnos - 1) * registrosPorPaginaTurnos) + 1;
     const fin = Math.min(paginaActualTurnos * registrosPorPaginaTurnos, totalRegistrosTurnos);
     
@@ -1059,7 +970,6 @@ function actualizarPaginadorTurnos() {
                 <ul class="pagination pagination-sm mb-0">
     `;
     
-    // Botón Anterior
     if (paginaActualTurnos > 1) {
         html += `
             <li class="page-item">
@@ -1076,17 +986,14 @@ function actualizarPaginadorTurnos() {
         `;
     }
     
-    // Números de página
     const paginasAMostrar = 5;
     let inicioPaginas = Math.max(1, paginaActualTurnos - Math.floor(paginasAMostrar / 2));
     let finPaginas = Math.min(totalPaginasTurnos, inicioPaginas + paginasAMostrar - 1);
     
-    // Ajustar si estamos cerca del final
     if (finPaginas - inicioPaginas + 1 < paginasAMostrar) {
         inicioPaginas = Math.max(1, finPaginas - paginasAMostrar + 1);
     }
     
-    // Página inicial
     if (inicioPaginas > 1) {
         html += `
             <li class="page-item">
@@ -1096,7 +1003,6 @@ function actualizarPaginadorTurnos() {
         `;
     }
     
-    // Páginas intermedias
     for (let i = inicioPaginas; i <= finPaginas; i++) {
         if (i === paginaActualTurnos) {
             html += `
@@ -1113,7 +1019,6 @@ function actualizarPaginadorTurnos() {
         }
     }
     
-    // Página final
     if (finPaginas < totalPaginasTurnos) {
         html += `
             ${finPaginas < totalPaginasTurnos - 1 ? '<li class="page-item disabled"><span class="page-link">...</span></li>' : ''}
@@ -1123,7 +1028,6 @@ function actualizarPaginadorTurnos() {
         `;
     }
     
-    // Botón Siguiente
     if (paginaActualTurnos < totalPaginasTurnos) {
         html += `
             <li class="page-item">
@@ -1150,15 +1054,11 @@ function actualizarPaginadorTurnos() {
     tabla.parentNode.appendChild(paginadorContainer);
 }
 
-/**
- * Cambia a una página específica para entregas de turno
- * @param {number} pagina - Número de página a cargar
- */
+
 function cambiarPaginaTurnos(pagina) {
     if (pagina >= 1 && pagina <= totalPaginasTurnos && pagina !== paginaActualTurnos) {
         cargarEntregasTurno(pagina);
         
-        // Scroll suave hacia la parte superior de la tabla
         const tabla = document.getElementById('tablaTurnos');
         if (tabla) {
             tabla.scrollIntoView({ behavior: 'smooth', block: 'start' });

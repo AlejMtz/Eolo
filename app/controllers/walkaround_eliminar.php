@@ -17,7 +17,6 @@ try {
         throw new Exception('ID de walkaround no proporcionado.');
     }
 
-    // Iniciar transacción para eliminar en cascada
     $pdo->beginTransaction();
 
     // 1. Primero eliminar evidencias

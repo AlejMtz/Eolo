@@ -2,25 +2,21 @@
 header('Content-Type: application/json');
 header('Access-Control-Allow-Origin: *');
 
-// Configuración de la base de datos
 $servername = "localhost";
 $username = "root";
 $password = "";
 $dbname = "eolo";
 
 try {
-    // Crear conexión
     $conn = new mysqli($servername, $username, $password, $dbname);
 
-    // Verificar conexión
     if ($conn->connect_error) {
         throw new Exception('Error de conexión: ' . $conn->connect_error);
     }
 
-    // Obtener parámetros - IMPORTANTE: Usar la fecha del control que queremos
     $fecha_control = isset($_GET['fecha_control']) ? $_GET['fecha_control'] : date('Y-m-d');
 
-    // ✅ CONSULTA PARA CONTROL DIARIO - Solo excluye aeronaves del control de HOY
+    // CONSULTA PARA CONTROL DIARIO MANUAL
     $sql = "
         SELECT 
             a.Id_Aeronave, 
@@ -28,16 +24,14 @@ try {
             a.Tipo, 
             a.Equipo,
             ultima.Fecha as Ultima_Fecha_Entrada,
-            ultima.Hora as Ultima_Hora_Entrada,
-            ultima.Id_Pernocta as Id_Ultimo_Registro
+            ultima.Hora as Ultima_Hora_Entrada
         FROM aeronave a
         INNER JOIN (
             -- Último movimiento de cada aeronave
             SELECT 
                 pd1.Id_Aeronave,
                 pd1.Fecha,
-                pd1.Hora, 
-                pd1.Id_Pernocta,
+                pd1.Hora,
                 pd1.Tipo_Movimiento
             FROM pernocta_diaria pd1
             INNER JOIN (
@@ -51,10 +45,9 @@ try {
         ) ultima ON a.Id_Aeronave = ultima.Id_Aeronave
         WHERE ultima.Tipo_Movimiento = 'entrada'  -- Solo aeronaves cuyo último movimiento fue ENTRADA
         AND a.Id_Aeronave NOT IN (
-            -- ✅ SOLO EXCLUIR AERONAVES DEL CONTROL DE HOY
             SELECT cp.Id_Aeronave 
             FROM control_pernocta cp 
-            WHERE DATE(cp.Fecha) = ?  -- Solo excluir del control de la fecha específica
+            WHERE DATE(cp.Fecha) = ?
         )
         ORDER BY a.Matricula
     ";
@@ -80,7 +73,7 @@ try {
         'aeronaves' => $aeronaves,
         'total' => count($aeronaves),
         'fecha_consulta' => $fecha_control,
-        'nota' => 'Muestra aeronaves en hangar que NO están en el control de la fecha: ' . $fecha_control
+        'nota' => 'Aeronaves en hangar disponibles para agregar manualmente'
     ]);
 
 } catch (Exception $e) {

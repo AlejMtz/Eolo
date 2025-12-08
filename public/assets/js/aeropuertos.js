@@ -1,45 +1,37 @@
-// Variables globales para paginación
 let paginaActual = 1;
 const registrosPorPagina = 10;
 let totalPaginas = 1;
 let totalRegistros = 0;
 
-// Variables globales para los modales
 let successModal = null;
 let errorModal = null;
 let confirmModal = null;
 
 document.addEventListener('DOMContentLoaded', () => {
-    // Inicializar modales de Bootstrap
     if (typeof bootstrap !== 'undefined') {
         successModal = new bootstrap.Modal(document.getElementById('successModal'));
         errorModal = new bootstrap.Modal(document.getElementById('errorModal'));
         
-        // Solo inicializar confirmModal si existe
         const confirmModalElement = document.getElementById('confirmModal');
         if (confirmModalElement) {
             confirmModal = new bootstrap.Modal(confirmModalElement);
         }
     }
 
-    // Verificar permisos antes de cargar contenido
     if (!verificarPermisosAeropuertos()) {
         return;
     }
 
-    // Detecta si el elemento de la tabla existe para saber en qué página estamos
     if (document.getElementById('tablaAeropuertos')) {
         cargarAeropuertos();
     }
 
-    // Detecta si el elemento del formulario existe para saber en qué página estamos
     if (document.getElementById('aeropuertoForm')) {
         configurarFormularioAeropuerto();
     }
     
     configurarValidacionCodigos();
 
-    // Configurar evento para el botón de confirmación de eliminación
     const confirmBtn = document.getElementById('confirmActionBtn');
     if (confirmBtn) {
         confirmBtn.addEventListener('click', function() {
@@ -51,18 +43,13 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
-/**
- * Muestra modal de éxito
- * @param {string} mensaje - Mensaje a mostrar
- * @param {function} callback - Función a ejecutar al cerrar el modal
- */
+
 function mostrarExito(mensaje, callback = null) {
     const modalBody = document.getElementById('successModalBody');
     if (modalBody && successModal) {
         modalBody.textContent = mensaje;
         successModal.show();
         
-        // Configurar callback si se proporciona
         if (callback) {
             const modalElement = document.getElementById('successModal');
             const handler = function() {
@@ -77,10 +64,7 @@ function mostrarExito(mensaje, callback = null) {
     }
 }
 
-/**
- * Muestra modal de error
- * @param {string} mensaje - Mensaje a mostrar
- */
+
 function mostrarError(mensaje) {
     const modalBody = document.getElementById('errorModalBody');
     if (modalBody && errorModal) {
@@ -91,10 +75,7 @@ function mostrarError(mensaje) {
     }
 }
 
-/**
- * Muestra modal de confirmación para eliminar
- * @param {string} id - ID del aeropuerto a eliminar
- */
+
 function mostrarConfirmacionEliminar(id) {
     const modalBody = document.getElementById('confirmModalBody');
     const confirmBtn = document.getElementById('confirmActionBtn');
@@ -104,7 +85,6 @@ function mostrarConfirmacionEliminar(id) {
         confirmBtn.setAttribute('data-id', id);
         confirmModal.show();
     } else {
-        // Fallback al confirm tradicional
         if (confirm('¿Estás seguro de que quieres eliminar este aeropuerto?')) {
             eliminarAeropuertoConfirmada(id);
         }
@@ -119,9 +99,7 @@ function verificarPermisosAeropuertos() {
         window.location.href = '../app/views/login.html';
         return false;
     }
-    
-    // Todos pueden ver aeropuertos, pero solo admin puede gestionar
-    return true;
+        return true;
 }
 
 /**
@@ -168,7 +146,6 @@ function configurarFormularioAeropuerto() {
             return;
         }
         
-        // RUTAS CORRECTAS desde public/assets/js/
         const url = Id_Aeropuerto ? 
             '/Eolo/app/controllers/aeropuerto_actualizar.php' : 
             '/Eolo/app/controllers/aeropuerto_crear.php';
@@ -183,7 +160,6 @@ function configurarFormularioAeropuerto() {
             Pais: document.getElementById('Pais').value.trim()
         };
 
-        // Mostrar loading
         const btnGuardar = document.getElementById('btnGuardar');
         const textoOriginal = btnGuardar.innerHTML;
         btnGuardar.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i> Guardando...';
@@ -200,26 +176,23 @@ function configurarFormularioAeropuerto() {
             body: JSON.stringify(data)
         })
         .then(async response => {
-            console.log('📡 Status de respuesta:', response.status);
-            console.log('📄 Headers:', response.headers);
+            console.log(' Status de respuesta:', response.status);
+            console.log(' Headers:', response.headers);
             
-            // Primero obtener el texto de la respuesta
             const responseText = await response.text();
-            console.log('📄 Respuesta cruda:', responseText);
+            console.log(' Respuesta cruda:', responseText);
             
             let data;
             try {
                 data = JSON.parse(responseText);
-                console.log('✅ JSON parseado correctamente:', data);
+                console.log('JSON parseado correctamente:', data);
             } catch (parseError) {
-                console.error('❌ Error parseando JSON:', parseError);
-                console.error('📄 Texto que causó el error:', responseText);
+                console.error('Error parseando JSON:', parseError);
+                console.error('Texto que causó el error:', responseText);
                 
-                // Si es un error 500 o hay mensaje de error de PHP, mostrarlo
                 if (responseText.includes('Fatal error') || responseText.includes('Parse error') || responseText.includes('Warning')) {
                     throw new Error('Error en el servidor: ' + responseText.substring(0, 200));
                 } else if (responseText.includes('success') || responseText.includes('error')) {
-                    // Intentar extraer mensaje aunque no sea JSON válido
                     throw new Error('Respuesta del servidor: ' + responseText.substring(0, 200));
                 } else {
                     throw new Error('El servidor devolvió una respuesta inesperada. Código: ' + response.status);
@@ -233,21 +206,20 @@ function configurarFormularioAeropuerto() {
                 const mensaje = Id_Aeropuerto ? 
                     'Aeropuerto actualizado correctamente.' : 
                     'Aeropuerto creado correctamente.';
-                console.log('✅ Éxito:', mensaje);
+                console.log(' Éxito:', mensaje);
                 mostrarExito(mensaje, () => {
                     window.location.href = '../../app/views/ver_aeropuertos.html';
                 });
             } else {
-                console.error('❌ Error del servidor:', data.error);
+                console.error(' Error del servidor:', data.error);
                 mostrarError(data.error || 'Error desconocido del servidor');
             }
         })
         .catch(error => {
-            console.error('❌ Error en guardarAeropuerto:', error);
+            console.error(' Error en guardarAeropuerto:', error);
             mostrarError('Error al guardar aeropuerto: ' + error.message);
         })
         .finally(() => {
-            // Restaurar botón
             btnGuardar.innerHTML = textoOriginal;
             btnGuardar.disabled = false;
         });
@@ -262,7 +234,7 @@ function configurarFormularioAeropuerto() {
 }
 
 /**
- * Carga la lista de aeropuertos y la muestra en la tabla con paginación.
+ * Carga la lista de aeropuertos
  */
 async function cargarAeropuertos(pagina = 1) {
     const tablaBody = document.querySelector('#tablaAeropuertos tbody');
@@ -271,18 +243,18 @@ async function cargarAeropuertos(pagina = 1) {
     tablaBody.innerHTML = '<tr><td colspan="7" class="text-center">Cargando...</td></tr>';
 
     try {
-        console.log('🔄 Cargando aeropuertos, página:', pagina);
+        console.log(' Cargando aeropuertos, página:', pagina);
         
         const response = await fetch(`../../app/models/leer_aeropuertos.php?pagina=${pagina}&registros_por_pagina=${registrosPorPagina}`);
         
-        console.log('📡 Status de respuesta:', response.status);
+        console.log(' Status de respuesta:', response.status);
         
         if (!response.ok) {
             throw new Error(`Error HTTP: ${response.status}`);
         }
         
         const data = await response.json();
-        console.log('📊 Datos recibidos del servidor:', data);
+        console.log(' Datos recibidos del servidor:', data);
         
         if (data.error) {
             throw new Error(data.error);
@@ -296,8 +268,8 @@ async function cargarAeropuertos(pagina = 1) {
             registros_por_pagina: registrosPorPagina
         };
 
-        console.log('📈 Información de paginación:', paginacion);
-        console.log('🛩️ Aeropuertos recibidos:', aeropuertos.length);
+        console.log(' Información de paginación:', paginacion);
+        console.log(' Aeropuertos recibidos:', aeropuertos.length);
 
         paginaActual = paginacion.pagina_actual;
         totalPaginas = paginacion.total_paginas;
@@ -345,7 +317,6 @@ async function cargarAeropuertos(pagina = 1) {
             });
         }
         
-        // Actualizar el paginador
         actualizarPaginador();
         
     } catch (error) {
@@ -354,9 +325,6 @@ async function cargarAeropuertos(pagina = 1) {
     }
 }
 
-/**
- * Muestra error de permisos específico para aeropuertos
- */
 function mostrarErrorPermisos(mensaje = 'No tienes permisos para realizar esta acción') {
     let modalElement = document.getElementById('permisosModal');
     
@@ -390,35 +358,32 @@ function mostrarErrorPermisos(mensaje = 'No tienes permisos para realizar esta a
     modal.show();
 }
 
-/**
- * Carga los datos de un aeropuerto para rellenar el formulario de edición.
- * @param {string} id - El ID del aeropuerto a editar.
- */
+
 async function cargarAeropuertoParaEditar(id) {
     console.log('🔍 Intentando cargar aeropuerto ID:', id);
     
     try {
         const response = await fetch(`../../app/controllers/aeropuerto_leer_id.php?id=${id}&t=${Date.now()}`);
         
-        console.log('📊 Status de respuesta:', response.status);
+        console.log(' Status de respuesta:', response.status);
         
         if (!response.ok) {
             const errorText = await response.text();
-            console.error('❌ Error del servidor:', errorText);
+            console.error(' Error del servidor:', errorText);
             throw new Error(`Error ${response.status}: No se pudieron cargar los datos`);
         }
         
         const data = await response.json();
-        console.log('✅ Datos recibidos:', data);
+        console.log(' Datos recibidos:', data);
         
         if (data.error) {
-            console.warn('⚠️ Error en respuesta:', data.error);
+            console.warn(' Error en respuesta:', data.error);
             throw new Error(data.error);
         }
 
         const aeropuerto = data.aeropuerto;
         if (!aeropuerto || !aeropuerto.Id_Aeropuerto) {
-            console.warn('⚠️ Datos incompletos:', aeropuerto);
+            console.warn(' Datos incompletos:', aeropuerto);
             throw new Error('Datos de aeropuerto incompletos');
         }
 
@@ -435,15 +400,15 @@ async function cargarAeropuertoParaEditar(id) {
         document.getElementById('btnGuardar').classList.remove('btn-primary');
         document.getElementById('btnGuardar').classList.add('btn-warning');
         
-        console.log('✅ Formulario llenado exitosamente');
+        console.log(' Formulario llenado exitosamente');
 
     } catch (error) {
-        console.error('❌ Error en cargarAeropuertoParaEditar:', error);
+        console.error(' Error en cargarAeropuertoParaEditar:', error);
         
         setTimeout(() => {
             const idAeropuerto = document.getElementById('Id_Aeropuerto').value;
             if (!idAeropuerto) {
-                console.warn('⚠️ Mostrando alerta de error tardía');
+                console.warn(' Mostrando alerta de error tardía');
                 mostrarError(error.message + '\n\nPero puedes editar manualmente los datos.');
             }
         }, 1500);
@@ -470,10 +435,7 @@ function configurarValidacionCodigos() {
     }
 }
 
-/**
- * Elimina un aeropuerto de la base de datos (muestra confirmación primero).
- * @param {string} id - El ID del aeropuerto a eliminar.
- */
+
 function eliminarAeropuerto(id) {
     // Verificar permisos antes de mostrar confirmación
     if (!permisosSistema.puedeEliminar('aeropuertos')) {
@@ -484,17 +446,12 @@ function eliminarAeropuerto(id) {
     mostrarConfirmacionEliminar(id);
 }
 
-/**
- * Función que ejecuta la eliminación después de la confirmación
- * @param {string} id - El ID del aeropuerto a eliminar.
- */
+
 function eliminarAeropuertoConfirmada(id) {
-    // Cerrar inmediatamente el modal de confirmación
     if (confirmModal) {
         confirmModal.hide();
     }
     
-    // Pequeño delay para asegurar el cierre del modal
     setTimeout(() => {
         fetch('../../app/controllers/aeropuerto_eliminar.php', {
             method: 'POST',
@@ -505,13 +462,13 @@ function eliminarAeropuertoConfirmada(id) {
         })
         .then(async response => {
             const responseText = await response.text();
-            console.log('📄 Respuesta eliminar:', responseText);
+            console.log(' Respuesta eliminar:', responseText);
             
             let data;
             try {
                 data = JSON.parse(responseText);
             } catch (parseError) {
-                console.error('❌ Error parseando JSON al eliminar:', parseError);
+                console.error(' Error parseando JSON al eliminar:', parseError);
                 throw new Error('Respuesta del servidor no es JSON válido: ' + responseText.substring(0, 100));
             }
             
@@ -520,7 +477,6 @@ function eliminarAeropuertoConfirmada(id) {
         .then(data => {
             if (data.success) {
                 mostrarExito(data.message, () => {
-                    // Recargar manteniendo la página actual
                     cargarAeropuertos(paginaActual);
                 });
             } else {
@@ -541,20 +497,17 @@ function actualizarPaginador() {
     const tabla = document.getElementById('tablaAeropuertos');
     if (!tabla) return;
     
-    // Eliminar paginador existente
     const paginadorExistente = tabla.nextElementSibling;
     if (paginadorExistente && paginadorExistente.classList.contains('paginador-container')) {
         paginadorExistente.remove();
     }
     
-    // Crear contenedor del paginador
     const paginadorContainer = document.createElement('div');
     paginadorContainer.className = 'paginador-container mt-4';
     paginadorContainer.id = 'paginadorAeropuertos';
     
     let html = '';
     
-    // Información de registros
     const inicio = ((paginaActual - 1) * registrosPorPagina) + 1;
     const fin = Math.min(paginaActual * registrosPorPagina, totalRegistros);
     
@@ -604,7 +557,6 @@ function actualizarPaginador() {
         `;
     }
     
-    // Páginas intermedias
     for (let i = inicioPaginas; i <= finPaginas; i++) {
         if (i === paginaActual) {
             html += `
@@ -621,7 +573,6 @@ function actualizarPaginador() {
         }
     }
     
-    // Página final
     if (finPaginas < totalPaginas) {
         html += `
             ${finPaginas < totalPaginas - 1 ? '<li class="page-item disabled"><span class="page-link">...</span></li>' : ''}
@@ -658,10 +609,7 @@ function actualizarPaginador() {
     tabla.parentNode.appendChild(paginadorContainer);
 }
 
-/**
- * Cambia a una página específica
- * @param {number} pagina - Número de página a cargar
- */
+
 function cambiarPaginaAeropuertos(pagina) {
     if (pagina >= 1 && pagina <= totalPaginas && pagina !== paginaActual) {
         cargarAeropuertos(pagina);

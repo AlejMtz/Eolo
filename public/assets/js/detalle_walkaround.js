@@ -3,7 +3,7 @@ let walkaroundData = null;
 let evidenceModal = null;
 
 
-// Tipos de daño según el formato - CORREGIDO CON NOMBRES ACTUALES
+// Tipos de daño según el formato 
 const tiposDano = [
     { id: 'derecho', nombre: 'DERECHO' },
     { id: 'izquierdo', nombre: 'IZQUIERDO' },
@@ -11,11 +11,11 @@ const tiposDano = [
     { id: 'rayon', nombre: 'RAYÓN' },
     { id: 'fisura', nombre: 'FISURA' },
     { id: 'quebrado', nombre: 'QUEBRADO' },
-    { id: 'pinturaCuarteada', nombre: 'PINT. CUARTEADA' },  // ✅ CORREGIDO
-    { id: 'otroDano', nombre: 'OTRO DAÑO' }  // ✅ CORREGIDO
+    { id: 'pinturaCuarteada', nombre: 'PINT. CUARTEADA' },  
+    { id: 'otroDano', nombre: 'OTRO DAÑO' }  
 ];
 
-// Clasificación de componentes - CORREGIDA (MISMA QUE EN CREACIÓN)
+// Clasificación de componentes
 const componentesPorTipo = {
     avion: {
         'A': [
@@ -57,20 +57,20 @@ const componentesPorTipo = {
     },
     helicoptero: {
         'A': [
-            { id: 'fuselaje', nombre: 'FUSELAJE' },  // ✅ CORREGIDO
-            { id: 'puertas', nombre: 'PUERTAS, VENTANAS, ANTENAS, LUCES' },  // ✅ CORREGIDO
-            { id: 'esqui', nombre: 'ESQUÍ / NEUMÁTICOS' },  // ✅ CORREGIDO
+            { id: 'fuselaje', nombre: 'FUSELAJE' },  
+            { id: 'puertas', nombre: 'PUERTAS, VENTANAS, ANTENAS, LUCES' },  
+            { id: 'esqui', nombre: 'ESQUÍ / NEUMÁTICOS' },  
             { id: 'palas', nombre: 'PALAS' },
             { id: 'boom', nombre: 'BOOM' },
             { id: 'estabilizadores', nombre: 'ESTABILIZADORES' },
-            { id: 'rotor', nombre: 'ROTOR DE COLA' },  // ✅ CORREGIDO
-            { id: 'parabrisas', nombre: 'PARABRISAS' }  // ✅ CORREGIDO
+            { id: 'rotor', nombre: 'ROTOR DE COLA' },  
+            { id: 'parabrisas', nombre: 'PARABRISAS' }
         ]
     }
 };
 
 document.addEventListener('DOMContentLoaded', function() {
-    // Obtener ID de la URL
+    
     const urlParams = new URLSearchParams(window.location.search);
     walkaroundId = urlParams.get('id');
     
@@ -93,7 +93,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-    // Inicializar el modal de evidencias
+    
     if (typeof bootstrap !== 'undefined') {
         evidenceModal = new bootstrap.Modal(document.getElementById('evidenceModal'));
     }
@@ -106,9 +106,7 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 
-/**
- * Carga el detalle completo del walkaround - VERSIÓN MEJORADA
- */
+
 async function cargarDetalleWalkaround() {
     try {
         console.log('🔍 Cargando detalle del walkaround ID:', walkaroundId);
@@ -117,17 +115,17 @@ async function cargarDetalleWalkaround() {
         
         console.log('📨 Respuesta recibida, status:', response.status);
         
-        // OBTENER EL TEXTO CRUDO PRIMERO
+       
         const responseText = await response.text();
         console.log('📄 Respuesta cruda del servidor:', responseText);
         
-        // Verificar si es JSON válido
+        
         if (!responseText.trim().startsWith('{') && !responseText.trim().startsWith('[')) {
-            console.error('❌ El servidor devolvió HTML en lugar de JSON');
+            console.error(' El servidor devolvió HTML en lugar de JSON');
             throw new Error('El servidor devolvió un formato incorrecto. Posible error PHP.');
         }
         
-        // Intentar parsear como JSON
+ 
         const data = JSON.parse(responseText);
         console.log('📊 Datos COMPLETOS recibidos para detalles:', data);
         
@@ -137,19 +135,18 @@ async function cargarDetalleWalkaround() {
         
         walkaroundData = data;        
         
-        // ⭐⭐ INFORMACIÓN DE FECHA - USANDO EL CAMPO CORREGIDO
 console.log('🔍 Campo Fechahora recibido:', data.Fechahora, '(tipo:', typeof data.Fechahora + ')');
 
 let fechaFormateada = 'No especificado';
 try {
     if (data.Fechahora && data.Fechahora !== 'null' && data.Fechahora !== '0000-00-00 00:00:00') {
         fechaFormateada = new Date(data.Fechahora).toLocaleString();
-        console.log('✅ Fecha formateada:', fechaFormateada);
+        console.log(' Fecha formateada:', fechaFormateada);
     } else {
-        console.warn('⚠️ Campo Fechahora vacío o inválido:', data.Fechahora);
+        console.warn(' Campo Fechahora vacío o inválido:', data.Fechahora);
     }
 } catch (e) {
-    console.warn('❌ Error al formatear fecha:', e);
+    console.warn(' Error al formatear fecha:', e);
     fechaFormateada = 'Fecha no válida';
 }
 
@@ -190,13 +187,12 @@ document.getElementById('fechaHoraInfo').textContent = fechaFormateada;
         // Cargar evidencias
         cargarEvidencias(data.evidencias || []);
         
-        console.log('✅ Detalles cargados exitosamente');
+        console.log(' Detalles cargados exitosamente');
         
-        // ⭐⭐ IMPORTANTE: Aplicar permisos después de cargar los datos ⭐⭐
         aplicarPermisosEnDetalle();
         
      } catch (error) {
-        console.error('❌ Error al cargar detalle:', error);
+        console.error(' Error al cargar detalle:', error);
         mostrarError('Error al cargar los detalles: ' + error.message);
         
         // Ocultar spinners y mostrar mensaje de error
@@ -226,28 +222,27 @@ function formatearFecha(fechaHora) {
     return 'Fecha no válida';
 }
 /**
- * Carga los componentes en el detalle - VERSIÓN COMPLETAMENTE CORREGIDA
+ * Carga los componentes en el detalle
  */
 function cargarComponentesDetalle(componentesGuardados, tipoAeronave) {
     const container = document.getElementById('componentesContainer');
     
-    console.log('🔧 Cargando componentes en detalle:', componentesGuardados);
-    console.log('🛩️ Tipo de aeronave:', tipoAeronave);
+    console.log(' Cargando componentes en detalle:', componentesGuardados);
+    console.log(' Tipo de aeronave:', tipoAeronave);
     
     // Determinar el tipo de aeronave para usar la clasificación correcta
     const esHelicoptero = tipoAeronave && tipoAeronave.toLowerCase() === 'helicoptero';
     const clasificacion = esHelicoptero ? componentesPorTipo.helicoptero : componentesPorTipo.avion;
     
-    console.log('📋 Usando clasificación para:', esHelicoptero ? 'helicóptero' : 'avión');
+    console.log('Usando clasificación para:', esHelicoptero ? 'helicóptero' : 'avión');
     
     // Crear un mapa de los componentes guardados para fácil acceso
     const componentesMap = {};
     componentesGuardados.forEach(comp => {
         const componenteId = comp.Identificador_Componente;
         
-        console.log(`📊 Procesando componente guardado: ${componenteId}`, comp);
+        console.log(` Procesando componente guardado: ${componenteId}`, comp);
         
-        // Usar los campos individuales directamente - CON NOMBRES CORRECTOS
         const estado = {
             derecho: comp.derecho === 1 || comp.derecho === true,
             izquierdo: comp.izquierdo === 1 || comp.izquierdo === true,
@@ -255,19 +250,18 @@ function cargarComponentesDetalle(componentesGuardados, tipoAeronave) {
             rayon: comp.rayon === 1 || comp.rayon === true,
             fisura: comp.fisura === 1 || comp.fisura === true,
             quebrado: comp.quebrado === 1 || comp.quebrado === true,
-            pinturaCuarteada: comp.pinturaCuarteada === 1 || comp.pinturaCuarteada === true,  // ✅ CORREGIDO
-            otroDano: comp.otroDano === 1 || comp.otroDano === true  // ✅ CORREGIDO
+            pinturaCuarteada: comp.pinturaCuarteada === 1 || comp.pinturaCuarteada === true, 
+            otroDano: comp.otroDano === 1 || comp.otroDano === true  
         };
         
         componentesMap[componenteId] = estado;
-        console.log(`📊 Componente ${componenteId} mapeado:`, estado);
+        console.log(` Componente ${componenteId} mapeado:`, estado);
     });
     
-    console.log('🗺️ Mapa completo de componentes:', componentesMap);
+    console.log(' Mapa completo de componentes:', componentesMap);
     
     let html = '';
     
-    // Generar cada sección en el orden correcto (A, B, C, D, E)
     const ordenSecciones = ['A', 'B', 'C', 'D', 'E'];
     
     ordenSecciones.forEach(letraSeccion => {
@@ -290,7 +284,7 @@ function cargarComponentesDetalle(componentesGuardados, tipoAeronave) {
                     fisura: false, quebrado: false, pinturaCuarteada: false, otroDano: false
                 };
                 
-                console.log(`📝 Renderizando componente: ${componente.id}`, estado);
+                console.log(` Renderizando componente: ${componente.id}`, estado);
                 
                 html += `
                     <tr class="${Object.values(estado).some(v => v) ? 'table-warning' : ''}">
@@ -299,7 +293,6 @@ function cargarComponentesDetalle(componentesGuardados, tipoAeronave) {
                         </td>
                 `;
                 
-                // Mostrar CHECKBOXES para cada tipo de daño
                 tiposDano.forEach(tipoDano => {
                     const tieneDano = estado[tipoDano.id];
                     
@@ -330,7 +323,6 @@ function cargarComponentesDetalle(componentesGuardados, tipoAeronave) {
     
     container.innerHTML = html;
     
-    // Verificar si hay componentes que no se mostraron
     const componentesMostrados = new Set();
     ordenSecciones.forEach(letra => {
         const seccion = clasificacion[letra];
@@ -341,12 +333,12 @@ function cargarComponentesDetalle(componentesGuardados, tipoAeronave) {
     
     const componentesNoMostrados = Object.keys(componentesMap).filter(id => !componentesMostrados.has(id));
     if (componentesNoMostrados.length > 0) {
-        console.warn('⚠️ Componentes en BD pero no en la clasificación:', componentesNoMostrados);
+        console.warn(' Componentes en BD pero no en la clasificación:', componentesNoMostrados);
     }
 }
 
 /**
- * Carga las evidencias - VERSIÓN CON MODAL DE PANTALLA COMPLETA
+ * Carga las evidencias
  */
 function cargarEvidencias(evidencias) {
     const container = document.getElementById('evidenciasContainer');
@@ -356,7 +348,7 @@ function cargarEvidencias(evidencias) {
         return;
     }
     
-    console.log('📸 Evidencias a cargar:', evidencias);
+    console.log(' Evidencias a cargar:', evidencias);
     
     let html = '<div class="evidence-gallery">';
     
@@ -367,7 +359,7 @@ function cargarEvidencias(evidencias) {
         const esImagen = ['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(extension);
         const esVideo = ['mp4', 'webm', 'ogg'].includes(extension);
         
-        console.log('🖼️ Procesando evidencia:', {
+        console.log(' Procesando evidencia:', {
             ruta: ruta,
             fileName: fileName,
             esImagen: esImagen,
@@ -386,7 +378,7 @@ function cargarEvidencias(evidencias) {
                      alt="${fileName}" 
                      class="img-fluid rounded evidence-thumbnail" 
                      style="height: 150px; width: 100%; object-fit: cover;"
-                     onerror="console.error('❌ Error cargando imagen:', this.src); this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjE1MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZjRmNGY0Ii8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCwgc2Fucy1zZXJpZiIgZm9udC1zaXplPSIxNCIgZmlsbD0iIzk5OSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPkltYWdlbiBubyBkaXNwb25pYmxlPC90ZXh0Pjwvc3ZnPg=='">
+                     onerror="console.error(' Error cargando imagen:', this.src); this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjE1MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZjRmNGY0Ii8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCwgc2Fucy1zZXJpZiIgZm9udC1zaXplPSIxNCIgZmlsbD0iIzk5OSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPkltYWdlbiBubyBkaXNwb25pYmxlPC90ZXh0Pjwvc3ZnPg=='">
                 <div class="mt-2">
                     <small class="text-muted d-block text-truncate" style="max-width: 180px;" title="${fileName}">${fileName}</small>
                 </div>
@@ -396,7 +388,7 @@ function cargarEvidencias(evidencias) {
                 <div class="position-relative">
                     <video class="rounded evidence-thumbnail" 
                            style="height: 150px; width: 100%; object-fit: cover;"
-                           onerror="console.error('❌ Error cargando video:', this.src);">
+                           onerror="console.error(' Error cargando video:', this.src);">
                         <source src="${ruta}" type="video/${extension}">
                     </video>
                     <div class="position-absolute top-50 start-50 translate-middle">
@@ -432,17 +424,15 @@ function cargarEvidencias(evidencias) {
  * Abre una evidencia en el modal de pantalla completa
  */
 function abrirEvidenciaEnModal(ruta, fileName, esImagen, esVideo) {
-    console.log('🔄 Abriendo evidencia en modal:', { ruta, fileName, esImagen, esVideo });
+    console.log(' Abriendo evidencia en modal:', { ruta, fileName, esImagen, esVideo });
     
     const modalContent = document.getElementById('evidenceModalContent');
     const modalTitle = document.getElementById('evidenceModalLabel');
     const fileNameSpan = document.getElementById('evidenceFileName');
     const downloadBtn = document.getElementById('downloadEvidenceBtn');
     
-    // Limpiar contenido anterior
     modalContent.innerHTML = '';
     
-    // Configurar nombre del archivo
     fileNameSpan.textContent = fileName;
     
     // Configurar botón de descarga
@@ -504,13 +494,11 @@ function abrirEvidenciaEnModal(ruta, fileName, esImagen, esVideo) {
         `;
     }
     
-    // SOLUCIÓN: Usar el modal de Bootstrap correctamente
     if (typeof bootstrap !== 'undefined') {
         const modalElement = document.getElementById('evidenceModal');
         const modal = new bootstrap.Modal(modalElement);
         modal.show();
     } else {
-        // Fallback si Bootstrap no está disponible
         document.getElementById('evidenceModal').style.display = 'block';
         document.getElementById('evidenceModal').classList.add('show');
     }
@@ -528,12 +516,10 @@ function descargarEvidencia(ruta, fileName) {
     link.download = fileName;
     link.target = '_blank';
     
-    // Simular clic en el enlace
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
     
-    // Opcional: mostrar mensaje de descarga
     const Toast = Swal.mixin({
         toast: true,
         position: 'top-end',
@@ -553,7 +539,7 @@ function mostrarMensajeDescarga(fileName) {
 }
 
 /**
- * Elimina el walkaround con verificación de permisos
+ * Elimina el walkaround 
  */
 async function eliminarWalkaround(id) {
     // Verificar permisos primero
@@ -586,12 +572,9 @@ async function eliminarWalkaround(id) {
     }
 }
 
-/**
- * Muestra mensaje de éxito (para consistencia)
- */
+
 function mostrarExito(mensaje, callback = null) {
-    // Puedes usar el mismo sistema de modales que en walkaround.js
-    // o implementar uno simple para esta página
+    
     alert('✅ ' + mensaje);
     if (callback) {
         callback();
@@ -599,26 +582,22 @@ function mostrarExito(mensaje, callback = null) {
 }
 
 /**
- * Muestra error (para consistencia)
+ * Muestra error
  */
 function mostrarError(mensaje) {
-    // Puedes usar el mismo sistema de modales que en walkaround.js
-    // o implementar uno simple para esta página
+    
     alert('❌ ' + mensaje);
 }
 
-/**
- * Aplica permisos en los botones de acción del detalle
- */
+
 function aplicarPermisosEnDetalle() {
     const btnEditar = document.getElementById('btnEditar');
     const btnEliminar = document.getElementById('btnEliminar');
     
-    console.log('🔐 Aplicando permisos en detalle...');
-    console.log('📊 Datos del walkaround:', walkaroundData);
+    console.log(' Aplicando permisos en detalle...');
+    console.log(' Datos del walkaround:', walkaroundData);
     
     if (btnEditar) {
-        // Mismo enfoque que entregas_turno
         const esPropietario = walkaroundData.Elaboro === permisosSistema.usuario.nombre;
         const puedeEditar = permisosSistema.puedeEditar('walkarounds', walkaroundData);
         
@@ -628,26 +607,26 @@ function aplicarPermisosEnDetalle() {
             btnEditar.style.opacity = '0.6';
             btnEditar.style.cursor = 'not-allowed';
             btnEditar.title = 'No tienes permisos para editar este walkaround';
-            console.log('❌ Botón editar deshabilitado');
+            console.log(' Botón editar deshabilitado');
         } else {
             btnEditar.title = 'Editar walkaround';
-            console.log('✅ Botón editar habilitado');
+            console.log(' Botón editar habilitado');
         }
     }
     
     if (btnEliminar) {
         const puedeEliminar = permisosSistema.puedeEliminar('walkarounds');
-        console.log('🗑️ Permiso eliminar:', puedeEliminar);
+        console.log(' Permiso eliminar:', puedeEliminar);
         
         if (!puedeEliminar) {
             btnEliminar.disabled = true;
             btnEliminar.style.opacity = '0.6';
             btnEliminar.style.cursor = 'not-allowed';
             btnEliminar.title = 'Solo los administradores pueden eliminar walkarounds';
-            console.log('❌ Botón eliminar deshabilitado');
+            console.log(' Botón eliminar deshabilitado');
         } else {
             btnEliminar.title = 'Eliminar walkaround';
-            console.log('✅ Botón eliminar habilitado');
+            console.log(' Botón eliminar habilitado');
         }
     }
 }

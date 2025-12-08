@@ -193,14 +193,12 @@
     document.addEventListener('DOMContentLoaded', function() {
         if (!verificarSesion()) return;
         
-        // Verificar acceso al módulo
         if (!permisosSistema.verificarAccesoPagina('control_pernoctas')) {
             return;
         }
         
         permisosSistema.aplicarPermisosUI();
         
-        // Verificar si estamos en modo agregar
         const urlParams = new URLSearchParams(window.location.search);
         const modoAgregar = urlParams.get('agregar');
         const idAeronave = urlParams.get('id_aeronave');
@@ -209,16 +207,13 @@
             console.log('➕ Modo AGREGAR activado para aeronave:', idAeronave);
             inicializarModoAgregar(urlParams);
             
-            // ✅ EVITAR que se ejecute la carga normal de control_pernocta.js
-            // Podemos hacer esto deshabilitando temporalmente la función
             window.cargarControlParaEdicion = function() {
-                console.log('⏸️ Carga de control deshabilitada - Modo agregar activo');
+                console.log('⏸ Carga de control deshabilitada - Modo agregar activo');
                 return Promise.resolve();
             };
             
         } else {
-            console.log('📝 Modo EDICIÓN normal');
-            // La inicialización normal se hace en control_pernocta.js
+            console.log(' Modo EDICIÓN normal');
         }
     });
 

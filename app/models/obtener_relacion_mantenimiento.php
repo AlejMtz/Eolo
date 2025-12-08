@@ -4,7 +4,6 @@ require_once('conexion.php');
 header('Content-Type: application/json; charset=utf-8');
 
 try {
-    // Validar parámetros
     if (!isset($_GET['fecha_inicio']) || !isset($_GET['fecha_fin'])) {
         throw new Exception("Fechas de inicio y fin son requeridas");
     }
@@ -12,7 +11,6 @@ try {
     $fecha_inicio = $_GET['fecha_inicio'];
     $fecha_fin = $_GET['fecha_fin'];
 
-    // Validar formato de fechas
     if (!strtotime($fecha_inicio) || !strtotime($fecha_fin)) {
         throw new Exception("Formato de fecha inválido");
     }

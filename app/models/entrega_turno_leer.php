@@ -5,15 +5,12 @@ header('Access-Control-Allow-Origin: *');
 require '../../app/models/conexion.php';
 
 try {
-    // Obtener parámetros de paginación
     $pagina = isset($_GET['pagina']) ? intval($_GET['pagina']) : 1;
     $registros_por_pagina = isset($_GET['registros_por_pagina']) ? intval($_GET['registros_por_pagina']) : 15;
     
-    // Validar parámetros
     $pagina = max(1, $pagina);
     $registros_por_pagina = max(1, min(100, $registros_por_pagina));
     
-    // Calcular offset
     $offset = ($pagina - 1) * $registros_por_pagina;
 
     // Consulta para obtener el total de registros
@@ -31,7 +28,6 @@ try {
     
     $entregas = $stmt->fetchAll(PDO::FETCH_ASSOC);
     
-    // Devolver respuesta con información de paginación
     echo json_encode([
         'entregas' => $entregas,
         'paginacion' => [

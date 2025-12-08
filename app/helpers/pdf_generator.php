@@ -52,18 +52,15 @@ class PDFGenerator {
             die('Error al generar PDF: ' . $e->getMessage());
         }
     }
-    
+
     /**
-     * Genera PDF para Walkaround - VERSIÓN ACTUALIZADA
-     */
-    /**
- * Genera PDF para Walkaround - VERSIÓN ACTUALIZADA CON PROCEDENCIA
+ * Genera PDF para Walkaround
  */
 public function generarWalkaround($id) {
     require_once('../models/conexion.php');
     
     try {
-        // Obtener datos del walkaround - ACTUALIZADA PARA INCLUIR PROCEDENCIA
+        // Obtener datos del walkaround 
         $sql = "SELECT w.*, a.Matricula, a.Equipo, a.Tipo 
                 FROM walkaround w 
                 LEFT JOIN aeronave a ON w.Id_Aeronave = a.Id_Aeronave 
@@ -99,7 +96,7 @@ public function generarWalkaround($id) {
 }
     
     /**
-     * CABECERA ENTREGA DE TURNO CON LOGO
+     * CABECERA ENTREGA DE TURNO
      */
     private function generarCabeceraEntregaTurno($entrega, $segundaPagina = false) {
         // Logo EOLO (izquierda)
@@ -133,7 +130,7 @@ public function generarWalkaround($id) {
     }
     
 /**
- * CABECERA WALKAROUND CON LOGO - VERSIÓN OPTIMIZADA Y CENTRADA
+ * CABECERA WALKAROUND CON LOGO
  */
 private function generarCabeceraWalkaround($walkaround) {
     // Logo EOLO (izquierda)
@@ -169,11 +166,10 @@ private function generarCabeceraWalkaround($walkaround) {
     
     $this->pdf->Cell(0, 10, 'Reporte de Inspección de Aeronave - Walk Around (' . $tipoWalkaround . ')', 0, 1, 'C');
     
-    // Tabla de información - OPTIMIZADA PARA MEJOR CENTRADO
-    $this->pdf->SetFont('helvetica', '', 9); // Reducido ligeramente para mejor ajuste
+    // Tabla de información
+    $this->pdf->SetFont('helvetica', '', 9); 
     $this->pdf->SetY(35);
     
-    // CALCULAR ANCHOS OPTIMIZADOS (total 180mm para centrar en página de 210mm)
     $anchos = [
         'fecha' => 28,    // Fecha
         'hora' => 20,     // Hora  
@@ -183,7 +179,7 @@ private function generarCabeceraWalkaround($walkaround) {
         'destino' => 36    // Destino
     ];
     
-    // Cabecera de la tabla - CENTRADA
+    // Cabecera de la tabla 
     $this->pdf->SetFillColor(240, 240, 240);
     $this->pdf->Cell($anchos['fecha'], 8, 'FECHA', 1, 0, 'C', true);
     $this->pdf->Cell($anchos['hora'], 8, 'HORA', 1, 0, 'C', true);
@@ -220,7 +216,7 @@ private function generarCabeceraWalkaround($walkaround) {
         return $texto;
     };
         
-    // Datos de la tabla - CON TEXTO OPTIMIZADO
+    // Datos de la tabla
     $this->pdf->Cell($anchos['fecha'], 10, $fecha, 1, 0, 'C');
     $this->pdf->Cell($anchos['hora'], 10, $hora, 1, 0, 'C');
     $this->pdf->Cell($anchos['tipo'], 10, $truncarTexto(isset($walkaround['Equipo']) ? $walkaround['Equipo'] : 'No esp.', 15), 1, 0, 'C');
@@ -231,7 +227,7 @@ private function generarCabeceraWalkaround($walkaround) {
 }
     
     /**
-     * COMPONENTES WALKAROUND EN TABLA CON TIPOS DE DAÑO - VERSIÓN ACTUALIZADA
+     * COMPONENTES WALKAROUND EN TABLA CON TIPOS DE DAÑO
      */
     private function generarComponentesWalkaroundPDF($componentes, $tipoAeronave) {
         $tipo = strtolower($tipoAeronave);
@@ -335,7 +331,6 @@ private function generarCabeceraWalkaround($walkaround) {
                                 $xCheckbox + ($anchoCheckbox/2 - 1.5), 
                                 $yInicial + ($alturaFila/2 - 1.5));
             
-            // VERIFICAR SI NECESITAMOS NUEVA PÁGINA
             if ($this->pdf->GetY() > 250) {
                 $this->pdf->AddPage();
                 // Redibujar cabecera de tabla si es nueva página
@@ -385,7 +380,7 @@ private function generarCabeceraWalkaround($walkaround) {
     }
     
     /**
-     * GENERAR FILA CORREGIDA - CENTRADO PERFECTO
+     * GENERAR FILA DE EQUIPO DE COMUNICACIÓN CORREGIDA
      */
     private function generarFilaEquipoComCorregida($nombre, $cantidad, $equipos, $clave, $estadoTexto) {
         // Guardar posición Y inicial
@@ -434,7 +429,7 @@ private function generarCabeceraWalkaround($walkaround) {
     }
     
     /**
-     * EQUIPOS DE OFICINA
+     * Equipos de Oficina
      */
     private function generarEquiposOficinaPDF($equipos) {
         $this->pdf->SetFont('helvetica', 'B', 10);
@@ -478,7 +473,6 @@ private function generarCabeceraWalkaround($walkaround) {
         // Guardar la posición Y inicial para alinear los checkboxes
         $yPos = $this->pdf->GetY();
 
-        // Texto "HP"
         $this->pdf->Cell(20, 20, 'HP', 0, 0);
 
         // Posición para el checkbox de 'SI'
@@ -546,39 +540,36 @@ private function generarCabeceraWalkaround($walkaround) {
      * CAJA FUERTE Y FIRMAS
      */
     private function generarCajaFuerteYFirmasPDF($entrega) {
-        // CORRECCIÓN: Verificar si necesitamos nueva página ANTES de agregar contenido
         $alturaNecesaria = 50;
 
         // Calcular espacio disponible en la página actual
-        $espacioDisponible = 297 - $this->pdf->GetY() - 20; // Altura A4 - posición Y - margen inferior
+        $espacioDisponible = 297 - $this->pdf->GetY() - 20;
         
-        // Si el espacio es insuficiente para el contenido restante, forzar nueva página
         if ($espacioDisponible < $alturaNecesaria) {
             $this->pdf->AddPage();
             $this->generarCabeceraEntregaTurno($entrega, true);
             $this->pdf->SetY(40);
         }
         
-        // CAJA FUERTE - versión más compacta
+        // CAJA FUERTE 
         $this->pdf->SetFont('helvetica', 'B', 10);
         $this->pdf->Cell(0, 6, 'CAJA FUERTE:', 0, 1);
         $this->pdf->SetFont('helvetica', '', 9);
         
         $contenido = $entrega['Caja_Fuerte_Contenido'] ?: 'Sin observaciones';
         
-        // Usar MultiCell para contenido largo
         $this->pdf->MultiCell(0, 6, $contenido, 0, 'L');
         
         $this->pdf->Ln(8);
         
-        // FIRMAS más compactas
+        // FIRMAS
         $this->pdf->SetFont('helvetica', 'B', 10); 
         $this->pdf->Cell(95, 6, 'FIRMA Y NOMBRE DE QUIEN ENTREGA', 0, 0);
         $this->pdf->Cell(95, 6, 'JEFE TURNO DE DESPACHO', 0, 1);
         
         $this->pdf->SetFont('helvetica', '', 9);
         
-        // Líneas para firmas más compactas
+        // Líneas para firmas
         $this->pdf->Cell(95, 15, $entrega['Firma_Entrega'] ?: '_________________________', 0, 0, 'C');
         $this->pdf->Cell(95, 15, $entrega['Firma_Recibe'] ?: '_________________________', 0, 1, 'C');
     }
@@ -605,7 +596,7 @@ private function generarCabeceraWalkaround($walkaround) {
         // Forzar segunda página
         
         $rutaDiagrama = '';        
-        // Determinar ruta del diagrama según el tipo - CORREGIDA LA RUTA
+        // Determinar ruta del diagrama según el tipo
         $basePath = __DIR__ . '/../../public/assets/images/diagramas/';
         
         if (strtoupper($tipoVehiculo) === 'AVION' || strtoupper($tipoVehiculo) === 'AVIÓN') {
@@ -616,7 +607,7 @@ private function generarCabeceraWalkaround($walkaround) {
             // Por defecto avión
             $rutaDiagrama = $basePath . 'diagrama_avion.jpg';
         }
-        // Mostrar imagen si existe - VERIFICAR EXTENSIONES
+        // Mostrar imagen
         $extensiones = ['.jpg', '.jpeg', '.png', '.gif'];
         $imagenEncontrada = false;
         
@@ -653,7 +644,6 @@ private function generarCabeceraWalkaround($walkaround) {
         
         $this->pdf->SetFont('helvetica', '', 10);
         
-        // CORRECCIÓN: Usar el campo 'observaciones' en minúsculas
         $observaciones = 'No hay observaciones registradas.';
         
         if (isset($walkaround['observaciones']) && !empty(trim($walkaround['observaciones']))) {
@@ -675,7 +665,6 @@ private function generarCabeceraWalkaround($walkaround) {
         $this->pdf->Cell(0, 8, 'Responsable de la operación (Nombre y firma):', 0, 1);
         $this->pdf->SetFont('helvetica', '', 9);
         
-        // CORRECCIÓN: Verificar que la clave existe
         $responsable = isset($walkaround['Responsable']) ? $walkaround['Responsable'] : '_________________________';
         $this->pdf->Cell(0, 8, $responsable, 'B', 1);
         $this->pdf->Ln(8);
@@ -707,7 +696,6 @@ private function generarCabeceraWalkaround($walkaround) {
         return $texto;
     }
     
-    // MÉTODOS AUXILIARES PARA BASE DE DATOS
     private function getEquiposComunicacion($pdo, $id) {
         $sql = "SELECT * FROM equipocomunicacion WHERE Entrega_Turno_Id = ?";
         $stmt = $pdo->prepare($sql);
@@ -803,7 +791,7 @@ private function generarCabeceraWalkaround($walkaround) {
 
 
 /**
- * Genera PDF para Pernocta Diaria - VERSIÓN CORREGIDA
+ * Genera PDF para Pernocta Diaria
  */
 public function generarPernocta($id) {
     require_once('../models/conexion.php');
@@ -849,7 +837,7 @@ public function generarPernocta($id) {
 }
 
 /**
- * CABECERA PERNOCTA HORIZONTAL - SIMPLIFICADA
+ * CABECERA PERNOCTA HORIZONTAL
  */
 private function generarCabeceraPernoctaHorizontal($pernocta) {
     // Logo EOLO (izquierda)
@@ -899,12 +887,12 @@ private function generarTablaPernoctaHorizontal($pernoctas) {
     // Configurar posición inicial
     $this->pdf->SetY(40);
     
-    // ===== TABLA DE ENTRADAS (LADO IZQUIERDO) =====
+    //TABLA DE ENTRADAS (LADO IZQUIERDO)
     $this->pdf->SetFont('helvetica', 'B', 12);
     $this->pdf->Cell(120, 8, 'ENTRADA', 0, 1, 'C'); // Reducido para más separación
     $this->pdf->Ln(2);
     
-    // Encabezado de tabla de entradas - SIN FECHA
+    // Encabezado de tabla de entradas
     $this->pdf->SetFont('helvetica', 'B', 8);
     $this->pdf->SetFillColor(240, 240, 240);
     $this->pdf->Cell(15, 8, 'HORA', 1, 0, 'C', true);
@@ -939,7 +927,7 @@ private function generarTablaPernoctaHorizontal($pernoctas) {
     
     $this->pdf->Ln(10);
     
-    // ===== TABLA DE SALIDAS (LADO DERECHO) =====
+    //TABLA DE SALIDAS (LADO DERECHO)
 
     $yPos = 40;
     $this->pdf->SetY($yPos);
@@ -950,7 +938,7 @@ private function generarTablaPernoctaHorizontal($pernoctas) {
     $this->pdf->SetX(155);
     $this->pdf->Ln(2);
     
-    // Encabezado de tabla de salidas - SIN FECHA
+    // Encabezado de tabla de salidas
     $this->pdf->SetX(155);
     $this->pdf->SetFont('helvetica', 'B', 8);
     $this->pdf->SetFillColor(240, 240, 240);
@@ -990,7 +978,7 @@ private function generarTablaPernoctaHorizontal($pernoctas) {
 }
 
 /**
- * CABECERA PARA SEGUNDA PÁGINA - ACTUALIZADA
+ * CABECERA PARA SEGUNDA PÁGINA
  */
 private function generarCabeceraTablaSegundaPagina() {
     $this->pdf->SetY(20);
@@ -1058,13 +1046,12 @@ private function formatearHora($hora) {
 }
 
 /**
- * FIRMAS PERNOCTA HORIZONTAL - TRES FIRMAS
+ * FIRMAS PERNOCTA HORIZONTAL
  */
 private function generarFirmasPernoctaHorizontal() {
     // Posicionar firmas en la parte inferior
     $this->pdf->SetY(160);
     
-    // Tres firmas distribuidas equitativamente
     $this->pdf->SetFont('helvetica', 'B', 10);
     $this->pdf->Cell(93, 8, 'Vigilante en Turno', 0, 0, 'C');
     $this->pdf->Cell(93, 8, 'Jefe de Seguridad', 0, 0, 'C');
@@ -1084,7 +1071,7 @@ private function generarFirmasPernoctaHorizontal() {
 }
 
 /**
- * Genera PDF para Control de Pernoctas - VERSIÓN VERTICAL SIMPLIFICADA
+ * Genera PDF para Control de Pernoctas
  */
 public function generarPernoctasDiarias($id) {
     require_once('../models/conexion.php');
@@ -1114,10 +1101,9 @@ public function generarPernoctasDiarias($id) {
             die('No se encontraron registros de control para esta fecha');
         }
         
-        $this->pdf->AddPage('P'); // P = Portrait (vertical)
+        $this->pdf->AddPage('P');
         $this->generarCabeceraControlPernoctas($controles[0]);
         $this->generarTablaControlPernoctas($controles);
-        // Quitamos las firmas
         
         $nombreArchivo = 'control_pernoctas_' . $fechaControl['Fecha'] . '.pdf';
         $this->pdf->Output($nombreArchivo, 'I');
@@ -1130,7 +1116,7 @@ public function generarPernoctasDiarias($id) {
 }
 
 /**
- * CABECERA CONTROL PERNOCTAS - VERSIÓN SIN ID
+ * CABECERA CONTROL PERNOCTAS
  */
 private function generarCabeceraControlPernoctas($control) {
     // Logo EOLO (izquierda)
@@ -1169,23 +1155,22 @@ private function generarCabeceraControlPernoctas($control) {
 }
 
 /**
- * TABLA CONTROL PERNOCTAS - VERSIÓN CON COLUMNAS AJUSTADAS
+ * TABLA CONTROL PERNOCTAS
  */
 private function generarTablaControlPernoctas($controles) {
     // Cabecera de la tabla
     $this->pdf->SetFont('helvetica', 'B', 8);
     $this->pdf->SetFillColor(240, 240, 240);
     
-    // Definir anchos de columnas - EQUIPO y EMPRESA más angostas, OBSERVACIONES más grande
     $anchos = [
-        'hora_inicial' => 16,  // 16mm
-        'hora_final' => 16,    // 16mm  
-        'matricula' => 20,     // 20mm
-        'equipo' => 22,        // 22mm (reducida de 28mm)
-        'hangar' => 14,        // 14mm
-        'empresa' => 26,       // 26mm (reducida de 32mm)
-        'observaciones' => 50, // 50mm (aumentada de 38mm)
-        'registro' => 18       // 18mm
+        'hora_inicial' => 16,  
+        'hora_final' => 16,    
+        'matricula' => 20,     
+        'equipo' => 22,        
+        'hangar' => 14,        
+        'empresa' => 26,       
+        'observaciones' => 50, 
+        'registro' => 18      
     ];    
     // Dibujar cabecera
     $this->pdf->Cell($anchos['hora_inicial'], 8, 'HORA INI', 1, 0, 'C', true);
@@ -1206,7 +1191,7 @@ private function generarTablaControlPernoctas($controles) {
             $horaInicial = $this->formatearHora($control['HoraInicial']);
             $horaFinal = $this->formatearHora($control['HoraFinal']);
             
-            // Función para truncar texto largo con nuevos límites
+            // Función para truncar texto
             $truncar = function($texto, $maxLength) {
                 if (strlen($texto) > $maxLength) {
                     return substr($texto, 0, $maxLength - 2) . '..';
@@ -1214,7 +1199,7 @@ private function generarTablaControlPernoctas($controles) {
                 return $texto;
             };
             
-            // Dibujar fila con textos truncados según nuevos anchos
+            // Dibujar fila con textos truncados
             $this->pdf->Cell($anchos['hora_inicial'], 8, $horaInicial, 1, 0, 'C');
             $this->pdf->Cell($anchos['hora_final'], 8, $horaFinal, 1, 0, 'C');
             $this->pdf->Cell($anchos['matricula'], 8, $truncar($control['Matricula'] ?? '-', 6), 1, 0, 'C');
@@ -1257,7 +1242,7 @@ private function generarTablaControlPernoctas($controles) {
 }
 
 /**
- * Genera PDF para Relación de Pernoctas Mensuales - FORMATO FÍSICO
+ * Genera PDF para Relación de Pernoctas Mensuales
  */
 public function generarRelacionMensual($fecha_inicio, $fecha_fin) {
     require_once('../models/conexion.php');
@@ -1272,7 +1257,7 @@ public function generarRelacionMensual($fecha_inicio, $fecha_fin) {
             throw new Exception('No se pudieron obtener los datos para el PDF');
         }
         
-        $this->pdf->AddPage('L', 'A4'); // Horizontal para más espacio
+        $this->pdf->AddPage('L', 'A4'); 
         $this->generarCabeceraRelacionMensual($data);
         $this->generarTablaRelacionMensualFormatoFisico($data);
         
@@ -1287,7 +1272,7 @@ public function generarRelacionMensual($fecha_inicio, $fecha_fin) {
 }
 
 /**
- * CABECERA RELACIÓN MENSUAL - MEJORADA CON NUEVA LEYENDA
+ * CABECERA RELACIÓN MENSUAL
  */
 private function generarCabeceraRelacionMensual($data) {
     // Logo EOLO
@@ -1314,7 +1299,7 @@ private function generarCabeceraRelacionMensual($data) {
     $this->pdf->Cell(0, 8, "Período: $fecha_inicio al $fecha_fin", 0, 1, 'C');
     $this->pdf->Cell(0, 8, "Total de días: " . $data['total_dias_periodo'], 0, 1, 'C');
     
-    // ✅ LEYENDA ACTUALIZADA
+    // LEYENDA 
     $this->pdf->SetFont('helvetica', '', 10);
     $this->pdf->Cell(0, 6, "H1 = Hangar 1 | H2 = Hangar 2 | F = Fuera", 0, 1, 'C');
     
@@ -1324,7 +1309,7 @@ private function generarCabeceraRelacionMensual($data) {
 }
 
 /**
- * TABLA RELACIÓN MENSUAL - FORMATO FÍSICO CON HANGARES ESPECÍFICOS (H1/H2) - CORREGIDA
+ * TABLA RELACIÓN MENSUAL CON HANGARES ESPECÍFICOS (H1/H2)
  */
 private function generarTablaRelacionMensualFormatoFisico($data) {
     $total_dias = $data['total_dias_periodo'];
@@ -1342,7 +1327,6 @@ private function generarTablaRelacionMensualFormatoFisico($data) {
     $ancho_total_tabla = array_sum($anchos);
     $margen_izquierdo = (297 - $ancho_total_tabla) / 2; 
     
-    // POSICIONAR TABLA MÁS A LA IZQUIERDA
     $this->pdf->SetX($margen_izquierdo);
     
     // Cabecera de la tabla
@@ -1356,10 +1340,10 @@ private function generarTablaRelacionMensualFormatoFisico($data) {
     $this->pdf->Cell($anchos['dias_hangar'], 10, 'D.HANGAR', 1, 0, 'C', true);
     $this->pdf->Cell($anchos['dias_fuera'], 10, 'D.FUERA', 1, 0, 'C', true);
     
-    // Cabecera de días (numeros)
+    // Cabecera de días
     $this->pdf->Cell($anchos['calendario'], 10, 'CALENDARIO DE DÍAS', 1, 1, 'C', true);
     
-    // Fila 2: Números de día - POSICIONAR CORRECTAMENTE
+    // Fila 2: Números de día
     $this->pdf->SetX($margen_izquierdo + $anchos['matricula'] + $anchos['equipo'] + $anchos['empresa'] + $anchos['dias_hangar'] + $anchos['dias_fuera']);
     
     $ancho_dia = $anchos['calendario'] / $total_dias;
@@ -1373,7 +1357,6 @@ private function generarTablaRelacionMensualFormatoFisico($data) {
     $this->pdf->SetFont('helvetica', '', 7);
     
     foreach ($data['aeronaves'] as $aeronave) {
-        // POSICIONAR CADA FILA MÁS A LA IZQUIERDA
         $this->pdf->SetX($margen_izquierdo);
         
         // Obtener empresa/procedencia
@@ -1386,31 +1369,26 @@ private function generarTablaRelacionMensualFormatoFisico($data) {
         $this->pdf->Cell($anchos['dias_hangar'], 8, $aeronave['total_dias_hangar'], 1, 0, 'C');
         $this->pdf->Cell($anchos['dias_fuera'], 8, $aeronave['total_dias_fuera'], 1, 0, 'C');
         
-        // ✅ CORRECCIÓN: Procesar correctamente la cadena de hangares
+        //Procesar cadena de hangares
         $hangares_raw = isset($aeronave['hangares']) ? $aeronave['hangares'] : $aeronave['dias'];
         
-        // Limpiar y procesar la cadena - eliminar espacios y dividir correctamente
-        $hangares_limpio = str_replace(' ', '', $hangares_raw); // Eliminar espacios
+        $hangares_limpio = str_replace(' ', '', $hangares_raw); 
         $estados_dias = [];
         
-        // Dividir la cadena en elementos de 2 caracteres (H1, H2) o 1 carácter (F)
         for ($i = 0; $i < strlen($hangares_limpio); $i++) {
             $caracter = $hangares_limpio[$i];
             if ($caracter === 'H' && isset($hangares_limpio[$i + 1]) && is_numeric($hangares_limpio[$i + 1])) {
                 // Es H1 o H2
                 $estados_dias[] = $caracter . $hangares_limpio[$i + 1];
-                $i++; // Saltar el siguiente carácter (el número)
+                $i++;
             } else {
-                // Es F o H sin número
                 $estados_dias[] = $caracter;
             }
         }
         
-        // Asegurar que tenemos exactamente $total_dias elementos
         if (count($estados_dias) > $total_dias) {
             $estados_dias = array_slice($estados_dias, 0, $total_dias);
         } elseif (count($estados_dias) < $total_dias) {
-            // Completar con 'F' si faltan días
             while (count($estados_dias) < $total_dias) {
                 $estados_dias[] = 'F';
             }
@@ -1420,15 +1398,15 @@ private function generarTablaRelacionMensualFormatoFisico($data) {
         for ($i = 0; $i < $total_dias; $i++) {
             $estado = isset($estados_dias[$i]) ? $estados_dias[$i] : 'F';
             
-            // ✅ CORRECCIÓN: Asignar colores correctamente
+            // Asignar colores correctamente
             if ($estado === 'H1' || $estado === 'H2') {
-                $color = [200, 255, 200]; // Verde claro para hangar
+                $color = [200, 255, 200];
                 $texto = $estado; // Mostrar H1 o H2
             } elseif ($estado === 'H') {
-                $color = [200, 255, 200]; // Verde claro para hangar genérico
-                $texto = 'H'; // Mostrar H
+                $color = [200, 255, 200];
+                $texto = 'H'; 
             } else {
-                $color = [255, 200, 200]; // Rojo claro para fuera
+                $color = [255, 200, 200];
                 $texto = 'F'; // Mostrar F
             }
             
@@ -1436,7 +1414,7 @@ private function generarTablaRelacionMensualFormatoFisico($data) {
             $this->pdf->Cell($ancho_dia, 8, $texto, 1, 0, 'C', true);
         }
         
-        $this->pdf->SetFillColor(255, 255, 255); // Restaurar color blanco
+        $this->pdf->SetFillColor(255, 255, 255);
         $this->pdf->Ln(8);
         
         // Verificar si necesitamos nueva página
@@ -1453,13 +1431,11 @@ private function obtenerDiasConHangarEspecifico($id_aeronave, $fecha_inicio, $fe
     $resultado = [];
     
     try {
-        // ✅ INCLUIR EL ARCHIVO DE CONEXIÓN Y CAPTURAR $pdo
         $conexionPath = __DIR__ . '/../models/conexion.php';
         if (file_exists($conexionPath)) {
             // Incluir el archivo y capturar la variable $pdo
             require_once($conexionPath);
             
-            // Verificar que $pdo se creó correctamente
             if (!isset($pdo) || $pdo === null) {
                 throw new Exception('La conexión PDO no se estableció correctamente');
             }
@@ -1520,8 +1496,8 @@ private function obtenerDiasConHangarEspecifico($id_aeronave, $fecha_inicio, $fe
 }
 
 
-/**generarCabeceraTablaFormatoFisico
- * CABECERA DE TABLA PARA NUEVAS PÁGINAS - FORMATO FÍSICO
+/**
+ * CABECERA DE TABLA PARA NUEVAS PÁGINAS
  */
 private function generarCabeceraTablaFormatoFisico($data, $anchos, $total_dias, $ancho_dia, $margen_izquierdo) {
     // POSICIONAR TABLA MÁS A LA IZQUIERDA EN NUEVAS PÁGINAS
@@ -1538,7 +1514,7 @@ private function generarCabeceraTablaFormatoFisico($data, $anchos, $total_dias, 
     $this->pdf->Cell($anchos['dias_fuera'], 10, 'DÍAS FUERA', 1, 0, 'C', true);
     $this->pdf->Cell($anchos['calendario'], 10, 'CALENDARIO DE DÍAS', 1, 1, 'C', true);
     
-    // Fila 2: Números de día - POSICIONAR CORRECTAMENTE
+    // Fila 2: Números de día
     $this->pdf->SetX($margen_izquierdo + $anchos['matricula'] + $anchos['equipo'] + $anchos['empresa'] + $anchos['dias_hangar'] + $anchos['dias_fuera']);
     
     for ($dia = 1; $dia <= $total_dias; $dia++) {
@@ -1554,7 +1530,6 @@ private function generarCabeceraTablaFormatoFisico($data, $anchos, $total_dias, 
  */
 private function obtenerEmpresaProcedencia($id_aeronave, $fecha_inicio, $fecha_fin) {
     try {
-        // ✅ CORREGIDO: Incluir conexión a la base de datos
         require_once('../models/conexion.php');
         
         $sql = "SELECT pd.Procedencia, cp.EmpresaProcedencia 
@@ -1589,12 +1564,11 @@ private function obtenerEmpresaProcedencia($id_aeronave, $fecha_inicio, $fecha_f
 $tipo = isset($_GET['tipo']) ? $_GET['tipo'] : '';
 $id = isset($_GET['id']) ? intval($_GET['id']) : 0;
 
-// Limpiar buffer de salida
 ob_clean();
 
 $generator = new PDFGenerator();
 
-// ✅ SWITCH MEJORADO - SOLO RELACION_MENSUAL NO REQUIERE ID
+// SWITCH DE SELECCIÓN DE CASO
 switch($tipo) {
     case 'entrega_turno':
     case 'walkaround':
@@ -1625,7 +1599,6 @@ switch($tipo) {
         die('Tipo de reporte no válido. Use: entrega_turno, walkaround, pernocta, pernoctas_diarias o relacion_mensual');
 }
 
-// ✅ AHORA EJECUTAMOS CADA TIPO CON SUS PARÁMETROS ESPECÍFICOS
 switch($tipo) {
     case 'entrega_turno':
         $generator->generarEntregaTurno($id);

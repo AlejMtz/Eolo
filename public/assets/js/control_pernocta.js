@@ -18,76 +18,66 @@ let confirmModal = null;
 let timeoutFiltrosControl = null;
 
 
-// ========== INICIALIZACIÓN ==========
 document.addEventListener('DOMContentLoaded', () => {
-    console.log('🚀 Inicializando control_pernocta.js');
+    console.log(' Inicializando control_pernocta.js');
     
-    // Inicializar modales de Bootstrap SOLO si existen
     if (typeof bootstrap !== 'undefined') {
         // Modal de control (para agregar/editar)
         if (document.getElementById('controlModal')) {
             controlModal = new bootstrap.Modal(document.getElementById('controlModal'));
-            console.log('✅ Modal de control inicializado');
+            console.log(' Modal de control inicializado');
         }
         
         // Modal de éxito
         if (document.getElementById('successModal')) {
             successModal = new bootstrap.Modal(document.getElementById('successModal'));
-            console.log('✅ Modal de éxito inicializado');
+            console.log(' Modal de éxito inicializado');
         }
         
         // Modal de error
         if (document.getElementById('errorModal')) {
             errorModal = new bootstrap.Modal(document.getElementById('errorModal'));
-            console.log('✅ Modal de error inicializado');
+            console.log(' Modal de error inicializado');
         }
         
-        // ✅ MODAL DE CONFIRMACIÓN PARA ELIMINAR
+        //  MODAL DE CONFIRMACIÓN PARA ELIMINAR
         if (document.getElementById('confirmModal')) {
             confirmModal = new bootstrap.Modal(document.getElementById('confirmModal'));
-            console.log('✅ Modal de confirmación inicializado');
+            console.log(' Modal de confirmación inicializado');
         }
         
-        // ✅ CONFIGURAR EVENTO PARA EL BOTÓN DE CONFIRMACIÓN DE ELIMINACIÓN
         const confirmBtn = document.getElementById('confirmActionBtn');
         if (confirmBtn) {
             confirmBtn.addEventListener('click', function() {
                 const id = this.getAttribute('data-id');
                 if (id) {
-                    console.log('🎯 Confirmando eliminación del control ID:', id);
+                    console.log(' Confirmando eliminación del control ID:', id);
                     eliminarControlPernoctaConfirmada(id);
                 }
             });
-            console.log('✅ Botón de confirmación configurado');
+            console.log(' Botón de confirmación configurado');
         }
     }
 
-    // Inicializar página de edición individual SI EXISTE
     if (document.getElementById('controlPernoctaForm')) {
-        console.log('📄 Página de edición individual detectada - Inicializando...');
+        console.log(' Página de edición individual detectada - Inicializando...');
         inicializarPaginaEdicion();
     }
 
-    // Inicializar página de lista SI EXISTE
     if (document.getElementById('cuerpoTablaControlPernoctas')) {
-        console.log('📊 Página de lista detectada - Cargando datos...');
+        console.log(' Página de lista detectada - Cargando datos...');
         cargarControlPernoctas();
         
-        // ✅ CONFIGURAR FILTROS SI EXISTEN EN LA PÁGINA DE LISTA
         configurarFiltrosControl();
     }
     
-    // ✅ CONFIGURAR EVENTOS DE TECLADO PARA FILTROS
     configurarEventosTeclado();
     
-    console.log('✅ control_pernocta.js inicializado completamente');
+    console.log(' control_pernocta.js inicializado completamente');
 });
 
-/**
- * Configura los eventos de teclado para filtros
- */
+
 function configurarEventosTeclado() {
-    // Enter en filtros aplica los filtros
     const filtroFecha = document.getElementById('filtroFechaControl');
     const filtroMatricula = document.getElementById('filtroMatriculaControl');
     const filtroHangar = document.getElementById('filtroHangar');
@@ -118,10 +108,10 @@ function configurarEventosTeclado() {
 }
 
 /**
- * Configura los filtros para la página de lista
+ * Configura los filtros
  */
 function configurarFiltrosControl() {
-    console.log('⚙️ Configurando filtros de control...');
+    console.log(' Configurando filtros de control...');
     
     const filtroFecha = document.getElementById('filtroFechaControl');
     const filtroMatricula = document.getElementById('filtroMatriculaControl');
@@ -133,24 +123,22 @@ function configurarFiltrosControl() {
     if (filtroFecha) {
         filtroFecha.addEventListener('change', function() {
             filtrosActivosControl.fecha = this.value;
-            console.log('📅 Filtro fecha cambiado:', this.value);
+            console.log(' Filtro fecha cambiado:', this.value);
         });
     }
     
-    // Filtro de matrícula con debounce
+    // Filtro de matrícula
     if (filtroMatricula) {
         filtroMatricula.addEventListener('input', function() {
             const valor = this.value.trim();
             
-            // Limpiar timeout anterior
             if (timeoutFiltros) {
                 clearTimeout(timeoutFiltros);
             }
             
-            // Esperar 500ms después de que el usuario deje de escribir
             timeoutFiltros = setTimeout(() => {
                 filtrosActivosControl.matricula = valor;
-                console.log('🛩️ Filtro matrícula actualizado:', valor);
+                console.log(' Filtro matrícula actualizado:', valor);
                 
                 // Aplicar filtros automáticamente después de escribir
                 if (valor.length >= 2 || valor.length === 0) {
@@ -164,12 +152,12 @@ function configurarFiltrosControl() {
     if (filtroHangar) {
         filtroHangar.addEventListener('change', function() {
             filtrosActivosControl.hangar = this.value;
-            console.log('🏢 Filtro hangar cambiado:', this.value);
+            console.log(' Filtro hangar cambiado:', this.value);
             aplicarFiltrosControl();
         });
     }
     
-    console.log('✅ Filtros de control configurados:', filtrosActivosControl);
+    console.log(' Filtros de control configurados:', filtrosActivosControl);
 }
 
 /**
@@ -178,7 +166,6 @@ function configurarFiltrosControl() {
 function aplicarFiltrosControl() {
     console.log('🔍 Aplicando filtros de control:', filtrosActivosControl);
     
-    // Resetear a primera página cuando se aplican filtros
     paginaActualControl = 1;
     cargarControlPernoctas();
 }
@@ -187,7 +174,7 @@ function aplicarFiltrosControl() {
  * Limpia los filtros y recarga la tabla
  */
 function limpiarFiltrosControl() {
-    console.log('🧹 Limpiando filtros de control...');
+    console.log(' Limpiando filtros de control...');
     
     const filtroFecha = document.getElementById('filtroFechaControl');
     const filtroMatricula = document.getElementById('filtroMatriculaControl');
@@ -207,41 +194,36 @@ function limpiarFiltrosControl() {
     cargarControlPernoctas();
 }
 
-/**
- * Procesa automáticamente las últimas entradas al cargar la página
- */
+
 async function procesarUltimasEntradas() {
     try {
-        console.log('🔄 Procesando últimas entradas automáticamente...');
+        console.log(' Procesando últimas entradas automáticamente...');
         
         const response = await fetch('/Eolo/app/models/obtener_entradas_control_pernocta.php');
         const data = await response.json();
         
         if (data.success && data.entradas.length > 0) {
-            console.log(`📋 ${data.entradas.length} entrada(s) disponible(s) para procesar`);
+            console.log(` ${data.entradas.length} entrada(s) disponible(s) para procesar`);
             
             // Mostrar notificación si hay entradas pendientes
             if (data.entradas.length > 0) {
                 console.log('💡 Hay entradas pendientes de procesar');
             }
         } else {
-            console.log('ℹ️ No hay entradas pendientes de procesar');
+            console.log(' No hay entradas pendientes de procesar');
         }
         
     } catch (error) {
-        console.error('❌ Error al procesar últimas entradas:', error);
-        // No mostrar error al usuario en la carga automática
+        console.error(' Error al procesar últimas entradas:', error);
     }
 }
 
 async function agregarControlManual() {
     try {
-        console.log('➕ Iniciando agregado manual de aeronaves en hangar...');
+        console.log(' Iniciando agregado manual de aeronaves en hangar...');
         
-        // ✅ OBTENER FECHA ACTUAL para el control del día
         const fechaHoy = new Date().toISOString().split('T')[0];
         
-        // ✅ PASAR LA FECHA COMO PARÁMETRO
         const response = await fetch(`/Eolo/app/models/obtener_aeronaves_hangar.php?fecha_control=${fechaHoy}`);
         const data = await response.json();
         
@@ -268,75 +250,43 @@ async function agregarControlManual() {
  */
 function inicializarModoAgregar(urlParams) {
     try {
-        console.log('🔄 Inicializando formulario en modo agregar...');
+        console.log('➕ Inicializando modo AGREGAR MANUAL...');
         
-        // Obtener datos de los parámetros URL
         const idAeronave = urlParams.get('id_aeronave');
         const matricula = decodeURIComponent(urlParams.get('matricula') || '');
         const equipo = decodeURIComponent(urlParams.get('equipo') || '');
-        const fechaEntrada = urlParams.get('fecha_entrada');
-        const horaEntrada = urlParams.get('hora_entrada');
-        const idUltimoRegistro = urlParams.get('id_ultimo_registro');
         
-        // ✅ CONFIGURAR CAMPOS DEL FORMULARIO
         const fechaActual = new Date().toISOString().split('T')[0];
         const ahora = new Date();
         const horaActual = ahora.getHours().toString().padStart(2, '0') + ':' + 
-                          ahora.getMinutes().toString().padStart(2, '0'); // Formato HH:MM
+                          ahora.getMinutes().toString().padStart(2, '0');
         
         document.getElementById('matricula').value = matricula || 'No especificada';
         document.getElementById('equipo').value = equipo || 'No especificado';
-        document.getElementById('fecha').value = fechaActual; // Fecha actual
-        document.getElementById('hora_inicial').value = horaEntrada || '08:00'; // Hora de la última entrada
-        document.getElementById('hora_final').value = horaActual; // Hora actual como valor por defecto
+        document.getElementById('fecha').value = fechaActual;
+        document.getElementById('hora_inicial').value = '08:00';
+        document.getElementById('hora_final').value = horaActual;
         
-        console.log('📝 Campos configurados:', {
-            fecha: fechaActual,
-            hora_inicial: horaEntrada || '08:00',
-            hora_final: horaActual
-        });
-        
-        // ✅ HACER TODOS LOS CAMPOS TEMPORALES DE SOLO LECTURA
-        document.getElementById('fecha').readOnly = true;
-        document.getElementById('hora_inicial').readOnly = true;
-        document.getElementById('hora_final').readOnly = true; // ✅ HORA FINAL TAMBIÉN DE SOLO LECTURA
+        // Campos de solo lectura
         document.getElementById('matricula').readOnly = true;
         document.getElementById('equipo').readOnly = true;
         
-        // ✅ Agregar clases CSS para indicar que son de solo lectura
-        const camposSoloLectura = ['fecha', 'hora_inicial', 'hora_final', 'matricula', 'equipo'];
-        camposSoloLectura.forEach(campoId => {
+        // Campos editables
+        document.getElementById('fecha').readOnly = false;
+        document.getElementById('hora_inicial').readOnly = false;
+        document.getElementById('hora_final').readOnly = false;
+        
+        // Quitar estilos de solo lectura
+        const camposEditables = ['fecha', 'hora_inicial', 'hora_final'];
+        camposEditables.forEach(campoId => {
             const campo = document.getElementById(campoId);
             if (campo) {
-                campo.classList.add('bg-light', 'text-muted');
-                campo.style.cursor = 'not-allowed';
+                campo.classList.remove('bg-light', 'text-muted');
+                campo.style.cursor = 'text';
             }
         });
         
-        // ✅ Asegurar que el campo id_control esté vacío en modo agregar
-        const idControlInput = document.getElementById('id_control');
-        if (idControlInput) {
-            idControlInput.value = ''; // Vacío para modo agregar
-        }
-        
-        // ✅ Cambiar título y estilos
-        const cardHeader = document.querySelector('.card-header');
-        if (cardHeader) {
-            cardHeader.className = 'card-header bg-success text-white';
-            cardHeader.innerHTML = '<h5 class="mb-0"><i class="fas fa-plus-circle"></i> Agregar Aeronave en Hangar al Control</h5>';
-        }
-        
-        // ✅ Cambiar texto y color del botón
-        const submitButton = document.getElementById('submitButton');
-        if (submitButton) {
-            submitButton.className = 'btn btn-success';
-            submitButton.innerHTML = `
-                <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true" style="display: none;"></span>
-                Agregar al Control
-            `;
-        }
-        
-        // ✅ AGREGAR CAMPOS OCULTOS NECESARIOS
+        // Agregar campo oculto id_aeronave
         let idAeronaveInput = document.getElementById('id_aeronave');
         if (!idAeronaveInput) {
             idAeronaveInput = document.createElement('input');
@@ -347,17 +297,14 @@ function inicializarModoAgregar(urlParams) {
         }
         idAeronaveInput.value = idAeronave;
         
-        let idUltimoRegistroInput = document.getElementById('id_ultimo_registro');
-        if (!idUltimoRegistroInput) {
-            idUltimoRegistroInput = document.createElement('input');
-            idUltimoRegistroInput.type = 'hidden';
-            idUltimoRegistroInput.id = 'id_ultimo_registro';
-            idUltimoRegistroInput.name = 'id_ultimo_registro';
-            document.getElementById('controlPernoctaForm').appendChild(idUltimoRegistroInput);
+        // ELIMINAR id_ultimo_registro si existe
+        const idUltimoRegistroInput = document.getElementById('id_ultimo_registro');
+        if (idUltimoRegistroInput) {
+            idUltimoRegistroInput.remove();
+            console.log('🗑️ Eliminado campo id_ultimo_registro');
         }
-        idUltimoRegistroInput.value = idUltimoRegistro;
         
-        // ✅ CAMPO OCULTO PARA INDICAR MODO AGREGAR
+        // Agregar campo modo_agregar
         let modoAgregarInput = document.getElementById('modo_agregar');
         if (!modoAgregarInput) {
             modoAgregarInput = document.createElement('input');
@@ -368,19 +315,11 @@ function inicializarModoAgregar(urlParams) {
         }
         modoAgregarInput.value = 'true';
         
-        // ✅ AGREGAR LABELS DESCRIPTIVOS PARA MEJOR UX
-        agregarLabelsDescriptivos();
-        
-        console.log('✅ Formulario configurado para modo agregar:', {
-            idAeronave,
-            matricula,
-            equipo,
-            fechaEntrada,
-            horaEntrada,
-            idUltimoRegistro,
-            fechaActual,
-            horaActual
-        });
+        console.log('✅ Modo agregar manual configurado');
+        console.log('📋 Campos en el formulario:', 
+            Array.from(document.querySelectorAll('#controlPernoctaForm input, #controlPernoctaForm select, #controlPernoctaForm textarea'))
+                 .map(el => el.name || el.id)
+        );
         
     } catch (error) {
         console.error('❌ Error inicializando modo agregar:', error);
@@ -388,11 +327,8 @@ function inicializarModoAgregar(urlParams) {
     }
 }
 
-/**
- * Agrega labels descriptivos para mejorar la experiencia de usuario
- */
+
 function agregarLabelsDescriptivos() {
-    // Agregar texto descriptivo debajo de los campos
     const fechaField = document.getElementById('fecha');
     const horaInicialField = document.getElementById('hora_inicial');
     const horaFinalField = document.getElementById('hora_final');
@@ -420,7 +356,7 @@ function agregarLabelsDescriptivos() {
 }
 
 /**
- * Agrega labels descriptivos para mejorar la experiencia de usuario
+ * Agregamos descripciones para mejorar la experiencia de usuario
  */
 function agregarLabelsDescriptivos() {
     // Agregar texto descriptivo debajo de los campos
@@ -450,34 +386,26 @@ function agregarLabelsDescriptivos() {
     }
 }
 
-// ========== FUNCIONES AUXILIARES ==========
 
-/**
- * Formatea la hora de HH:MM:SS a HH:MM para mostrar
- */
+
 function formatearHoraParaMostrar(hora) {
     if (!hora || hora === 'null' || hora === 'undefined') {
         return 'No especificada';
     }
     
-    // Si la hora viene en formato HH:MM:SS, tomar solo HH:MM
     if (typeof hora === 'string' && hora.length >= 8 && hora.includes(':')) {
-        return hora.substring(0, 5); // Tomar solo los primeros 5 caracteres (HH:MM)
+        return hora.substring(0, 5);
     }
     
-    // Si ya está en formato HH:MM, devolver tal cual
     return hora;
 }
 
-/**
- * Formatea la hora de HH:MM a HH:MM:SS para guardar en BD
- */
+
 function formatearHoraParaBD(hora) {
     if (!hora) {
         return '00:00:00';
     }
     
-    // Si la hora viene en formato HH:MM, agregar :00
     if (typeof hora === 'string' && hora.length === 5 && hora.includes(':')) {
         return hora + ':00';
     }
@@ -485,11 +413,8 @@ function formatearHoraParaBD(hora) {
     return hora;
 }
 
-/**
- * Muestra un modal para seleccionar aeronaves en hangar
- */
+
 function mostrarSelectorAeronaves(aeronaves) {
-    // Crear modal dinámicamente
     const modalHTML = `
         <div class="modal fade" id="selectorAeronavesModal" tabindex="-1">
             <div class="modal-dialog modal-lg">
@@ -545,14 +470,11 @@ function mostrarSelectorAeronaves(aeronaves) {
         </div>
     `;
     
-    // Agregar modal al DOM
     document.body.insertAdjacentHTML('beforeend', modalHTML);
     
-    // Mostrar modal
     const modal = new bootstrap.Modal(document.getElementById('selectorAeronavesModal'));
     modal.show();
     
-    // Limpiar modal cuando se cierre
     modal._element.addEventListener('hidden.bs.modal', function() {
         this.remove();
     });
@@ -562,7 +484,7 @@ function mostrarSelectorAeronaves(aeronaves) {
  * Redirige al formulario de control con la aeronave seleccionada
  */
 function seleccionarAeronaveParaControl(idAeronave, matricula, equipo, fechaEntrada, horaEntrada, idUltimoRegistro) {
-    console.log('🛩️ Aeronave seleccionada para control manual:', {
+    console.log(' Aeronave seleccionada para control manual:', {
         idAeronave,
         matricula, 
         equipo,
@@ -571,13 +493,12 @@ function seleccionarAeronaveParaControl(idAeronave, matricula, equipo, fechaEntr
         idUltimoRegistro
     });
     
-    // Cerrar el modal primero
+    
     const modal = bootstrap.Modal.getInstance(document.getElementById('selectorAeronavesModal'));
     if (modal) {
         modal.hide();
     }
     
-    // Construir URL con todos los parámetros necesarios
     const params = new URLSearchParams({
         'agregar': 'true',
         'id_aeronave': idAeronave,
@@ -596,15 +517,13 @@ function seleccionarAeronaveParaControl(idAeronave, matricula, equipo, fechaEntr
  * Redirige a la página de edición individual del control
  */
 function editarControlPernocta(idControl) {
-    console.log('✏️ Editando control ID:', idControl);
+    console.log(' Editando control ID:', idControl);
     
-    // Verificar permisos
     if (!permisosSistema.puedeEditar('control_pernoctas')) {
         mostrarError('No tienes permisos para editar registros de control.');
         return;
     }
     
-    // Redirigir a la página de edición individual
     window.location.href = `../../app/views/control_pernocta_editar.html?id=${idControl}`;
 }
 
@@ -612,52 +531,45 @@ function editarControlPernocta(idControl) {
  * Inicializa la página de edición individual
  */
 function inicializarPaginaEdicion() {
-    console.log('🔄 Inicializando página de edición individual...');
+    console.log(' Inicializando página de edición individual...');
     
-    // Configurar envío del formulario
     const controlForm = document.getElementById('controlPernoctaForm');
     if (controlForm) {
         controlForm.addEventListener('submit', function(event) {
             event.preventDefault();
             actualizarControl();
         });
-        console.log('✅ Formulario configurado para envío');
+        console.log(' Formulario configurado para envío');
     } else {
-        console.error('❌ No se encontró el formulario controlPernoctaForm');
+        console.error(' No se encontró el formulario controlPernoctaForm');
     }
 
-    // Cargar datos para edición
     cargarControlParaEdicion();
     
-    // Ejecutar diagnóstico después de 2 segundos
     setTimeout(diagnosticoUrgente, 2000);
 }
 
-/**
- * Carga los datos del control para edición en página individual
- */
+
 async function cargarControlParaEdicion(idControl = null) {
     try {
-        // Obtener ID de la URL si no se proporciona
         if (!idControl) {
             const urlParams = new URLSearchParams(window.location.search);
             idControl = urlParams.get('id');
         }
 
-        // ✅ VERIFICAR SI ESTAMOS EN MODO AGREGAR
         const urlParams = new URLSearchParams(window.location.search);
         const modoAgregar = urlParams.get('agregar');
         
         if (modoAgregar === 'true') {
-            console.log('🔄 Modo AGREGAR detectado - No se cargan datos de control existente');
-            return; // Salir sin cargar datos de control
+            console.log(' Modo AGREGAR detectado - No se cargan datos de control existente');
+            return;
         }
 
         if (!idControl) {
             throw new Error('No se proporcionó ID de control');
         }
 
-        console.log('🔄 Cargando control para edición ID:', idControl);
+        console.log(' Cargando control para edición ID:', idControl);
 
         const response = await fetch(`/Eolo/app/controllers/control_pernocta_leer_id.php?id=${idControl}`);
         
@@ -667,25 +579,23 @@ async function cargarControlParaEdicion(idControl = null) {
         
         const data = await response.json();
         
-        console.log('📊 Respuesta completa del servidor:', data);
+        console.log(' Respuesta completa del servidor:', data);
 
         if (data.success && data.control) {
-            console.log('✅ Datos del control recibidos:', data.control);
+            console.log(' Datos del control recibidos:', data.control);
             llenarFormularioEdicion(data.control);
         } else {
             throw new Error(data.error || 'No se pudieron cargar los datos del control');
         }
         
     } catch (error) {
-        console.error('❌ Error al cargar control para edición:', error);
-        // ❌ NO mostrar error en modo agregar
+        console.error('Error al cargar control para edición:', error);
         const urlParams = new URLSearchParams(window.location.search);
         const modoAgregar = urlParams.get('agregar');
         
         if (modoAgregar !== 'true') {
             mostrarError('Error al cargar los datos para editar: ' + error.message);
             
-            // Redirigir después de 3 segundos solo si no es modo agregar
             setTimeout(() => {
                 window.location.href = '../../app/views/ver_control_pernoctas.html';
             }, 3000);
@@ -697,24 +607,21 @@ async function cargarControlParaEdicion(idControl = null) {
  * Llena el formulario con datos para edición
  */
 function llenarFormularioEdicion(control) {
-    console.log('📝 Llenando formulario con datos del control:', control);
+    console.log(' Llenando formulario con datos del control:', control);
     
-    // ✅ CAMPOS DE SOLO LECTURA - USANDO NOMBRES EXACTOS DE LA BD
     setFieldValue('id_control', control.Id_Control);
     setFieldValue('matricula', control.Matricula);
     setFieldValue('equipo', control.Equipo);
     setFieldValue('fecha', control.Fecha);
-    setFieldValue('hora_inicial', formatearHoraParaMostrar(control.HoraInicial)); // ✅ Formateado
-    setFieldValue('hora_final', formatearHoraParaMostrar(control.HoraFinal));     // ✅ Formateado
+    setFieldValue('hora_inicial', formatearHoraParaMostrar(control.HoraInicial));
+    setFieldValue('hora_final', formatearHoraParaMostrar(control.HoraFinal));     
     
-    // ✅ HACER CAMPOS DE SOLO LECTURA
     document.getElementById('fecha').readOnly = true;
     document.getElementById('hora_inicial').readOnly = true;
     document.getElementById('hora_final').readOnly = true;
     document.getElementById('matricula').readOnly = true;
     document.getElementById('equipo').readOnly = true;
     
-    // ✅ Agregar clases CSS para indicar que son de solo lectura
     const camposSoloLectura = ['fecha', 'hora_inicial', 'hora_final', 'matricula', 'equipo'];
     camposSoloLectura.forEach(campoId => {
         const campo = document.getElementById(campoId);
@@ -724,13 +631,12 @@ function llenarFormularioEdicion(control) {
         }
     });
     
-    // ✅ CAMPOS EDITABLES
     setFieldValue('hangar', control.Hangar);
     setFieldValue('empresa_procedencia', control.EmpresaProcedencia);
     setFieldValue('observaciones', control.Observaciones);
     setFieldValue('persona_registro', control.Persona_Registro);
 
-    console.log('✅ Formulario cargado correctamente para edición');
+    console.log(' Formulario cargado correctamente para edición');
 }
 
 /**
@@ -741,25 +647,24 @@ function setFieldValue(fieldId, value) {
     if (field) {
         const finalValue = value !== null && value !== undefined ? value : '';
         field.value = finalValue;
-        console.log(`✅ Campo ${fieldId} establecido: "${finalValue}"`);
+        console.log(` Campo ${fieldId} establecido: "${finalValue}"`);
     } else {
-        console.error(`❌ Campo no encontrado: ${fieldId}`);
+        console.error(` Campo no encontrado: ${fieldId}`);
     }
 }
 
 /**
- * Procesa el formulario (tanto para agregar como editar)
+ * Procesa el formulario
  */
 async function actualizarControl() {
     try {
         const formData = new FormData(document.getElementById('controlPernoctaForm'));
         
-        // ✅ DETERMINAR SI ES MODO AGREGAR O EDITAR
         const idControl = document.getElementById('id_control').value;
         const modoAgregarInput = document.getElementById('modo_agregar');
         const esModoAgregar = modoAgregarInput && modoAgregarInput.value === 'true';
         
-        console.log('📤 Enviando datos:', esModoAgregar ? 'MODO AGREGAR' : 'MODO EDITAR');
+        console.log(' Enviando datos:', esModoAgregar ? 'MODO AGREGAR' : 'MODO EDITAR');
         
         if (esModoAgregar) {
             console.log('- ID Aeronave:', formData.get('id_aeronave'));
@@ -776,12 +681,10 @@ async function actualizarControl() {
         console.log('- Observaciones:', formData.get('observaciones'));
         console.log('- Persona Registro:', formData.get('persona_registro'));
         
-        // Validar formulario
         if (!validarFormularioEdicion()) {
             return;
         }
         
-        // Mostrar loading
         const btnSubmit = document.getElementById('submitButton');
         btnSubmit.disabled = true;
         const spinner = btnSubmit.querySelector('.spinner-border');
@@ -789,15 +692,14 @@ async function actualizarControl() {
             spinner.style.display = 'inline-block';
         }
         
-        // ✅ DETERMINAR URL SEGÚN EL MODO
         let url = '';
         if (esModoAgregar) {
-            url = '/Eolo/app/controllers/control_pernocta_crear.php'; // ✅ CREACIÓN
+            url = '/Eolo/app/controllers/control_pernocta_crear.php'; // crear
         } else {
-            url = '/Eolo/app/controllers/control_pernocta_actualizar.php'; // ✅ ACTUALIZACIÓN
+            url = '/Eolo/app/controllers/control_pernocta_actualizar.php'; // actualizar
         }
         
-        console.log('🌐 URL de envío:', url);
+        console.log(' URL de envío:', url);
         
         const response = await fetch(url, {
             method: 'POST',
@@ -806,7 +708,7 @@ async function actualizarControl() {
         
         const data = await response.json();
         
-        console.log('📊 Respuesta del servidor:', data);
+        console.log(' Respuesta del servidor:', data);
         
         if (data.success) {
             const mensaje = esModoAgregar ? 
@@ -821,10 +723,9 @@ async function actualizarControl() {
         }
         
     } catch (error) {
-        console.error('❌ Error al procesar control:', error);
+        console.error(' Error al procesar control:', error);
         mostrarError('Error al procesar el control: ' + error.message);
     } finally {
-        // Ocultar loading
         const btnSubmit = document.getElementById('submitButton');
         if (btnSubmit) {
             btnSubmit.disabled = false;
@@ -836,9 +737,7 @@ async function actualizarControl() {
     }
 }
 
-/**
- * Valida el formulario de edición individual
- */
+
 function validarFormularioEdicion() {
     const hangar = document.getElementById('hangar').value;
     const personaRegistro = document.getElementById('persona_registro').value.trim();
@@ -846,12 +745,10 @@ function validarFormularioEdicion() {
     const horaInicial = document.getElementById('hora_inicial').value;
     const horaFinal = document.getElementById('hora_final').value;
     
-    // Verificar si es modo agregar
     const modoAgregar = document.getElementById('modo_agregar');
     const esModoAgregar = modoAgregar && modoAgregar.value === 'true';
     
     if (esModoAgregar) {
-        // ✅ Validaciones específicas para modo AGREGAR
         if (!fecha) {
             mostrarError('La fecha es obligatoria.');
             return false;
@@ -867,7 +764,6 @@ function validarFormularioEdicion() {
             return false;
         }
         
-        // ✅ Validar formato de hora (HH:MM)
         const horaRegex = /^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/;
         if (!horaRegex.test(horaFinal)) {
             mostrarError('El formato de la hora final no es válido. Use HH:MM (ej: 14:30)');
@@ -885,7 +781,7 @@ function validarFormularioEdicion() {
         return false;
     }
     
-    console.log('✅ Formulario válido - Modo:', esModoAgregar ? 'AGREGAR' : 'EDITAR');
+    console.log(' Formulario válido - Modo:', esModoAgregar ? 'AGREGAR' : 'EDITAR');
     return true;
 }
 
@@ -907,7 +803,6 @@ async function eliminarControlPernocta(id) {
         return;
     }
     
-    // ✅ USAR MODAL CON ESTILO EN LUGAR DE CONFIRM NATIVO
     mostrarConfirmacionEliminarControl(id);
 }
 
@@ -920,7 +815,6 @@ function mostrarConfirmacionEliminarControl(id) {
     const modalTitle = document.getElementById('confirmModalLabel');
     
     if (modalBody && confirmModal && confirmBtn) {
-        // ✅ APLICAR ESTILOS CONSISTENTES
         modalTitle.innerHTML = '<i class="fas fa-trash-alt me-2"></i>Eliminar Control';
         modalBody.innerHTML = `
             <div class="alert alert-warning mb-0">
@@ -941,11 +835,10 @@ function mostrarConfirmacionEliminarControl(id) {
             </div>
         `;
         confirmBtn.innerHTML = '<i class="fas fa-trash-alt me-1"></i> Eliminar';
-        confirmBtn.className = 'btn btn-danger'; // ✅ ESTILO PELIGRO
+        confirmBtn.className = 'btn btn-danger';
         confirmBtn.setAttribute('data-id', id);
         confirmModal.show();
     } else {
-        // Fallback al confirm tradicional si no hay modal
         if (confirm('¿Estás seguro de que quieres eliminar este registro de control? Esta acción no se puede deshacer.')) {
             eliminarControlPernoctaConfirmada(id);
         }
@@ -956,18 +849,16 @@ function mostrarConfirmacionEliminarControl(id) {
  * Función que ejecuta la eliminación después de la confirmación
  */
 async function eliminarControlPernoctaConfirmada(id) {
-    // Cerrar modal inmediatamente
     if (confirmModal) {
         confirmModal.hide();
     }
     
     try {
-        console.log('🗑️ Eliminando control ID:', id);
+        console.log(' Eliminando control ID:', id);
         
         const formData = new FormData();
         formData.append('id', id);
         
-        // Mostrar loading en el botón de eliminar temporalmente
         const originalButtons = document.querySelectorAll(`button[onclick*="${id}"]`);
         originalButtons.forEach(btn => {
             if (btn.innerHTML.includes('fa-trash-alt')) {
@@ -975,7 +866,6 @@ async function eliminarControlPernoctaConfirmada(id) {
                 btn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i> Eliminando...';
                 btn.disabled = true;
                 
-                // Restaurar después de 3 segundos si hay error
                 setTimeout(() => {
                     if (btn.disabled) {
                         btn.innerHTML = originalHTML;
@@ -993,7 +883,6 @@ async function eliminarControlPernoctaConfirmada(id) {
         const data = await response.json();
         
         if (data.success) {
-            // ✅ MENSAJE DE ÉXITO CON ESTILO
             mostrarExito(`
                 <div class="text-center">
                     <i class="fas fa-check-circle text-success fa-3x mb-3"></i>
@@ -1008,9 +897,8 @@ async function eliminarControlPernoctaConfirmada(id) {
         }
         
     } catch (error) {
-        console.error('❌ Error al eliminar control:', error);
+        console.error(' Error al eliminar control:', error);
         
-        // ✅ MENSAJE DE ERROR CON ESTILO
         mostrarError(`
             <div class="d-flex align-items-center">
                 <i class="fas fa-exclamation-triangle text-danger fa-2x me-3"></i>
@@ -1028,15 +916,14 @@ async function eliminarControlPernoctaConfirmada(id) {
 async function cargarControlPernoctas() {
     const tablaBody = document.getElementById('cuerpoTablaControlPernoctas');
     if (!tablaBody) {
-        console.error('❌ No se encontró el elemento cuerpoTablaControlPernoctas');
+        console.error(' No se encontró el elemento cuerpoTablaControlPernoctas');
         return;
     }
     
-    console.log('🔄 Iniciando carga de control de pernoctas...');
+    console.log(' Iniciando carga de control de pernoctas...');
     tablaBody.innerHTML = '<tr><td colspan="11" class="text-center">Cargando registros...</td></tr>';
 
     try {
-        // Obtener fecha del filtro
         let fecha = '';
         const filtroFecha = document.getElementById('filtroFechaControl');
         if (filtroFecha && filtroFecha.value) {
@@ -1056,7 +943,7 @@ async function cargarControlPernoctas() {
             url += `&hangar=${filtrosActivosControl.hangar}`;
         }
 
-        console.log(`🌐 URL de consulta: ${url}`);
+        console.log(` URL de consulta: ${url}`);
         
         const response = await fetch(url);
         
@@ -1065,14 +952,14 @@ async function cargarControlPernoctas() {
         }
         
         const data = await response.json();
-        console.log('📊 Datos recibidos del servidor:', data);
+        console.log(' Datos recibidos del servidor:', data);
         
         if (data.error) {
             throw new Error(data.error);
         }
 
         const controles = data.controles;
-        console.log(`✅ Número de controles recibidos: ${controles.length}`);
+        console.log(` Número de controles recibidos: ${controles.length}`);
         
         paginaActualControl = data.paginacion.pagina_actual;
         totalPaginasControl = data.paginacion.total_paginas;
@@ -1146,23 +1033,22 @@ async function cargarControlPernoctas() {
         actualizarPaginadorControl();
         
     } catch (error) {
-        console.error('❌ Error al cargar control de pernoctas:', error);
+        console.error(' Error al cargar control de pernoctas:', error);
         tablaBody.innerHTML = `<tr><td colspan="11" class="text-center text-danger">Error al cargar los datos: ${error.message}</td></tr>`;
     }
 }
 
 /**
- * Agrega nuevo control (para página de lista)
+ * Agrega nuevo control
  */
 async function agregarNuevoControl() {
     try {
-        console.log('➕ Abriendo modal para nuevo control...');
+        console.log('Abriendo modal para nuevo control...');
         
         const response = await fetch('/Eolo/app/models/obtener_entradas_control_pernocta.php');
         const data = await response.json();
         
         if (data.success && data.entradas.length > 0) {
-            // Mostrar la primera entrada disponible
             const entrada = data.entradas[0];
             abrirModalControl(entrada, 'agregar');
         } else {
@@ -1181,7 +1067,7 @@ async function agregarNuevoControl() {
 function abrirModalControl(datos, modo = 'agregar') {
     const modalElement = document.getElementById('controlModal');
     if (!modalElement) {
-        console.log('ℹ️ Modal no disponible, redirigiendo a página individual');
+        console.log(' Modal no disponible, redirigiendo a página individual');
         if (modo === 'editar' && datos.Id_Control) {
             window.location.href = `../../app/views/control_pernocta_editar.html?id=${datos.Id_Control}`;
         }
@@ -1196,7 +1082,6 @@ function abrirModalControl(datos, modo = 'agregar') {
 function mostrarExito(mensaje, callback = null) {
     const modalBody = document.getElementById('successModalBody');
     if (modalBody && successModal) {
-        // ✅ SOPORTAR TANTO TEXTO COMO HTML
         if (typeof mensaje === 'string' && mensaje.includes('<')) {
             modalBody.innerHTML = mensaje;
         } else {
@@ -1224,7 +1109,6 @@ function mostrarExito(mensaje, callback = null) {
 function mostrarError(mensaje) {
     const modalBody = document.getElementById('errorModalBody');
     if (modalBody && errorModal) {
-        // ✅ SOPORTAR TANTO TEXTO COMO HTML
         if (typeof mensaje === 'string' && mensaje.includes('<')) {
             modalBody.innerHTML = mensaje;
         } else {
@@ -1232,13 +1116,12 @@ function mostrarError(mensaje) {
         }
         errorModal.show();
     } else {
-        alert('¡Error! ⚠️\n' + (typeof mensaje === 'string' ? mensaje.replace(/<[^>]*>/g, '') : mensaje));
+        alert('¡Error! \n' + (typeof mensaje === 'string' ? mensaje.replace(/<[^>]*>/g, '') : mensaje));
     }
 }
 
-// Funciones de filtros y paginación (para página de lista)
 function aplicarFiltrosControl() {
-    console.log('🔍 Aplicando filtros de control...');
+    console.log(' Aplicando filtros de control...');
     
     const filtroFecha = document.getElementById('filtroFechaControl');
     const filtroMatricula = document.getElementById('filtroMatriculaControl');
@@ -1261,7 +1144,7 @@ function aplicarFiltrosControl() {
 }
 
 function limpiarFiltrosControl() {
-    console.log('🧹 Limpiando filtros de control...');
+    console.log(' Limpiando filtros de control...');
     
     const filtroFecha = document.getElementById('filtroFechaControl');
     const filtroMatricula = document.getElementById('filtroMatriculaControl');
@@ -1338,7 +1221,6 @@ function actualizarPaginadorControl() {
         `;
     }
     
-    // Páginas intermedias
     for (let i = inicioPaginas; i <= finPaginas; i++) {
         if (i === paginaActualControl) {
             html += `
@@ -1355,7 +1237,6 @@ function actualizarPaginadorControl() {
         }
     }
     
-    // Página final
     if (finPaginas < totalPaginasControl) {
         html += `
             ${finPaginas < totalPaginasControl - 1 ? '<li class="page-item disabled"><span class="page-link">...</span></li>' : ''}

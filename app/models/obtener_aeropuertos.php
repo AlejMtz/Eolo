@@ -3,17 +3,14 @@
 header('Content-Type: application/json');
 header('Access-Control-Allow-Origin: *');
 
-// Configuración de la base de datos
 $servername = "localhost";
 $username = "root";
 $password = "";
 $dbname = "eolo";
 
 try {
-    // Crear conexión
     $conn = new mysqli($servername, $username, $password, $dbname);
 
-    // Verificar conexión
     if ($conn->connect_error) {
         throw new Exception('Error de conexión a la base de datos: ' . $conn->connect_error);
     }
@@ -54,7 +51,6 @@ try {
             $termino, $termino, $likeTermino, $likeTermino
         );
     } else {
-        // Si no hay término, devolver aeropuertos principales
         $stmt = $conn->prepare("
             SELECT 
                 Id_Aeropuerto as id,

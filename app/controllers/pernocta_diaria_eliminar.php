@@ -29,11 +29,10 @@ try {
     $pernocta = $stmt_check->fetch(PDO::FETCH_ASSOC);
     $id_aeronave = $pernocta['Id_Aeronave'];
 
-    // Iniciar transacción para asegurar consistencia
     $pdo->beginTransaction();
 
     try {
-        // 1. DESHABILITAR EL REGISTRO (no eliminar)
+        //Deshabilitar el registro
         $sql_deshabilitar = "UPDATE pernocta_diaria SET Estado_Registro = 'inactivo' WHERE Id_Pernocta = ?";
         $stmt_deshabilitar = $pdo->prepare($sql_deshabilitar);
         $result = $stmt_deshabilitar->execute([$id_pernocta]);
@@ -41,11 +40,6 @@ try {
         if (!$result) {
             throw new Exception("Error al deshabilitar el registro en la base de datos");
         }
-
-        // 2. RECALCULAR EL ESTADO DE LA AERONAVE (para consistencia)
-        // Esto se hará automáticamente en las próximas consultas gracias al filtro Estado_Registro
-
-        // Confirmar transacción
         $pdo->commit();
 
         $response = [

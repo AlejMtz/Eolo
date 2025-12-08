@@ -14,7 +14,7 @@ try {
 
     $id_pernocta = intval($_POST['id_pernocta']);
 
-    // Validar campos requeridos
+    // Validar campos
     $required_fields = ['fecha', 'hora', 'id_aeronave', 'tipo_movimiento', 'persona_registro'];
     foreach ($required_fields as $field) {
         if (!isset($_POST[$field]) || empty($_POST[$field])) {
@@ -54,10 +54,9 @@ try {
     // Determinar valor de Activo
     $activo = ($tipo_movimiento == 'entrada') ? 1 : 0;
 
-    // Si cambió el tipo de movimiento o la aeronave, validar estados
     if ($tipo_movimiento != $tipo_movimiento_anterior || $id_aeronave != $id_aeronave_anterior) {
         
-        // Validar nuevo estado para la aeronave (solo registros activos)
+        // Validar nuevo estado para la aeronave
         $sql_estado = "SELECT Tipo_Movimiento 
                        FROM pernocta_diaria 
                        WHERE Id_Aeronave = ? 
