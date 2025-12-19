@@ -3,18 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="../../public/assets/css/style.css">
     <script src="../../public/assets/js/auth_check.js"></script>
-    <title>Gestión de Walkarounds</title>
+    <title>Gestión de Remisiones</title>
 </head>
 <body>
     <nav class="navbar navbar-expand-lg navbar-dark navbar-custom">
         <div class="container-fluid container-responsive">
             <a href="../../app/views/Index.html" class="navbar-brand">
                 <i class="fas fa-plane"></i> 
-                <span class="desktop-only">EOLO - Sistema de Walkaround</span>
+                <span class="desktop-only">EOLO - Sistema de Remisión</span>
                 <span class="mobile-only">EOLO</span>
             </a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
@@ -22,28 +25,11 @@
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto">
+                    
                     <li class="nav-item">
-                        <a class="nav-link" href="../../app/views/ver_aeronaves.html">
-                            <i class="fas fa-plane"></i> 
-                            <span class="desktop-only">Aeronaves</span>
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="../../app/views/ver_aeropuertos.html">
-                            <i class="fas fa-map-marker-alt"></i> 
-                            <span class="desktop-only">Aeropuertos</span>
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link active" href="../../app/views/ver_walkaround.html">
-                            <i class="fas fa-clipboard-check"></i> 
-                            <span class="desktop-only">Walkaround</span>
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="../../app/views/ver_entrega_turno.html">
-                            <i class="fas fa-images"></i> 
-                            <span class="desktop-only">Entrega de Turno</span>
+                        <a class="nav-link active" href="../../app/views/ver_remision_pipa.html">
+                            <i class="fas fa-gas-pump"></i> 
+                            <span class="desktop-only">Remisiones</span>
                         </a>
                     </li>
                 </ul>
@@ -62,30 +48,30 @@
     <div class="container-fluid container-responsive">
         <div class="container-form mt-3">
             <h2 class="form-title responsive-text">
-                <i class="fas fa-clipboard-check"></i> Gestión de Walkarounds
-            </h2>
+                <i class="fas fa-bed"></i> Gestión de Remisiones</h2>
         </div>
 
-        <!-- Información de permisos (sin leyendas de accesible/no accesible) -->
+        <!-- Información de permisos -->
         <div id="infoPermisos"></div>
 
         <div class="mt-4">
             <div class="d-flex justify-content-between align-items-center mb-3 flex-responsive">
     <h3 class="form-title mb-0 responsive-text">
         <i class="fas fa-list-ul"></i> 
-        <span class="d-none d-md-inline">Lista de Walkarounds</span>
-        <span class="d-md-none">Walkarounds</span>
+        <span class="d-none d-md-inline">Lista de Remisiones</span>
+        <span class="d-md-none">Remisones</span>
     </h3>
 
+
     <!-- Botón condicional según permisos -->
-    <a href="../../app/views/componenteWk.html" class="btn btn-success btn-crear" data-modulo="walkarounds">
+    <a href="../../app/views/remision.html" class="btn btn-success btn-crear" data-modulo="remision">
         <i class="fas fa-plus"></i> 
-        <span class="d-none d-md-inline">Agregar Walkaround</span>
+        <span class="d-none d-md-inline">Agregar Registro</span>
         <span class="d-md-none">Agregar</span>
     </a>
 </div>
 
-              <!-- Filtros de búsqueda - VERSIÓN RESPONSIVA -->
+            <!-- Filtros de búsqueda - VERSIÓN RESPONSIVA -->
 <div class="row mb-3">
     <!-- Filtro Fecha -->
     <div class="col-12 col-sm-6 col-md-4 col-lg-3 mb-2">
@@ -103,26 +89,16 @@
         </div>
     </div>
     
-    <!-- Filtro Movimiento -->
-    <div class="col-12 col-sm-6 col-md-4 col-lg-3 mb-2">
-        <div class="form-group">
-            <label for="filtroMovimiento" class="form-label">Tipo de movimiento:</label>
-            <select id="filtroMovimiento" class="form-select">
-                <option value="">Todos</option>
-                <option value="entrada">Entrada</option>
-                <option value="salida">Salida</option>
-            </select>
-        </div>
-    </div>
+    
     
     <!-- Botones de Acción -->
     <div class="col-12 col-sm-6 col-md-12 col-lg-3 mb-2 d-flex align-items-end">
         <div class="d-grid d-md-flex gap-2 w-100">
-            <button class="btn btn-primary flex-fill" onclick="aplicarFiltrosWalkaround()">
+            <button class="btn btn-primary flex-fill" onclick="aplicarFiltros()">
                 <i class="fas fa-search me-1"></i> 
                 <span class="d-none d-sm-inline"></span>
             </button>
-            <button class="btn btn-secondary flex-fill" onclick="limpiarFiltrosWalkaround()">
+            <button class="btn btn-secondary flex-fill" onclick="limpiarFiltros()">
                 <i class="fas fa-undo me-1"></i>
                 <span class="d-none d-sm-inline"></span>
             </button>
@@ -137,22 +113,21 @@
 
             <div class="table-responsive container-responsive">
                 <div class="table-responsive-custom">
-                    <table class="table table-striped table-hover" id="tablaWalkarounds">
+                    <table class="table table-striped table-hover" id="tablaRemisiones">
                         <thead class="table-dark">
                             <tr>
-                                <th>No.</th>
-                                <th>Fecha/Hora</th>
+                                <th class="mobile-compact">Fecha</th>
                                 <th>Matrícula</th>
-                                <th>Tipo Aeronave</th>
-                                <th>Movimiento</th>
-                                <th>Procedencia</th>
-                                <th>Destino</th>
-                                <th>Elaboró</th>
-                                <th>Responsable</th>
+                                <th>Equipo</th>
+                                <th class="mobile-compact">No.Remisión</th>
+                                <th class="desktop-only">Totalizador Inicial</th>
+                                <th class="desktop-only">Totalizador Final</th>
+                                <th class="desktop-only">Total Litros</th>
                                 <th>Acciones</th>
                             </tr>
                         </thead>
-                        <tbody>
+                        <tbody id="cuerpoTablaRemisiones">
+                            <!-- Los datos se cargarán aquí dinámicamente -->
                         </tbody>
                     </table>
                 </div>
@@ -221,22 +196,20 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="../../public/assets/js/walkaround.js"></script>
+<script src="../../public/assets/js/remision.js"></script>
     <script src="../../public/assets/js/auth_check.js"></script>
     <script src="../../public/assets/js/permisos.js"></script>
     <script>
-        // Verificar permisos específicos para esta página
-        document.addEventListener('DOMContentLoaded', function() {
-            if (!verificarSesion()) return;
-            
-            // Verificar acceso al módulo
-            if (!permisosSistema.verificarAccesoPagina('walkarounds')) {
-                return;
-            }
-            
-            permisosSistema.aplicarPermisosUI();
-            cargarWalkarounds();
-        });
-    </script>
+    document.addEventListener('DOMContentLoaded', function() {
+        if (!verificarSesion()) return;
+        
+        // Verificar acceso al módulo
+        if (!permisosSistema.verificarAccesoPagina('remision')) {
+            return;
+        }
+        
+        permisosSistema.aplicarPermisosUI();
+    });
+</script>
 </body>
 </html>

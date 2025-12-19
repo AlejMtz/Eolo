@@ -164,6 +164,33 @@ class SistemaPermisos {
                 visitantes: true
             },
 
+            // Módulos de Rampa
+            rampa: {
+                ver: true,
+                crear: true,
+                editar: function(registro) {
+                    if (esAdmin) return true;
+                    return registro.Persona_Registro === this.usuario.nombre;
+                }.bind(this),
+                eliminar: esAdmin,
+                exportar: true,
+                imprimir: true
+                
+            },
+
+             // Módulos de Rampa
+            remision: {
+                ver: true,
+                crear: true,
+                editar: function(registro) {
+                    if (esAdmin) return true;
+                    return false;
+                }.bind(this),
+                eliminar: esAdmin,
+                exportar: true,
+                imprimir: true
+            }
+
         };
     }
 
@@ -211,8 +238,6 @@ class SistemaPermisos {
         console.log(` Verificar imprimir módulo ${modulo}:`, puede);
         return puede;
     }
-
-    // MÉTODOS ESPECÍFICOS POR MÓDULO
 
     // Método específico para relación de pernoctas
     puedeGenerarRelacion() {
@@ -266,6 +291,18 @@ class SistemaPermisos {
         return puede;
     }
 
+     // Método específico para rampa
+    puedeAccederRampa(submodulo = null) {
+        if (submodulo) {
+            const puede = this.permisos.rampa?.[submodulo] || false;
+            console.log(`🔍 Verificar seguridad submodulo ${submodulo}:`, puede);
+            return puede;
+        }
+        const puede = this.puedeVer('rampa');
+        console.log('🔍 Verificar rampa general:', puede);
+        return puede;
+    }
+
     //MÉTODOS PARA UI
 
     aplicarPermisosUI() {
@@ -279,7 +316,7 @@ class SistemaPermisos {
         console.log(' Aplicando permisos en menú...');
         
         // Ocultar módulos no accesibles
-        const modulosNoAccesibles = ['rampa', 'trafico', 'administracion'];
+        const modulosNoAccesibles = ['trafico'];
         
         modulosNoAccesibles.forEach(modulo => {
             if (!this.puedeVer(modulo)) {
@@ -338,13 +375,23 @@ class SistemaPermisos {
             }
         });
 
-        // eguridad accesible
+        // seguridad accesible
         const elementosSeguridad = document.querySelectorAll('[data-modulo="seguridad"]');
         elementosSeguridad.forEach(el => {
             if (this.puedeVer('seguridad')) {
                 el.style.opacity = '1';
                 el.style.pointerEvents = 'auto';
                 el.title = 'Acceder al módulo de seguridad';
+            }
+        });
+
+         // rampa accesible
+        const elementosRampa = document.querySelectorAll('[data-modulo="rampa"]');
+        elementosRampa.forEach(el => {
+            if (this.puedeVer('rampa')) {
+                el.style.opacity = '1';
+                el.style.pointerEvents = 'auto';
+                el.title = 'Acceder al módulo de rampa';
             }
         });
 
@@ -368,7 +415,7 @@ class SistemaPermisos {
         const botonesControl = document.querySelectorAll('.btn-control');
         const botonesRelacion = document.querySelectorAll('.btn-relacion');
         const botonesPDF = document.querySelectorAll('.btn-pdf');
-        const botonesCSV = document.querySelectorAll('.btn-csv'); // ✅ NUEVO
+        const botonesCSV = document.querySelectorAll('.btn-csv'); 
         
         const botonesExtraer = document.querySelectorAll('.btn-extraer');
         const botonesAsignar = document.querySelectorAll('.btn-asignar');
@@ -377,7 +424,7 @@ class SistemaPermisos {
         console.log(`Encontrados ${botonesAsignar.length} botones asignar`);
         console.log(` Encontrados ${botonesEditar.length} botones editar`);
         console.log(` Encontrados ${botonesEliminar.length} botones eliminar`);
-        console.log(`Encontrados ${botonesCSV.length} botones CSV`); // ✅ NUEVO
+        console.log(`Encontrados ${botonesCSV.length} botones CSV`);
 
         // Botones crear
         botonesCrear.forEach(btn => {

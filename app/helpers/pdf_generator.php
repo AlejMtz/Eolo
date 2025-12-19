@@ -94,7 +94,357 @@ public function generarWalkaround($id) {
         die('Error al generar PDF: ' . $e->getMessage());
     }
 }
+
+
+/**
+ * Genera PDF para Remisión de Combustible
+ */
+public function generarRemisionCombustible($id) {
+    require_once('../models/conexion.php');
     
+    try {
+        // Obtener datos de la remisión - SQL SIMPLIFICADO
+        $sql = "SELECT r.*, a.Matricula, a.Equipo, a.Tipo 
+                FROM remision r 
+                LEFT JOIN aeronave a ON r.Id_Aeronave = a.Id_Aeronave 
+                WHERE r.Id_Remision = ?";
+        
+        $stmt = $pdo->prepare($sql);
+        $stmt->execute([$id]);
+        $remision = $stmt->fetch(PDO::FETCH_ASSOC);
+        
+        if (!$remision) {
+            die('Remisión no encontrada');
+        }
+        
+        // Obtener datos adicionales si es necesario
+        $estacion = "Eolo Plus";
+        $equipo = "PIPA1 - Autotanque"; // Cambiado a PIPA1 según imagen
+        $producto = "TURBOSINA"; // Cambiado a TURBOSINA según imagen
+        
+        $this->pdf->AddPage('P');
+        $this->generarCabeceraRemision($remision, $estacion, $equipo, $producto);
+        $this->generarDatosRemision($remision);
+        $this->generarServiciosCombustible($remision);
+        $this->generarObservacionesFirmas($remision);
+        
+        $this->pdf->Output('remision_combustible_' . $id . '.pdf', 'I');
+        return true;
+        
+    } catch (Exception $e) {
+        ob_clean();
+        die('Error al generar PDF de remisión: ' . $e->getMessage());
+    }
+}
+    
+
+/**
+ * CABECERA REMISIÓN DE COMBUSTIBLE - COMPACTA
+ */
+private function generarCabeceraRemision($remision, $estacion, $equipo, $producto) {
+    // Configurar márgenes pequeños
+    $this->pdf->SetMargins(10, 8, 10);
+    
+    // Logo EOLO pequeño
+    $logoPath = __DIR__ . '/../../public/assets/images/eolo_logo.png';
+    if (file_exists($logoPath)) {
+        $this->pdf->Image($logoPath, 10, 6, 12, 0, 'PNG');
+    }
+    
+    // Título EOLO - tamaño mediano
+    $this->pdf->SetFont('helvetica', 'B', 16);
+    $this->pdf->SetY(5);
+    $this->pdf->SetX(25);
+    $this->pdf->Cell(0, 8, 'E O L O', 0, 1, 'L');
+    
+    // Subtítulo "Combustibles"
+    $this->pdf->SetFont('helvetica', 'B', 12);
+    $this->pdf->SetX(25);
+    $this->pdf->Cell(0, 6, 'Combustibles', 0, 1, 'L');
+    
+    // Información de producto
+    $this->pdf->SetFont('helvetica', '', 10);
+    $this->pdf->SetX(25);
+    $this->pdf->Cell(0, 6, 'Remisión Eolo Plus S.A. de C.V.', 0, 1, 'L');
+    
+    // Línea divisoria
+    $this->pdf->SetY(25);
+    $this->pdf->Line(10, $this->pdf->GetY(), 200, $this->pdf->GetY());
+    $this->pdf->Ln(2);
+    
+    // Sección de información de la remisión
+    $this->pdf->SetFont('helvetica', 'B', 12);
+    $this->pdf->Cell(50, 6, 'Remisión: ' . $remision['Id_Remision'], 0, 0, 'L');
+    
+    // OV
+    $this->pdf->SetFont('helvetica', 'B', 10);
+    $this->pdf->Cell(15, 6, 'OV:', 0, 0, 'L');
+    $this->pdf->SetFont('helvetica', '', 10);
+    $ov_text = isset($remision['Ov']) && !empty($remision['Ov']) ? $remision['Ov'] : '______';
+    $this->pdf->Cell(0, 6, $ov_text, 0, 1, 'L');
+    
+    $this->pdf->Ln(2);
+}
+
+/**
+ * DATOS DE LA REMISIÓN - COMPACTO SIN PRESIÓN
+ */
+private function generarDatosRemision($remision) {
+    $this->pdf->SetFont('helvetica', '', 10); // Un poquito más grande
+    
+    // PRIMERA COLUMNA (Izquierda) - Datos fijos
+    $x_pos = 10;
+    $this->pdf->SetX($x_pos);
+    
+    // Estación
+    $this->pdf->Cell(35, 6, 'Estación:', 0, 0, 'L');
+    $this->pdf->Cell(45, 6, 'Eolo Plus', 0, 1, 'L');
+    
+    // Equipo
+    $this->pdf->SetX($x_pos);
+    $this->pdf->Cell(35, 6, 'Equipo:', 0, 0, 'L');
+    $this->pdf->Cell(45, 6, 'PIPA1 - Autotanque', 0, 1, 'L');
+    
+    // Producto
+    $this->pdf->SetX($x_pos);
+    $this->pdf->Cell(35, 6, 'Prod.:', 0, 0, 'L');
+    $this->pdf->Cell(45, 6, 'TURBOSINA', 0, 1, 'L');
+    
+    // Operador
+    $this->pdf->SetX($x_pos);
+    $this->pdf->Cell(35, 6, 'Operador:', 0, 0, 'L');
+    $this->pdf->Cell(45, 6, $remision['Operador'] ?? '', 0, 1, 'L');
+    
+    // SEGUNDA COLUMNA (Derecha)
+    $x_pos = 100;
+    $this->pdf->SetY(33); // Alinear con primera columna
+    
+    // Fecha
+    $this->pdf->SetX($x_pos);
+    $this->pdf->Cell(40, 6, 'Fecha:', 0, 0, 'L');
+    $fecha_formateada = date('d/m/Y', strtotime($remision['Fecha']));
+    $this->pdf->Cell(45, 6, $fecha_formateada, 0, 1, 'L');
+    
+    // Nº Económico
+    $this->pdf->SetX($x_pos);
+    $this->pdf->Cell(40, 6, 'Nº Económico:', 0, 0, 'L');
+    $this->pdf->Cell(45, 6, 'EP01', 0, 1, 'L');
+    
+    // Equipo Vehículo
+    $this->pdf->SetX($x_pos);
+    $this->pdf->Cell(40, 6, 'Equipo:', 0, 0, 'L');
+    $this->pdf->Cell(45, 6, 'HINO Serie 500', 0, 1, 'L');
+    
+    // Placas
+    $this->pdf->SetX($x_pos);
+    $this->pdf->Cell(40, 6, 'Placas:', 0, 0, 'L');
+    $this->pdf->Cell(45, 6, 'LC-44-020', 0, 1, 'L');
+    
+    // Línea divisoria
+    $this->pdf->SetY(58);
+    $this->pdf->Line(10, $this->pdf->GetY(), 200, $this->pdf->GetY());
+    $this->pdf->Ln(4);
+    
+    // SECCIÓN VUELO
+    $this->pdf->SetFont('helvetica', 'B', 11);
+    $this->pdf->Cell(0, 7, 'Vuelo', 0, 1, 'L');
+    
+    $this->pdf->SetFont('helvetica', '', 10);
+    
+    // Cliente
+    $this->pdf->Cell(35, 6, 'Cliente:', 0, 0, 'L');
+    $this->pdf->Cell(70, 6, $remision['Cliente'] ?? '', 0, 1, 'L');
+    
+    // Requisición
+    $this->pdf->Cell(35, 6, 'Requisición:', 0, 0, 'L');
+    $requisicion = isset($remision['Requision']) && !empty($remision['Requision']) ? $remision['Requision'] : '______';
+    $this->pdf->Cell(70, 6, $requisicion, 0, 1, 'L');
+    
+    // Forma de Pago
+    $this->pdf->Cell(35, 6, 'Forma de Pago:', 0, 0, 'L');
+    $forma_pago = isset($remision['FormaPago']) ? $remision['FormaPago'] : (isset($remision['pago']) ? $remision['pago'] : '');
+    $this->pdf->Cell(70, 6, $forma_pago, 0, 1, 'L');
+    
+    // Línea divisoria
+    $this->pdf->SetY(87);
+    $this->pdf->Line(10, $this->pdf->GetY(), 200, $this->pdf->GetY());
+    $this->pdf->Ln(4);
+    
+    // SECCIÓN AERONAVE
+    $this->pdf->SetFont('helvetica', 'B', 11);
+    $this->pdf->Cell(0, 7, 'Aeronave', 0, 1, 'L');
+    
+    $this->pdf->SetFont('helvetica', '', 10);
+    
+    // Tipo
+    $this->pdf->Cell(35, 6, 'Tipo:', 0, 0, 'L');
+    $this->pdf->Cell(70, 6, $remision['Tipo'] ?? '', 0, 1, 'L');
+    
+    // Matrícula
+    $this->pdf->Cell(35, 6, 'Matrícula:', 0, 0, 'L');
+    $this->pdf->Cell(70, 6, $remision['Matricula'] ?? '', 0, 1, 'L');
+    
+    // Equipo
+    $this->pdf->Cell(35, 6, 'Equipo:', 0, 0, 'L');
+    $this->pdf->Cell(70, 6, $remision['Equipo'] ?? '', 0, 1, 'L');
+    
+    // Línea divisoria
+    $this->pdf->SetY(116);
+    $this->pdf->Line(10, $this->pdf->GetY(), 200, $this->pdf->GetY());
+    $this->pdf->Ln(4);
+}
+
+/**
+ * SERVICIOS DE COMBUSTIBLE - SIN PRESIÓN DIF.
+ */
+private function generarServiciosCombustible($remision) {
+    // Título Servicio
+    $this->pdf->SetFont('helvetica', 'B', 10);
+    $this->pdf->Cell(0, 6, 'Servicio', 0, 1, 'L');
+    
+    // Anchos de columnas - más espacio sin Presión Dif.
+    $anchos = [
+        'concepto' => 35,
+        'hora' => 25,
+        'lectura' => 60
+    ];
+    
+    // Cabecera de tabla
+    $this->pdf->SetFont('helvetica', 'B', 9);
+    $this->pdf->SetFillColor(240, 240, 240);
+    
+    $this->pdf->Cell($anchos['concepto'], 8, '', 1, 0, 'C', true);
+    $this->pdf->Cell($anchos['hora'], 8, 'Hora', 1, 0, 'C', true);
+    $this->pdf->Cell($anchos['lectura'], 8, 'Lectura', 1, 1, 'C', true);
+    
+    $this->pdf->SetFont('helvetica', '', 9);
+    
+    // Función para formatear horas
+    $formatearHora = function($hora) {
+        if (empty($hora) || $hora == '00:00:00') {
+            return '';
+        }
+        return str_replace(':', ' ', substr($hora, 0, 5));
+    };
+    
+    // Función para formatear números
+    $formatearNumero = function($numero) {
+        if (!is_numeric($numero)) return $numero;
+        $entero = intval($numero);
+        $cadena = strval($entero);
+        $formateado = '';
+        $longitud = strlen($cadena);
+        for ($i = 0; $i < $longitud; $i++) {
+            $formateado .= $cadena[$i];
+            if (($longitud - $i - 1) % 3 == 0 && $i < $longitud - 1) {
+                $formateado .= ' ';
+            }
+        }
+        return $formateado;
+    };
+    
+    // Fila Llegada
+    $this->pdf->Cell($anchos['concepto'], 10, 'Llegada:', 1, 0, 'L');
+    $hora_llegada = isset($remision['HoraLlegada']) ? $formatearHora($remision['HoraLlegada']) : '';
+    $this->pdf->Cell($anchos['hora'], 10, $hora_llegada, 1, 0, 'C');
+    $this->pdf->Cell($anchos['lectura'], 10, '', 1, 1, 'C');
+    
+    // Fila Final
+    $this->pdf->Cell($anchos['concepto'], 10, 'Final:', 1, 0, 'L');
+    $hora_final = isset($remision['HoraFinal']) ? $formatearHora($remision['HoraFinal']) : '16 30';
+    $lec_final = isset($remision['LecFinal']) ? $formatearNumero($remision['LecFinal']) : '9 139 443';
+    $this->pdf->Cell($anchos['hora'], 10, $hora_final, 1, 0, 'C');
+    $this->pdf->Cell($anchos['lectura'], 10, $lec_final, 1, 1, 'C');
+    
+    // Fila Inicial
+    $this->pdf->Cell($anchos['concepto'], 10, 'Inicial:', 1, 0, 'L');
+    $hora_inicial = isset($remision['HoraInicial']) ? $formatearHora($remision['HoraInicial']) : '11 39';
+    $lec_inicial = isset($remision['LecInicial']) ? $formatearNumero($remision['LecInicial']) : '9 136 201';
+    $this->pdf->Cell($anchos['hora'], 10, $hora_inicial, 1, 0, 'C');
+    $this->pdf->Cell($anchos['lectura'], 10, $lec_inicial, 1, 1, 'C');
+    
+    // Fila Litros
+    $this->pdf->Cell($anchos['concepto'], 10, 'Litros:', 1, 0, 'L');
+    $this->pdf->Cell($anchos['hora'], 10, '', 1, 0, 'C');
+    $litros_tot = isset($remision['LitrosTot']) ? $formatearNumero($remision['LitrosTot']) : '3 742';
+    $this->pdf->Cell($anchos['lectura'], 10, $litros_tot, 1, 1, 'C');
+    
+    $this->pdf->Ln(4);
+    
+    // Observación
+    $this->pdf->SetFont('helvetica', 'B', 9);
+    $this->pdf->Cell(12, 5, 'Obs:', 0, 0, 'L');
+    
+    $this->pdf->SetFont('helvetica', '', 9);
+    $observacion = isset($remision['Observaciones']) && !empty($remision['Observaciones']) ? 
+                   $remision['Observaciones'] : 'Recirculación de combustible por filtros.';
+    $this->pdf->MultiCell(0, 5, $observacion, 0, 'L');
+    
+    $this->pdf->SetY($this->pdf->GetY() + 2);
+    $this->pdf->Line(10, $this->pdf->GetY(), 200, $this->pdf->GetY());
+    $this->pdf->Ln(3);
+}
+
+/**
+ * OBSERVACIONES Y FIRMAS - CON MÁS ESPACIO
+ */
+private function generarObservacionesFirmas($remision) {
+    // Texto de aceptación
+    $this->pdf->SetFont('helvetica', '', 9);
+    
+    $texto_aceptacion = "Acepto ser el representante del cliente y aeronave descrita por lo que me obligo a pagar a Eolo Plus S.A. de C.V. el importe total que se haya generado por este servicio.\nAclaraciones y quejas: soporte@eolo.com.mx";
+    
+    $this->pdf->MultiCell(0, 20, $texto_aceptacion, 0, 'L');
+    
+    $this->pdf->Ln(8);
+    
+    // FIRMAS 
+    $ancho_celda = 75;
+    $alto_linea = 1;
+    $espacio_horizontal = 20;
+    
+    // PRIMERA FILA
+    $y_pos = $this->pdf->GetY();
+    
+    // Cliente
+    $this->pdf->SetX(20);
+    $this->pdf->Cell($ancho_celda, $alto_linea, '', 'T', 0, 'C');
+    
+    // Operador
+    $this->pdf->SetX(20 + $ancho_celda + $espacio_horizontal);
+    $this->pdf->Cell($ancho_celda, $alto_linea, '', 'T', 1, 'C');
+    
+    // Nombres primera fila
+    $this->pdf->SetY($y_pos + $alto_linea);
+    $this->pdf->SetX(20);
+    $this->pdf->SetFont('helvetica', '', 8);
+    
+    $this->pdf->Cell($ancho_celda, 5, 'Cliente', 0, 0, 'C');
+    $this->pdf->SetX(20 + $ancho_celda + $espacio_horizontal);
+    $this->pdf->Cell($ancho_celda, 5, 'Operador', 0, 1, 'C');
+    
+    // SEGUNDA FILA
+    $y_pos = $this->pdf->GetY() + 20;
+    $this->pdf->SetY($y_pos);
+    
+    // Cobranza
+    $this->pdf->SetX(20);
+    $this->pdf->SetFont('helvetica', 'B', 9);
+    $this->pdf->Cell($ancho_celda, $alto_linea, '', 'T', 0, 'C');
+    
+    // Servicios Comerciales
+    $this->pdf->SetX(20 + $ancho_celda + $espacio_horizontal);
+    $this->pdf->Cell($ancho_celda, $alto_linea, '', 'T', 1, 'C');
+    
+    // Nombres segunda fila
+    $this->pdf->SetY($y_pos + $alto_linea);
+    $this->pdf->SetX(20);
+    $this->pdf->SetFont('helvetica', '', 8);
+    
+    $this->pdf->Cell($ancho_celda, 5, 'Cobranza', 0, 0, 'C');
+    $this->pdf->SetX(20 + $ancho_celda + $espacio_horizontal);
+    $this->pdf->Cell($ancho_celda, 5, 'Servicios Comerciales', 0, 1, 'C');
+}
     /**
      * CABECERA ENTREGA DE TURNO
      */
@@ -1573,8 +1923,8 @@ switch($tipo) {
     case 'entrega_turno':
     case 'walkaround':
     case 'pernocta':
-    case 'pernoctas_diarias':
-        // Estos tipos REQUIEREN ID
+    case 'remision_combustible':
+            // Estos tipos REQUIEREN ID
         if ($id <= 0) {
             die('ID requerido para ' . $tipo);
         }
@@ -1615,5 +1965,8 @@ switch($tipo) {
     case 'relacion_mensual':
         $generator->generarRelacionMensual($fecha_inicio, $fecha_fin);
         break;
+    case 'remision_combustible':
+        $generator->generarRemisionCombustible($id);
+        break;    
 }
 ?>

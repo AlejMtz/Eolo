@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="../../public/assets/css/style.css">
+    <script src="../../public/assets/js/auth_check.js"></script>
+    <title>Detalle de Remision</title>
+
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark navbar-custom">
+        <div class="container">
+            <a href="../../app/views/Index.html" class="navbar-brand">
+                <i class="fas fa-plane"></i> EOLO - Sistema de Remisiones
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+              <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link active" href="../../app/views/ver_remision_pipa.html">
+                            <i class="fas fa-gas-pump"></i> 
+                            <span class="desktop-only">Remisiones</span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="navbar-nav ms-auto">
+            <span class="navbar-text text-light me-3" id="userInfo"></span>
+            <button class="btn btn-outline-light btn-sm" onclick="cerrarSesion()">
+                <i class="fas fa-sign-out-alt me-1"></i>Cerrar Sesión
+            </button>
+        </div>
+    </nav>
+
+    <div class="container container-form mt-4">
+        <h2 class="form-title"><i class="fas fa-clipboard-check"></i> Detalle de Remision</h2>
+    </div>
+
+    <!-- Información de permisos -->
+    <div id="infoPermisos"></div>
+
+    <div class="container mt-4">
+        <!-- Información general -->
+        <div class="card mb-4">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0"><i class="fas fa-info-circle"></i> Información General</h5>
+            </div>
+            <div class="card-body">
+                <div class="row" id="infoGeneral">
+                    <div class="col-md-4">
+                        <p><strong>Fecha:</strong> <span id="fechaInfo"></span></p>
+                        <p><strong>Estación:</strong> Eolo Plus<span id="estacionInfo"></span></p>
+                        <p><strong>Equipo:</strong> Pipa1-Autotanque<span id="equipoInfo"></span></p>
+                        <p><strong>Producto:</strong> TURBOSINA<span id="prodInfo"></span></p>  
+                        <p><strong>Operador:</strong> <span id="operadorInfo"></span></p>
+
+                    </div>
+                    <div class="col-md-4">
+                        <p><strong>OV:</strong> <span id="ovInfo"></span></p>
+                        <p><strong>No. Económico:</strong> EP01<span id="noEconomicoInfo"></span></p>
+                        <p><strong>Equipo:</strong> HINO Serie 500<span id="equipo2Info"></span></p>
+                        <p><strong>Placas:</strong> LC-44-020<span id="placasInfo"></span></p>
+                    </div>
+                    </div>
+                </div>
+            </div>
+
+        <!-- Informacion de vuelo y aeronave -->
+         <div class="card mb-4">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0"><i class="fas fa-info-circle"></i> Información De Vuelo y Aeronave</h5>
+            </div>
+            <div class="card-body">
+                <div class="row" id="infoVuelo">
+                    <div class="col-md-4">
+                        <p><strong>Cliente:</strong> <span id="clienteInfo"></span></p>
+                        <p><strong>Requisición:</strong><span id="requisicionInfo"></span></p>
+                        <p><strong>Metodo de Pago:</strong><span id="metodoPagoInfo"></span></p>
+                    </div>
+
+                    <div class="col-md-4">
+                        <p><strong>Aeronave:</strong> <span id="aeronaveInfo"></span></p>
+                        <p><strong>Tipo Aeronave:</strong> <span id="equipoAeronaveInfo"></span></p>
+                    </div>
+                </div>
+                </div>
+            </div>
+
+            <!-- Informacion de servcios -->
+         <div class="card mb-4">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0"><i class="fas fa-info-circle"></i> Información De Servicio</h5>
+            </div>
+            <div class="card-body">
+                <div class="row" id="infoServicio">
+                    <div class="col-md-4">
+                        <p><strong>Hora Llegada:</strong> <span id="horaLlegadaInfo"></span></p>
+                        <p><strong>Hora Inicial Servicio:</strong><span id="horaInicialServicioInfo"></span></p>
+                        <p><strong>Hora Final Servicio:</strong><span id="horaFinalServicioInfo"></span></p>
+                    </div>
+
+                    <div class="col-md-4">
+                        <p><strong>Lectura Inicial:</strong> <span id="lecturaInicialInfo"></span></p>
+                        <p><strong>Lectura Final:</strong><span id="lecturaFinalInfo"></span></p>
+                        <p><strong>Litros Totales:</strong><span id="litrosTotalesInfo"></span></p>
+                    </div>
+                </div>
+                </div>
+            </div>
+
+              <!-- Informacion adicional -->
+         <div class="card mb-4">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0"><i class="fas fa-info-circle"></i> Información Adicional</h5>
+            </div>
+            <div class="card-body">
+                <div class="row" id="infoAdicional">
+                    <div class="col-md-4">
+                        <p><strong>Observaciones:</strong> <span id="observacionesInfo"></span></p>
+                        <p><strong>Cobranza:</strong><span id="cobranzaInfo"></span></p>
+                        <p><strong>Servicios Comerciales:</strong><span id="serviciosComInfo"></span></p>
+                    </div>
+                </div>
+            </div>
+            </div>
+        </div>
+
+
+        <!-- Botones de acción con permisos -->
+        <div class="d-flex gap-2 mb-4">
+            <a href="../../app/views/ver_remision_pipa.html" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i> Volver a la lista
+            </a>
+        </div>
+    </div>
+
+    <!-- Modales -->
+    <div class="modal fade" id="errorModal" tabindex="-1" aria-labelledby="errorModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header bg-danger text-white">
+                    <h5 class="modal-title" id="errorModalLabel">
+                        <i class="fas fa-exclamation-triangle me-2"></i>¡Error! ⚠️
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body" id="errorModalBody"></div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Aceptar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+        <!-- Modal para visualización en pantalla completa -->
+    <div class="modal fade" id="evidenceModal" tabindex="-1" aria-labelledby="evidenceModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-fullscreen">
+            <div class="modal-content">
+                <div class="modal-header bg-dark text-white">
+                    <h5 class="modal-title" id="evidenceModalLabel">
+                        <i class="fas fa-expand-alt me-2"></i>Vista Previa
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body d-flex justify-content-center align-items-center bg-dark">
+                    <div id="evidenceModalContent" class="text-center">
+                        <!-- El contenido se cargará dinámicamente aquí -->
+                    </div>
+                </div>
+                <div class="modal-footer bg-dark text-white">
+                    <div class="me-auto">
+                        <span id="evidenceFileName" class="fw-bold"></span>
+                    </div>
+                    <button type="button" class="btn btn-outline-light" data-bs-dismiss="modal">
+                        <i class="fas fa-times me-1"></i>Cerrar (ESC)
+                    </button>
+                    <button type="button" class="btn btn-primary" id="downloadEvidenceBtn" style="display: none;">
+                        <i class="fas fa-download me-1"></i>Descargar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="../../public/assets/js/detalle_remision.js"></script>
+    <script src="../../public/assets/js/permisos.js"></script>
+
+    <script>
+        // Verificar permisos al cargar la página
+        document.addEventListener('DOMContentLoaded', function() {
+            if (!verificarSesion()) return;
+            
+            // Verificar acceso al módulo
+            if (!permisosSistema.verificarAccesoPagina('remision')) {
+                return;
+            }
+            
+            permisosSistema.aplicarPermisosUI();
+        });
+    </script>
+</body>
+</html>

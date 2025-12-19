@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="../../public/assets/css/style.css">
+    <script src="../../public/assets/js/auth_check.js"></script>
+    <title>Remisiones</title>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark navbar-custom">
+        <div class="container-fluid container-responsive">
+            <a href="../../app/views/Index.html" class="navbar-brand">
+                <i class="fas fa-plane"></i> 
+                <span class="desktop-only">EOLO - Sistema de Remisiones</span>
+                <span class="mobile-only">EOLO</span>
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link active" href="../../app/views/ver_remision_pipa.html">
+                            <i class="fas fa-gas-pump"></i> 
+                            <span class="desktop-only">Remisiones</span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="navbar-nav ms-auto">
+                <span class="navbar-text text-light me-3 desktop-only" id="userInfo"></span>
+                <button class="btn btn-outline-light btn-sm" onclick="cerrarSesion()">
+                    <i class="fas fa-sign-out-alt"></i>
+                    <span class="desktop-only">Cerrar Sesión</span>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Formulario de Remision -->
+    <div class="card mt-4">
+        <div class="card-header bg-primary text-white">
+            <h5 class="mb-0"><i class="fas fa-plus-circle"></i> Registrar Remisión</h5>
+        </div>
+        <div class="card-body">
+            <form id="remisionForm">
+                <input type="hidden" id="Id_Remision" name="Id_Remision">
+
+                <!-- Sección 1: Información General -->
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="fecha" class="form-label">Fecha:</label>
+                            <input type="date" id="fecha" name="fecha" class="form-control" required readonly>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="estacion" class="form-label">Estación:</label>
+                            <select name="estacion" id="estacion" class="form-control">
+                                <option value="Eolo Plus">Eolo Plus</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="equipo" class="form-label">Equipo:</label>
+                            <select name="equipo" id="equipo" class="form-control">
+                                <option value="Pipa1">PIPA1 - Autotanque</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="prod" class="form-label">Prod:</label>
+                            <select name="prod" id="prod" class="form-control">
+                                <option value="TURBOSINA">TURBOSINA</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="operador" class="form-label">Operador:</label>
+                            <input type="text" id="operador" name="operador" class="form-control">
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="ov" class="form-label">OV:</label>
+                            <input type="text" id="ov" name="ov" class="form-control">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="NoEconomico" class="form-label">No. Económico:</label>
+                            <select name="NoEconomico" id="NoEconomico" class="form-control">
+                                <option value="EPO01">EP01</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="equipo2" class="form-label">Equipo:</label>
+                            <select name="equipo2" id="equipo2" class="form-control">
+                                <option value="HINO Serie 500">HINO Serie 500</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="placas" class="form-label">Placas:</label>
+                            <select name="placas" id="placas" class="form-control">
+                                <option value="LC-44-020">LC-44-020</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <hr class="my-4">
+
+                <!-- Sección 2: Información de Vuelo y Aeronave -->
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <h4 class="mb-3"><i class="fas fa-plane-departure"></i> Información de Vuelo</h4>
+                        
+                        <div class="form-group">
+                            <label for="cliente" class="form-label">Cliente:</label>
+                            <input type="text" id="cliente" name="cliente" class="form-control">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="requision" class="form-label">Requisición:</label>
+                            <input type="text" id="requision" name="requision" class="form-control">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="pago" class="form-label">Método de pago:</label>
+                            <select name="pago" id="pago" class="form-control">
+                                <option value="efectivo">Efectivo</option>
+                                <option value="tarjeta">Tarjeta</option>
+                                <option value="deposito">Depósito</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <h4 class="mb-3"><i class="fas fa-plane"></i> Información de Aeronave</h4>
+                        
+                        <div class="form-group">
+                            <label for="buscarAeronave" class="form-label">Buscar aeronave por matrícula:</label>
+                            <input type="text" class="form-control" id="buscarAeronave" 
+                                placeholder="Escribe la matrícula de la aeronave..." 
+                                autocomplete="off">
+                            <small class="form-text text-muted">Escribe al menos 2 caracteres para buscar</small>
+                            
+                            <!-- Lista de resultados de búsqueda -->
+                            <div id="resultadosBusqueda" class="mt-2" style="display: none;">
+                                <div class="card">
+                                    <div class="card-body p-2">
+                                        <div id="listaAeronaves" class="list-group list-group-flush">
+                                            <!-- Los resultados se cargarán aquí dinámicamente -->
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Campo oculto para almacenar la aeronave seleccionada -->
+                            <input type="hidden" id="aeronaveSeleccionada" name="id_aeronave">
+                        </div>
+
+                        <!-- Información adicional de la aeronave seleccionada -->
+                        <div class="row mb-4" id="infoAeronaveContainer" style="display: none;">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="form-label">Matrícula:</label>
+                                    <div class="form-control-plaintext fw-bold" id="infoMatricula"></div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="form-label">Tipo Aeronave:</label>
+                                    <div class="form-control-plaintext" id="infoEquipo"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <hr class="my-4">
+
+                <!-- Sección 3: Información de Servicios -->
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <h4 class="mb-3"><i class="fas fa-clock"></i> Detalles de Servicio</h4>
+                        
+                        <div class="form-group">
+                            <label for="horaLlegada" class="form-label">Hora de llegada:</label>
+                            <input type="time" id="horaLlegada" name="horaLlegada" class="form-control" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="horaInicial" class="form-label">Hora Inicial de servicio:</label>
+                            <input type="time" id="horaInicial" name="horaInicial" class="form-control" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="horaFinal" class="form-label">Hora Final de servicio:</label>
+                            <input type="time" id="horaFinal" name="horaFinal" class="form-control" required>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <h4 class="mb-3"><i class="fas fa-gas-pump"></i> Medición de Combustible</h4>
+                        
+                        <div class="form-group">
+                            <label for="lecInicial" class="form-label">Lectura Inicial (litros):</label>
+                            <input type="number" id="lecInicial" name="lecInicial" class="form-control" required step="0.01" min="0">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="lecFinal" class="form-label">Lectura Final (litros):</label>
+                            <input type="number" id="lecFinal" name="lecFinal" class="form-control" required step="0.01" min="0">
+                        </div>
+
+                    </div>
+
+                     <div class="alert alert-info mt-3" id="infoCalculoLitros" style="display: none;">
+                        <i class="fas fa-calculator me-2"></i>
+                        <strong>Litros totales calculados: </strong>
+                        <span id="valorLitrosTot">0.00</span> litros
+                    </div>
+                </div>
+
+                <hr class="my-4">
+
+                <!--Observaciones -->
+                <div class="row mb-4">
+                    <div class="col-12">
+                        <h4 class="mb-3"><i class="fas fa-sticky-note"></i> Observaciones</h4>
+                        
+                        <div class="form-group">
+                            <label for="observaciones" class="form-label">Observaciones:</label>
+                            <textarea id="observaciones" name="observaciones" 
+                                      class="form-control" 
+                                      rows="4" 
+                                      placeholder="Ingrese cualquier observación, nota o comentario adicional sobre esta remisión..."></textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                        <label for="cobranza" class="form-label"> Cobranza:</label>
+                        <input type="text" id="cobranza" name="cobranza" class="form-control" required>
+                    </div>
+                
+                    </div>
+
+                     <div class="col-md-6">
+                        
+                    <div class="form-group">
+                        <label for="serviciosCom" class="form-label"> Servecios Comerciales:</label>
+                        <input type="text" id="serviciosCom" name="serviciosCom" class="form-control" required>
+                    </div>
+                    </div>
+                
+
+                    
+                </div>
+
+                
+
+                 
+
+                <!-- Botones de acción -->
+                <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-4">
+                    <!-- Botón Cancelar Edición (oculto inicialmente) -->
+                    <button type="button" class="btn btn-warning me-md-2" onclick="cancelarEdicion()" id="cancelarBtn" style="display: none;">
+                        <i class="fas fa-times"></i> Cancelar Edición
+                    </button>
+                    
+                    <button type="submit" class="btn btn-primary" id="submitButton">
+                        <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true" style="display: none;"></span>
+                        <i class="fas fa-save"></i> Guardar Registro
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modales -->
+    <div class="modal fade" id="successModal" tabindex="-1" aria-labelledby="successModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header bg-success text-white">
+                    <h5 class="modal-title" id="successModalLabel">
+                        <i class="fas fa-check-circle me-2"></i>¡Éxito! 🎉
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body" id="successModalBody"></div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-success" data-bs-dismiss="modal">Aceptar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="errorModal" tabindex="-1" aria-labelledby="errorModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header bg-danger text-white">
+                    <h5 class="modal-title" id="errorModalLabel">
+                        <i class="fas fa-exclamation-triangle me-2"></i>¡Error! ⚠️
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body" id="errorModalBody"></div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Aceptar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de confirmación -->
+    <div class="modal fade" id="confirmModal" tabindex="-1" aria-labelledby="confirmModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header bg-warning text-dark">
+                    <h5 class="modal-title" id="confirmModalLabel">
+                        <i class="fas fa-question-circle me-2"></i>Confirmar
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body" id="confirmModalBody"></div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-warning" id="confirmActionBtn">Confirmar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="../../public/assets/js/remision.js"></script>
+    <script src="../../public/assets/js/auth_check.js"></script>
+    <script src="../../public/assets/js/permisos.js"></script>
+    
+   <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        if (!verificarSesion()) return;
+        
+        // Verificar acceso al módulo
+        if (!permisosSistema.verificarAccesoPagina('remision')) {
+            return;
+        }
+        
+        permisosSistema.aplicarPermisosUI();
+        
+        // Configurar cálculo automático de litros
+        const lecInicial = document.getElementById('lecInicial');
+        const lecFinal = document.getElementById('lecFinal');
+        const infoCalculo = document.getElementById('infoCalculoLitros');
+        const valorLitros = document.getElementById('valorLitrosTot');
+        
+        function calcularYMostrarLitros() {
+            if (lecInicial.value && lecFinal.value) {
+                const inicial = parseFloat(lecInicial.value);
+                const final = parseFloat(lecFinal.value);
+                
+                if (!isNaN(inicial) && !isNaN(final) && inicial >= final) {
+                    const total = inicial - final;
+                    valorLitros.textContent = total.toFixed(2);
+                    infoCalculo.style.display = 'block';
+                    
+                    // Validación visual
+                    lecInicial.classList.remove('is-invalid');
+                    lecFinal.classList.remove('is-invalid');
+                    lecInicial.classList.add('is-valid');
+                    lecFinal.classList.add('is-valid');
+                } else {
+                    infoCalculo.style.display = 'none';
+                    
+                    // Mostrar error si lectura final <= inicial
+                    if (inicial <= final && !isNaN(final)) {
+                        lecFinal.classList.add('is-invalid');
+                        lecInicial.classList.add('is-invalid');
+                    } else {
+                        lecInicial.classList.remove('is-invalid', 'is-valid');
+                        lecFinal.classList.remove('is-invalid', 'is-valid');
+                    }
+                }
+            } else {
+                infoCalculo.style.display = 'none';
+            }
+        }
+        
+        // Agregar event listeners para cálculo automático
+        if (lecInicial && lecFinal) {
+            lecInicial.addEventListener('input', calcularYMostrarLitros);
+            lecFinal.addEventListener('input', calcularYMostrarLitros);
+            
+            // Calcular al cargar si hay valores
+            setTimeout(calcularYMostrarLitros, 100);
+        }
+        
+    });
+</script>
+</body>
+</html>

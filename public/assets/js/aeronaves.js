@@ -233,7 +233,6 @@ function configurarFormularioAeronave() {
             return;
         }
         
-        // ⭐⭐ RUTAS CORRECTAS desde public/assets/js/
         const url = id_aeronave ? '../../app/controllers/aeronaves_actualizar.php' : '../../app/controllers/aeronaves_crear.php';
         const formData = new FormData(this);
 

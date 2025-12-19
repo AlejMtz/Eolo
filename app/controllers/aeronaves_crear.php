@@ -61,7 +61,7 @@ try {
         echo json_encode(['error' => 'Error en la base de datos: ' . $e->getMessage()]);
     }
 } catch (Exception $e) {
-    http_response_code(400); // 400 Bad Request por datos inválidos
+    http_response_code(400); 
     echo json_encode(['error' => $e->getMessage()]);
 }
 ?>

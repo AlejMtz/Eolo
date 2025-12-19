@@ -82,7 +82,7 @@ try {
     
     $response = array(
         'Id_Walk' => isset($walkaround['Id_Walk']) ? $walkaround['Id_Walk'] : null,
-        'Fechahora' => $fechahora,  // ✅ JSON usa 'h' minúscula para coincidir con JavaScript
+        'Fechahora' => $fechahora,  
         'Id_Aeronave' => isset($walkaround['Id_Aeronave']) ? $walkaround['Id_Aeronave'] : null,
         'Matricula' => isset($walkaround['Matricula']) ? $walkaround['Matricula'] : null,
         'Equipo' => isset($walkaround['Equipo']) ? $walkaround['Equipo'] : null,
