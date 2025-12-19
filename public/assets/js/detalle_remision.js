@@ -44,83 +44,90 @@ async function cargarDetalleRemision() {
             throw new Error(data.error);
         }
         
-        remisionData = data;
+        // CORRECCIÓN IMPORTANTE: Acceder a data.remision en lugar de data directamente
+        if (!data.success || !data.remision) {
+            throw new Error('Estructura de datos incorrecta');
+        }
         
-        console.log('✅ Datos recibidos para detalles:', data);
+        remisionData = data.remision; // Aquí está el cambio principal
+        
+        console.log('✅ Datos de remisión para detalles:', remisionData);
         
         // Llenar información general
         if (document.getElementById('fechaInfo')) {
-            document.getElementById('fechaInfo').textContent = formatearFecha(data.Fecha);
+            document.getElementById('fechaInfo').textContent = formatearFecha(remisionData.Fecha);
         }
         
         if (document.getElementById('operadorInfo')) {
-            document.getElementById('operadorInfo').textContent = data.Operador || 'No especificado';
+            document.getElementById('operadorInfo').textContent = remisionData.Operador || 'No especificado';
         }
         
         if (document.getElementById('ovInfo')) {
-            document.getElementById('ovInfo').textContent = data.Ov || 'No especificado';
+            document.getElementById('ovInfo').textContent = remisionData.Ov || 'No especificado';
         }
         
         if (document.getElementById('clienteInfo')) {
-            document.getElementById('clienteInfo').textContent = data.Cliente || 'No especificado';
+            document.getElementById('clienteInfo').textContent = remisionData.Cliente || 'No especificado';
         }
         
         if (document.getElementById('requisicionInfo')) {
-            document.getElementById('requisicionInfo').textContent = data.Requision || 'No especificado';
+            document.getElementById('requisicionInfo').textContent = remisionData.Requision || 'No especificado';
         }
         
+        // CORRECCIÓN: Usar FormaPago o pago
+        const metodoPago = remisionData.FormaPago || remisionData.pago;
         if (document.getElementById('metodoPagoInfo')) {
-            document.getElementById('metodoPagoInfo').textContent = data.FormaPago || 'No especificado';
+            document.getElementById('metodoPagoInfo').textContent = metodoPago || 'No especificado';
         }
         
         // Información de aeronave
-        const matricula = data.Matricula || 'No especificada';
-        const equipo = data.Equipo || 'No especificado';
+        const matricula = remisionData.Matricula || 'No especificada';
+        const equipo = remisionData.Equipo || 'No especificado';
         
         if (document.getElementById('aeronaveInfo')) {
-            document.getElementById('aeronaveInfo').textContent = `${matricula}`;
+            document.getElementById('aeronaveInfo').textContent = matricula;
         }
         
-        if (document.getElementById('equipoInfo')) {
+        if (document.getElementById('equipoAeronaveInfo')) {
             document.getElementById('equipoAeronaveInfo').textContent = equipo;
         }
         
         // Información de servicios
         if (document.getElementById('horaLlegadaInfo')) {
-            document.getElementById('horaLlegadaInfo').textContent = data.HoraLlegada || 'No especificado';
+            document.getElementById('horaLlegadaInfo').textContent = remisionData.HoraLlegada || 'No especificado';
         }
         
         if (document.getElementById('horaInicialServicioInfo')) {
-            document.getElementById('horaInicialServicioInfo').textContent = data.HoraInicial || 'No especificado';
+            document.getElementById('horaInicialServicioInfo').textContent = remisionData.HoraInicial || 'No especificado';
         }
         
         if (document.getElementById('horaFinalServicioInfo')) {
-            document.getElementById('horaFinalServicioInfo').textContent = data.HoraFinal || 'No especificado';
+            document.getElementById('horaFinalServicioInfo').textContent = remisionData.HoraFinal || 'No especificado';
         }
         
         if (document.getElementById('lecturaInicialInfo')) {
-            document.getElementById('lecturaInicialInfo').textContent = data.LecInicial ? parseFloat(data.LecInicial).toFixed(2) : '0.00';
+            document.getElementById('lecturaInicialInfo').textContent = remisionData.LecInicial ? parseFloat(remisionData.LecInicial).toFixed(2) : '0.00';
         }
         
         if (document.getElementById('lecturaFinalInfo')) {
-            document.getElementById('lecturaFinalInfo').textContent = data.LecFinal ? parseFloat(data.LecFinal).toFixed(2) : '0.00';
+            document.getElementById('lecturaFinalInfo').textContent = remisionData.LecFinal ? parseFloat(remisionData.LecFinal).toFixed(2) : '0.00';
         }
         
         if (document.getElementById('litrosTotalesInfo')) {
-            document.getElementById('litrosTotalesInfo').textContent = data.LitrosTot ? parseFloat(data.LitrosTot).toFixed(2) : '0.00';
+            document.getElementById('litrosTotalesInfo').textContent = remisionData.LitrosTot ? parseFloat(remisionData.LitrosTot).toFixed(2) : '0.00';
         }
         
         // Información adicional
         if (document.getElementById('observacionesInfo')) {
-            document.getElementById('observacionesInfo').textContent = data.Observaciones || 'No especificadas';
+            document.getElementById('observacionesInfo').textContent = remisionData.Observaciones || 'No especificadas';
         }
         
         if (document.getElementById('cobranzaInfo')) {
-            document.getElementById('cobranzaInfo').textContent = data.Cobranza || 'No especificada';
+            document.getElementById('cobranzaInfo').textContent = remisionData.Cobranza || 'No especificada';
         }
         
         if (document.getElementById('serviciosComInfo')) {
-            document.getElementById('serviciosComInfo').textContent = data.ServiciosCom || 'No especificados';
+            document.getElementById('serviciosComInfo').textContent = remisionData.ServiciosCom || 'No especificados';
         }
         
         console.log('✅ Detalles cargados correctamente');
@@ -158,4 +165,11 @@ function mostrarError(mensaje) {
     } else {
         alert('Error: ' + mensaje);
     }
+}
+
+/**
+ * Función para volver a la lista (opcional)
+ */
+function volverALista() {
+    window.location.href = '../../app/views/ver_remision_pipa.html';
 }

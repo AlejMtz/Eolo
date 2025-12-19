@@ -742,7 +742,7 @@ function validarFormulario() {
         { id: 'fecha', nombre: 'Fecha' },
         { id: 'operador', nombre: 'Operador' },
         { id: 'cliente', nombre: 'Cliente' },
-        { id: 'pago', nombre: 'Método de pago' },
+        { id: 'pago', nombre: 'Método de pago' }, // Este es el campo correcto
         { id: 'horaLlegada', nombre: 'Hora de llegada' },
         { id: 'horaInicial', nombre: 'Hora inicial de servicio' },
         { id: 'lecInicial', nombre: 'Lectura inicial' },
@@ -1039,32 +1039,59 @@ async function configurarModoEdicion(id) {
     isEditMode = true;
     
     try {
-        // Obtener datos de la remisión
+        // Obtener datos de la remisión - AGREGAR DEPURACIÓN
+        console.log(`📡 Solicitando datos para ID: ${id}`);
         const response = await fetch(`../../app/controllers/remision_leer_id.php?id=${id}`);
+        
+        console.log('📥 Respuesta recibida, status:', response.status);
         
         if (!response.ok) {
             throw new Error(`Error HTTP: ${response.status}`);
         }
         
-        const data = await response.json();
+        const responseText = await response.text();
+        console.log('📄 Respuesta del servidor (texto):', responseText);
         
+        let data;
+        try {
+            data = JSON.parse(responseText);
+            console.log('📊 Respuesta del servidor (JSON):', data);
+        } catch (jsonError) {
+            console.error('❌ Error al parsear JSON:', jsonError);
+            throw new Error(`Respuesta inválida del servidor: ${responseText.substring(0, 100)}...`);
+        }
+        
+        // Verificar estructura de respuesta
         if (data.success && data.remision) {
+            console.log('✅ Datos recibidos correctamente:', data.remision);
             cargarDatosEnFormulario(data.remision);
             
             // Cambiar título y botones
-            document.querySelector('.card-header h5').innerHTML = '<i class="fas fa-edit"></i> Editar Remisión';
-            document.getElementById('submitButton').innerHTML = '<i class="fas fa-save"></i> Actualizar Registro';
+            const cardHeader = document.querySelector('.card-header h5');
+            if (cardHeader) {
+                cardHeader.innerHTML = '<i class="fas fa-edit"></i> Editar Remisión';
+            }
+            
+            const submitButton = document.getElementById('submitButton');
+            if (submitButton) {
+                submitButton.innerHTML = '<i class="fas fa-save"></i> Actualizar Registro';
+            }
             
             // Mostrar botón de cancelar edición
-            document.getElementById('cancelarBtn').style.display = 'inline-block';
+            const cancelarBtn = document.getElementById('cancelarBtn');
+            if (cancelarBtn) {
+                cancelarBtn.style.display = 'inline-block';
+            }
             
             console.log('✅ Modo edición configurado correctamente');
         } else {
+            console.error('❌ Estructura de respuesta incorrecta:', data);
             throw new Error(data.error || 'No se pudieron cargar los datos de la remisión.');
         }
         
     } catch (error) {
         console.error('❌ Error al cargar remisión para editar:', error);
+        console.error('Stack trace:', error.stack);
         mostrarError('No se pudo cargar la remisión para editar. ' + error.message);
         
         // Redirigir a la lista después de 3 segundos
@@ -1080,13 +1107,14 @@ async function configurarModoEdicion(id) {
 function cargarDatosEnFormulario(remision) {
     console.log('📝 Cargando datos en formulario:', remision);
     
-    // Función segura para establecer valores
-    function setValueSafe(elementId, value) {
+    // Función mejorada para establecer valores
+    function setValueSafe(elementId, value, defaultValue = '') {
         try {
             const element = document.getElementById(elementId);
             if (element) {
-                element.value = value || '';
-                console.log(`   ✓ ${elementId}: "${value || '(vacío)'}"`);
+                const finalValue = value !== null && value !== undefined ? value : defaultValue;
+                element.value = finalValue;
+                console.log(`   ✓ ${elementId}: "${finalValue}"`);
                 return true;
             } else {
                 console.warn(`   ✗ ${elementId}: Elemento no encontrado`);
@@ -1101,7 +1129,7 @@ function cargarDatosEnFormulario(remision) {
     try {
         console.log('🔍 DEPURACIÓN - Verificando elementos del formulario:');
         
-        // Lista de elementos que deberían existir
+        // Lista de elementos que deberían existir - ACTUALIZADA
         const elementosEsperados = [
             'Id_Remision', 'fecha', 'operador', 'ov', 'cliente', 'requision', 'pago',
             'aeronaveSeleccionada', 'buscarAeronave', 'horaLlegada', 'horaInicial',
@@ -1124,7 +1152,9 @@ function cargarDatosEnFormulario(remision) {
         // Información de vuelo y aeronave
         setValueSafe('cliente', remision.Cliente);
         setValueSafe('requision', remision.Requision);
-        setValueSafe('pago', remision.pago || 'efectivo');
+        // IMPORTANTE: Usar FormaPago si existe, sino usar pago
+        const formaPago = remision.FormaPago || remision.pago || 'efectivo';
+        setValueSafe('pago', formaPago);
         
         // Aeronave
         setValueSafe('aeronaveSeleccionada', remision.Id_Aeronave);
@@ -1149,8 +1179,12 @@ function cargarDatosEnFormulario(remision) {
                 const infoMatricula = document.getElementById('infoMatricula');
                 const infoEquipo = document.getElementById('infoEquipo');
                 
-                if (infoMatricula) infoMatricula.textContent = remision.Matricula;
-                if (infoEquipo) infoEquipo.textContent = remision.Equipo || 'No especificado';
+                if (infoMatricula) {
+                    infoMatricula.textContent = remision.Matricula || 'No especificada';
+                }
+                if (infoEquipo) {
+                    infoEquipo.textContent = remision.Equipo || 'No especificado';
+                }
                 infoContainer.style.display = 'flex';
                 console.log('   ✓ Info aeronave mostrada');
             }
