@@ -80,25 +80,24 @@ document.addEventListener('DOMContentLoaded', () => {
  * Aplica los filtros y recarga la tabla de remisiones
  */
 function aplicarFiltrosRemisiones() {
-    console.log(' Aplicando filtros remisones...');
-    console.log(' Filtros activos:', filtrosActivosRemision);
+    console.log('🔍 Aplicando filtros remisiones...');
     
     const filtroFecha = document.getElementById('filtroFecha');
     const filtroMatricula = document.getElementById('filtroMatricula');
     
-    if (filtroFecha && filtroFecha.value !== filtrosActivosRemision.fecha) {
+    if (filtroFecha) {
         filtrosActivosRemision.fecha = filtroFecha.value;
     }
     
-    if (filtroMatricula && filtroMatricula.value.trim() !== filtrosActivosRemision.matricula) {
+    if (filtroMatricula) {
         filtrosActivosRemision.matricula = filtroMatricula.value.trim();
     }
     
-    console.log(' Filtros sincronizados:', filtrosActivosRemision);
+    console.log('✅ Filtros activos:', filtrosActivosRemision);
     
-    const tablaBody = document.querySelector('#tablaRemision tbody');
+    const tablaBody = document.querySelector('#tablaRemisiones tbody');
     if (tablaBody) {
-        tablaBody.innerHTML = '<tr><td colspan="10" class="text-center">Aplicando filtros...</td></tr>';
+        tablaBody.innerHTML = '<tr><td colspan="8" class="text-center">Aplicando filtros...</td></tr>';
     }
     
     paginaActual = 1; 
@@ -106,42 +105,40 @@ function aplicarFiltrosRemisiones() {
 }
 
 /**
- * Limpia los filtros y recarga la tabla de walkarounds
+ * Limpia los filtros y recarga la tabla de remisiones
  */
 function limpiarFiltrosRemisiones() {
-    console.log(' Limpiando filtros remisiones...');
+    console.log('🧹 Limpiando filtros remisiones...');
     
     const filtroFecha = document.getElementById('filtroFecha');
     const filtroMatricula = document.getElementById('filtroMatricula');
     
     if (filtroFecha) filtroFecha.value = '';
     if (filtroMatricula) filtroMatricula.value = '';
-    if (filtroMovimiento) filtroMovimiento.value = '';
     
     filtrosActivosRemision = {
         fecha: '',
         matricula: ''
-        };
+    };
     
-    const tablaBody = document.querySelector('#tablaWalkarounds tbody');
-    if (tablaBody) {
-        tablaBody.innerHTML = '<tr><td colspan="10" class="text-center">Limpiando filtros...</td></tr>';
-    }
+    console.log('✅ Filtros limpiados:', filtrosActivosRemision);
     
     paginaActual = 1;
     cargarRemisiones();
 }
 
-
+/**
+ * Configura los eventos de los filtros
+ */
 function configurarFiltrosRemisiones() {
-    console.log(' Configurando eventos de filtros para remisiones...');
+    console.log('⚙️ Configurando eventos de filtros para remisiones...');
     
     const filtroFecha = document.getElementById('filtroFecha');
     const filtroMatricula = document.getElementById('filtroMatricula');
     
     if (filtroFecha) {
         filtroFecha.addEventListener('change', function() {
-            console.log(' Cambio en filtro fecha:', this.value);
+            console.log('📅 Cambio en filtro fecha:', this.value);
             aplicarFiltros();
         });
     }
@@ -150,14 +147,14 @@ function configurarFiltrosRemisiones() {
         let timeoutMatricula = null;
         filtroMatricula.addEventListener('input', function() {
             const valor = this.value.trim();
-            console.log(' Input en filtro matrícula:', valor);
+            console.log('🔤 Input en filtro matrícula:', valor);
             
             if (timeoutMatricula) {
                 clearTimeout(timeoutMatricula);
             }
             
             timeoutMatricula = setTimeout(() => {
-                console.log(' Aplicando filtro de matrícula:', valor);
+                console.log('🔍 Aplicando filtro de matrícula:', valor);
                 aplicarFiltros();
             }, 500);
         });
@@ -169,7 +166,53 @@ function configurarFiltrosRemisiones() {
         });
     }
     
-    console.log(' Filtros de remisiones configurados correctamente');
+    console.log('✅ Filtros de remisiones configurados correctamente');
+}
+
+/**
+ * Aplica los filtros a la tabla de remisiones
+ */
+function aplicarFiltros() {
+    console.log('🚀 Aplicando filtros...');
+    
+    const filtroFecha = document.getElementById('filtroFecha');
+    const filtroMatricula = document.getElementById('filtroMatricula');
+    
+    if (!filtroFecha || !filtroMatricula) {
+        console.error('❌ Elementos de filtro no encontrados');
+        return;
+    }
+    
+    filtrosActivosRemision.fecha = filtroFecha.value;
+    filtrosActivosRemision.matricula = filtroMatricula.value.trim();
+    
+    console.log('📊 Filtros aplicados:', filtrosActivosRemision);
+    
+    paginaActual = 1;
+    cargarRemisiones();
+}
+
+/**
+ * Limpia los filtros de la tabla de remisiones
+ */
+function limpiarFiltros() {
+    console.log('🧼 Limpiando filtros...');
+    
+    const filtroFecha = document.getElementById('filtroFecha');
+    const filtroMatricula = document.getElementById('filtroMatricula');
+    
+    if (filtroFecha) filtroFecha.value = '';
+    if (filtroMatricula) filtroMatricula.value = '';
+    
+    filtrosActivosRemision = {
+        fecha: '',
+        matricula: ''
+    };
+    
+    console.log('✅ Filtros limpiados:', filtrosActivosRemision);
+    
+    paginaActual = 1;
+    cargarRemisiones();
 }
 
 /**
@@ -903,6 +946,7 @@ function limpiarFiltros() {
  */
 async function cargarRemisiones(pagina = 1) {
     const tablaBody = document.querySelector('#tablaRemisiones tbody');
+
     if (!tablaBody) return;
 
     tablaBody.innerHTML = '<tr><td colspan="8" class="text-center">Cargando...</td></tr>';

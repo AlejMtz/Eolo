@@ -14,77 +14,135 @@ try {
         throw new Exception('Error de conexión: ' . $conn->connect_error);
     }
 
-    $pagina = isset($_GET['pagina']) ? (int)$_GET['pagina'] : 1;
-    $registros_por_pagina = isset($_GET['registros_por_pagina']) ? (int)$_GET['registros_por_pagina'] : 10;
-    
-    $matricula = isset($_GET['matricula']) ? $conn->real_escape_string($_GET['matricula']) : '';
-    
-    if ($pagina < 1) $pagina = 1;
-    if ($registros_por_pagina < 1) $registros_por_pagina = 10;
-
+    // Obtener parámetros de paginación
+    $pagina = isset($_GET['pagina']) ? intval($_GET['pagina']) : 1;
+    $registros_por_pagina = isset($_GET['registros_por_pagina']) ? intval($_GET['registros_por_pagina']) : 15;
     $offset = ($pagina - 1) * $registros_por_pagina;
-
-   // Construir consulta base con filtros
-    $sql_base = "FROM remision r
-                 LEFT JOIN aeronave a ON r.Id_Aeronave = a.Id_Aeronave
-                 WHERE 1=1";
-
-    $sql_where = "";             
     
+    // Obtener parámetros de filtro
+    $fecha = isset($_GET['fecha']) ? $_GET['fecha'] : '';
+    $matricula = isset($_GET['matricula']) ? $_GET['matricula'] : '';
+    
+    // Construir consulta base
+    $sql_base = "SELECT 
+                    r.Id_Remision,
+                    r.Fecha,
+                    r.Operador,
+                    r.Cliente,
+                    r.FormaPago,
+                    r.HoraLlegada,
+                    r.HoraInicial,
+                    r.LecInicial,
+                    r.HoraFinal,
+                    r.LecFinal,
+                    r.LitrosTot,
+                    r.Observaciones,
+                    r.Cobranza,
+                    r.ServiciosCom,
+                    a.Matricula,
+                    a.Equipo
+                FROM remision r
+                LEFT JOIN aeronave a ON r.Id_Aeronave = a.Id_Aeronave
+                WHERE 1=1";
+    
+    $sql_count = "SELECT COUNT(*) as total 
+                  FROM remision r
+                  LEFT JOIN aeronave a ON r.Id_Aeronave = a.Id_Aeronave
+                  WHERE 1=1";
+    
+    $params = [];
+    $types = "";
+    
+    // Aplicar filtro de fecha
+    if (!empty($fecha)) {
+        $sql_base .= " AND DATE(r.Fecha) = ?";
+        $sql_count .= " AND DATE(r.Fecha) = ?";
+        $params[] = $fecha;
+        $types .= "s";
+    }
+    
+    // Aplicar filtro de matrícula
     if (!empty($matricula)) {
-        $sql_where .= " AND a.Matricula LIKE '%$matricula%'";
-    }
-
-    // Consulta para obtener el total de registros
-    $sql_total = "SELECT COUNT(*) as total FROM remision r
-                 LEFT JOIN aeronave a ON r.Id_Aeronave = a.Id_Aeronave
-                 WHERE 1=1 $sql_where";
-    $result_total = $conn->query($sql_total);
-    
-    if (!$result_total) {
-        throw new Exception('Error en consulta total: ' . $conn->error);
+        $sql_base .= " AND a.Matricula LIKE ?";
+        $sql_count .= " AND a.Matricula LIKE ?";
+        $params[] = "%" . $matricula . "%";
+        $types .= "s";
     }
     
-    $total_registros = $result_total->fetch_assoc()['total'];
-    $total_paginas = ceil($total_registros / $registros_por_pagina);
-
-    /// Consulta SQL para obtener remisiones con paginación
-    $sql = "SELECT 
-                r.Fecha, 
-                a.Matricula,
-                a.Equipo,
-                r.Id_Remision,
-                r.LecInicial,
-                r.LecFinal,
-                r.LitrosTot
-            " . $sql_base . " 
-            ORDER BY r.Id_Remision DESC
-            LIMIT ? OFFSET ?";
-        
-            $stmt = $conn->prepare($sql);
-            $stmt->bind_param("ii", $registros_por_pagina, $offset);
+    // Ordenar por fecha descendente
+    $sql_base .= " ORDER BY r.Fecha DESC, r.Id_Remision DESC LIMIT ? OFFSET ?";
+    
+    // Obtener total de registros
+    $stmt_count = $conn->prepare($sql_count);
+    if (!$stmt_count) {
+        throw new Exception('Error en consulta COUNT: ' . $conn->error);
+    }
+    
+    if (!empty($params)) {
+        $stmt_count->bind_param($types, ...$params);
+    }
+    
+    $stmt_count->execute();
+    $result_count = $stmt_count->get_result();
+    $total_registros = $result_count->fetch_assoc()['total'];
+    $stmt_count->close();
+    
+    // Obtener datos paginados
+    $stmt = $conn->prepare($sql_base);
+    if (!$stmt) {
+        throw new Exception('Error en consulta principal: ' . $conn->error);
+    }
+    
+    // Agregar parámetros de paginación
+    $params_paginacion = $params;
+    $types_paginacion = $types . "ii";
+    $params_paginacion[] = $registros_por_pagina;
+    $params_paginacion[] = $offset;
+    
+    if (!empty($params_paginacion)) {
+        $stmt->bind_param($types_paginacion, ...$params_paginacion);
+    }
+    
     $stmt->execute();
     $result = $stmt->get_result();
-    if (!$result) {
-        throw new Exception('Error en consulta remisiones: ' . $conn->error);
-    }
+    
     $remisiones = [];
     while ($row = $result->fetch_assoc()) {
         $remisiones[] = $row;
-    }   
-    echo json_encode([
+    }
+    
+    // Calcular paginación
+    $total_paginas = ceil($total_registros / $registros_por_pagina);
+    
+    $response = [
+        'success' => true,
         'remisiones' => $remisiones,
-        'total_paginas' => $total_paginas,
-        'pagina_actual' => $pagina
-    ]);
-
+        'paginacion' => [
+            'pagina_actual' => $pagina,
+            'total_paginas' => $total_paginas,
+            'total_registros' => $total_registros,
+            'registros_por_pagina' => $registros_por_pagina
+        ],
+        'filtros' => [
+            'fecha' => $fecha,
+            'matricula' => $matricula
+        ]
+    ];
+    
+    echo json_encode($response, JSON_UNESCAPED_UNICODE);
+    
     $stmt->close();
-
-} catch (Exception $e) {
-    echo json_encode(['error' => $e->getMessage()]);
-}
-
-if (isset($conn) && $conn) {
     $conn->close();
+    
+} catch (Exception $e) {
+    http_response_code(500);
+    echo json_encode([
+        'success' => false,
+        'error' => $e->getMessage(),
+        'filtros' => [
+            'fecha' => isset($fecha) ? $fecha : '',
+            'matricula' => isset($matricula) ? $matricula : ''
+        ]
+    ]);
 }
 ?>

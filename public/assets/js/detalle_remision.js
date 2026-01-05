@@ -33,10 +33,10 @@ async function cargarDetalleRemision() {
         let data;
         try {
             data = JSON.parse(responseText);
-            console.log('📊 Datos parseados:', data);
+            console.log(' Datos parseados:', data);
         } catch (jsonError) {
-            console.error('❌ Error al parsear JSON:', jsonError);
-            console.error('❌ Texto que causó el error:', responseText);
+            console.error(' Error al parsear JSON:', jsonError);
+            console.error(' Texto que causó el error:', responseText);
             throw new Error('Respuesta inválida del servidor');
         }
         
@@ -167,9 +167,3 @@ function mostrarError(mensaje) {
     }
 }
 
-/**
- * Función para volver a la lista (opcional)
- */
-function volverALista() {
-    window.location.href = '../../app/views/ver_remision_pipa.html';
-}
