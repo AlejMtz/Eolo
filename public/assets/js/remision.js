@@ -941,9 +941,7 @@ function limpiarFiltros() {
     cargarRemisiones();
 }
 
-/**
- * Modifica cargarRemisiones para aplicar filtros
- */
+
 async function cargarRemisiones(pagina = 1) {
     const tablaBody = document.querySelector('#tablaRemisiones tbody');
 
